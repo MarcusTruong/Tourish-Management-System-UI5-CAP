@@ -1,0 +1,32 @@
+POST http://localhost:4004/odata/v4/tourish-management/createTour
+Content-Type: application/json
+Authorization: Basic admin admin
+
+{
+  "tour": {
+    "ID": "uuid-tour-1",
+    "TourName": "Hà Nội City Tour",
+    "Description": "A tour around Hà Nội",
+    "NumberDays": 2,
+    "NumberNights": 1,
+    "Price": 200.00,
+    "Status": "Draft",
+    "CreatedByID": "uuid-user-1"
+  },
+  "schedules": [
+    {
+      "ID": "uuid-schedule-1",
+      "TourID": "uuid-tour-1",
+      "DayNumber": 1,
+      "Activity": "Visit Hoàn Kiếm Lake",
+      "Description": "Explore the lake and Ngoc Son Temple"
+    },
+    {
+      "ID": "uuid-schedule-2",
+      "TourID": "uuid-tour-1",
+      "DayNumber": 2,
+      "Activity": "Visit Temple of Literature",
+      "Description": "Explore the first university in Vietnam"
+    }
+  ]
+}

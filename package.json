@@ -17,15 +17,14 @@
     "@sap/cds-dk": "^8"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "watch-tour": "cds watch --open tour/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
     "requires": {
-      "auth": "xsuaa",
-      "db": "hana"
-    },
-    "sql": {
-      "native_hana_associations": false
+      "[hybrid]": {
+        "db": "hana"
+      }
     }
   }
 }
