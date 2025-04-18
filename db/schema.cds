@@ -28,6 +28,7 @@ entity Tour {
   Description : String(500);
   NumberDays : Integer;
   NumberNights : Integer;
+  TourType: String(20);
   Price : Decimal(15,2);
   Status : String(20) default 'Draft'; // Draft/Open/Canceled
   CreatedByID : UUID; // Khóa ngoại tham chiếu đến User.ID
@@ -60,6 +61,7 @@ entity Customer {
   Phone : String(20);
   Email : String(100);
   Address : String(200);
+  BirthDay : Date;
   Notes : String(500);
   TotalTransactions : Decimal(15,2) default 0.00;
   Contracts : Association to many Contract on Contracts.CustomerID = $self.ID;
