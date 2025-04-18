@@ -1,0 +1,23 @@
+<mvc:View
+  controllerName="tour.controller.CreateTour"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:layout="sap.ui.layout">
+  <Page id="_IDGenPage2" title="{i18n>createTourTitle}" showNavButton="true" navButtonPress="onNavBack">
+    <content>
+      <layout:VerticalLayout id="_IDGenVerticalLayout">
+        <Input id="tourName" placeholder="Tour Name"/>
+        <TextArea id="description" placeholder="Description"/>
+        <Input id="numberDays" type="Number" placeholder="Number of Days"/>
+        <Input id="numberNights" type="Number" placeholder="Number of Nights"/>
+        <Input id="price" type="Number" placeholder="Price"/>
+        <Input id="createdByID" value="uuid-user-1" placeholder="Created By ID"/>
+        <Button id="_IDGenButton2" text="Add Schedule" press="onAddSchedule"/>
+        <List id="schedules" items="{schedules>/items}">
+          <StandardListItem id="_IDGenStandardListItem" title="{schedules>DayNumber}: {schedules>Activity}"/>
+        </List>
+        <Button id="_IDGenButton3" text="Create" press="onCreate"/>
+      </layout:VerticalLayout>
+    </content>
+  </Page>
+</mvc:View>

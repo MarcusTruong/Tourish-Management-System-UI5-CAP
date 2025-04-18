@@ -93,17 +93,33 @@
       },
       "routes": [
         {
-          "name": "Routetour",
-          "pattern": ":?query:",
-          "target": [
-            "Targettour"
-          ]
+          "pattern": "",
+          "name": "tourList",
+          "target": "tourList"
+        },
+        {
+          "pattern": "createTour",
+          "name": "createTour",
+          "target": "createTour"
+        },
+        {
+          "pattern": "createOrder",
+          "name": "createOrder",
+          "target": "createOrder"
         }
       ],
       "targets": {
-        "Targettour": {
-          "id": "tour",
-          "name": "tour"
+        "tourList": {
+          "viewName": "TourList",
+          "viewId": "tourList"
+        },
+        "createTour": {
+          "viewName": "CreateTour",
+          "viewId": "createTour"
+        },
+        "createOrder": {
+          "viewName": "CreateOrder",
+          "viewId": "createOrder"
         }
       }
     },
