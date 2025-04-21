@@ -7,8 +7,9 @@ module.exports = cds.service.impl(async function () {
   this.on('createSupplier', async (req) => {
     const { supplierName, address, phone, email } = req.data;
     const tx = cds.transaction(req);
-
+  
     try {
+      console.log('Starting transaction for creating supplier');
       const supplier = {
         ID: cds.utils.uuid(),
         SupplierName: supplierName,
@@ -16,8 +17,13 @@ module.exports = cds.service.impl(async function () {
         Phone: phone,
         Email: email
       };
-      const createdSupplier = await tx.run(INSERT.into(Suppliers).entries(supplier));
+      await tx.run(INSERT.into(Suppliers).entries(supplier));
+      console.log('Supplier inserted:', supplier);
+  
+      const createdSupplier = await tx.run(SELECT.one.from(Suppliers).where({ ID: supplier.ID }));
       await tx.commit();
+      console.log('Transaction committed successfully');
+  
       return {
         ID: createdSupplier.ID,
         SupplierName: createdSupplier.SupplierName,
@@ -26,6 +32,7 @@ module.exports = cds.service.impl(async function () {
         Email: createdSupplier.Email
       };
     } catch (error) {
+      console.error('Error occurred:', error);
       await tx.rollback();
       req.error(500, `Failed to create supplier: ${error.message}`);
     }
@@ -235,7 +242,7 @@ module.exports = cds.service.impl(async function () {
     const { searchTerm } = req.data;
     try {
       const suppliers = await SELECT.from(Suppliers)
-        .where`SupplierName LIKE ${`%${searchTerm}%`} OR Email LIKE ${`%${searchTerm}%`} OR Phone LIKE ${`%${searchTerm}%`}`;
+        .where`SupplierName LIKE ${`%${searchTerm}%`} OR Email LIKE ${`%${searchTerm}%`} OR Phone LIKE ${`%${searchTerm}%`} OR Address LIKE ${`%${searchTerm}%`}`;
       return suppliers.map(s => ({
         ID: s.ID,
         SupplierName: s.SupplierName,

@@ -1,1 +1,0 @@
-using TourishManagementService as service from '../../srv/service';
