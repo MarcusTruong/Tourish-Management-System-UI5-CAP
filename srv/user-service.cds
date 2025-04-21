@@ -9,7 +9,6 @@ service UserService @(path: '/user-service') {
   action createUser(
     username: String,
     password: String,
-    role: String,
     fullName: String,
     email: String,
     phone: String
@@ -42,7 +41,6 @@ service UserService @(path: '/user-service') {
   // Action để thêm User vào Workspace
   @(requires: 'admin')
   action addUser(
-    workspaceID: UUID,
     username: String,
     password: String,
     role: String,
@@ -65,7 +63,7 @@ service UserService @(path: '/user-service') {
   @(requires: 'admin')
   action updateUserPermissions(
     userID: UUID,
-    role: String
+    role: String  
   ) returns {
     ID: UUID;
     WorkspaceID: UUID;
@@ -81,10 +79,12 @@ service UserService @(path: '/user-service') {
   // Action để đổi mật khẩu
   @(requires: 'authenticated-user')
   action changePassword(
-    userID: UUID,
     currentPassword: String,
     newPassword: String
-  ) returns Boolean;
+  ) returns {
+    success: Boolean;
+    message: String;
+  };
 
   // Action để xác thực
   action authenticate(
@@ -101,6 +101,15 @@ service UserService @(path: '/user-service') {
       Phone: String(20);
       Status: String(20);
     };
+    token: String;
+  };
+
+    // Action để làm mới token
+  @(requires: 'authenticated-user')
+  action refreshToken(
+    userID: UUID
+  ) returns {
+    success: Boolean;
     token: String;
   };
 }

@@ -1,7 +1,7 @@
-POST http://localhost:4004/supplier-service/markDebtAsPaid
+POST http://localhost:4004/user-service/authenticate
 Content-Type: application/json
-Authorization: Basic admin admin
 
 {
-  "debtID": "572a54f7-f441-4ca2-be33-7f25cdb49e5d"
+  "username": "staff11",
+  "password": "staffpass123"
 }

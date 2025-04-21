@@ -1,3 +1,8 @@
-GET http://localhost:4004/supplier-service/getActiveServices()
+POST http://localhost:4004/user-service/updateUserPermissions
 Content-Type: application/json
-Authorization: Basic admin admin
+Authorization: Basic truong 22082002
+
+{
+  "userID": "8e87762d-a391-495d-b1c7-f8942eef887f",
+  "role": "Manager"
+}
