@@ -1,7 +1,7 @@
 {
   "_version": "1.65.0",
   "sap.app": {
-    "id": "tour",
+    "id": "tourishui",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": {
@@ -13,11 +13,11 @@
     "sourceTemplate": {
       "id": "@sap/generator-fiori:basic",
       "version": "1.17.3",
-      "toolsId": "50757005-6c3d-4d83-9376-8bddf5b5af49"
+      "toolsId": "38399362-21b9-41b4-b6f0-2cfe93920cb7"
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v4/tourish-management/",
+        "uri": "/user-service/",
         "type": "OData",
         "settings": {
           "annotations": [],
@@ -59,7 +59,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "tour.i18n.i18n"
+          "bundleName": "tourishui.i18n.i18n"
         }
       },
       "": {
@@ -87,44 +87,28 @@
         "transition": "slide",
         "type": "View",
         "viewType": "XML",
-        "path": "tour.view",
+        "path": "tourishui.view",
         "async": true,
-        "viewPath": "tour.view"
+        "viewPath": "tourishui.view"
       },
       "routes": [
         {
-          "pattern": "",
-          "name": "tourList",
-          "target": "tourList"
-        },
-        {
-          "pattern": "createTour",
-          "name": "createTour",
-          "target": "createTour"
-        },
-        {
-          "pattern": "createOrder",
-          "name": "createOrder",
-          "target": "createOrder"
+          "name": "RouteLogin",
+          "pattern": ":?query:",
+          "target": [
+            "TargetLogin"
+          ]
         }
       ],
       "targets": {
-        "tourList": {
-          "viewName": "TourList",
-          "viewId": "tourList"
-        },
-        "createTour": {
-          "viewName": "CreateTour",
-          "viewId": "createTour"
-        },
-        "createOrder": {
-          "viewName": "CreateOrder",
-          "viewId": "createOrder"
+        "TargetLogin": {
+          "id": "Login",
+          "name": "Login"
         }
       }
     },
     "rootView": {
-      "viewName": "tour.view.App",
+      "viewName": "tourishui.view.App",
       "type": "XML",
       "id": "App",
       "async": true

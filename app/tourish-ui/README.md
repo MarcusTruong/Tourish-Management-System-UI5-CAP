@@ -1,14 +1,14 @@
 ## Application Details
 |               |
 | ------------- |
-|**Generation Date and Time**<br>Fri Apr 18 2025 01:59:43 GMT+0000 (Coordinated Universal Time)|
+|**Generation Date and Time**<br>Tue Apr 22 2025 02:35:13 GMT+0000 (Coordinated Universal Time)|
 |**App Generator**<br>@sap/generator-fiori-freestyle|
 |**App Generator Version**<br>1.17.3|
 |**Generation Platform**<br>SAP Business Application Studio|
 |**Template Used**<br>Basic|
 |**Service Type**<br>Local Cap|
-|**Service URL**<br>http://localhost:4004/odata/v4/tourish-management/|
-|**Module Name**<br>tour|
+|**Service URL**<br>http://localhost:4004/user-service/|
+|**Module Name**<br>tourish-ui|
 |**Application Title**<br>Tourish Management System|
 |**Namespace**<br>|
 |**UI5 Theme**<br>sap_horizon|
@@ -17,7 +17,7 @@
 |**Enable TypeScript**<br>False|
 |**Add Eslint configuration**<br>False|
 
-## tour
+## tourish-ui
 
 An Tourish Management System using SAP Fiori application.
 
@@ -25,7 +25,7 @@ An Tourish Management System using SAP Fiori application.
 
 -   This app has been generated using the SAP Fiori tools - App Generator, as part of the SAP Fiori tools suite.  In order to launch the generated app, simply start your CAP project and navigate to the following location in your browser:
 
-http://localhost:4004/tour/webapp/index.html
+http://localhost:4004/tourish-ui/webapp/index.html
 
 #### Pre-requisites:
 

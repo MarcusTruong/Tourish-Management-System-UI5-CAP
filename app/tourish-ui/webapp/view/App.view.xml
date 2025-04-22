@@ -1,4 +1,4 @@
-<mvc:View controllerName="tour.controller.App"
+<mvc:View controllerName="tourishui.controller.App"
     displayBlock="true"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m">

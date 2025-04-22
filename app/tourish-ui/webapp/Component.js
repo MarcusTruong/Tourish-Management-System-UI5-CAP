@@ -1,10 +1,10 @@
 sap.ui.define([
     "sap/ui/core/UIComponent",
-    "tour/model/models"
+    "tourishui/model/models"
 ], (UIComponent, models) => {
     "use strict";
 
-    return UIComponent.extend("tour.Component", {
+    return UIComponent.extend("tourishui.Component", {
         metadata: {
             manifest: "json",
             interfaces: [

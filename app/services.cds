@@ -1,2 +1,2 @@
 
-using from './tour/annotations';
+using from './tourish-ui/annotations';

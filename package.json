@@ -20,7 +20,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "watch-tour": "cds watch --open tour/webapp/index.html?sap-ui-xx-viewCache=false"
+    "watch-tourish-ui": "cds watch --open tourish-ui/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "cds": {
     "requires": {
