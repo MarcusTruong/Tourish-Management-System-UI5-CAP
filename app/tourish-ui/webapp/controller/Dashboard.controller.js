@@ -1,44 +1,20 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/m/MessageBox",
-  "sap/ui/model/json/JSONModel",
   "sap/ui/model/odata/v4/ODataModel"
-], function (Controller, MessageBox, JSONModel, ODataModel) {
+], function (Controller, MessageBox, ODataModel) {
   "use strict";
 
   return Controller.extend("tourishui.controller.Dashboard", {
     onInit: function () {
-      // Đảm bảo auth model đã được khởi tạo
-      const oComponent = this.getOwnerComponent();
-      if (!oComponent.getModel("auth")) {
-        oComponent.setModel(new JSONModel({ token: null, user: null }), "auth");
-      }
-      
-      const oAuthModel = oComponent.getModel("auth");
-      // Kiểm tra xem model đã tồn tại và có thuộc tính token chưa
-      if (!oAuthModel || !oAuthModel.getProperty("/token")) {
-        // Kiểm tra localStorage để khôi phục session
-        const sAuthData = localStorage.getItem("auth");
-        if (sAuthData) {
-          const oAuthData = JSON.parse(sAuthData);
-          oAuthModel.setData(oAuthData);
-        } else {
-          oComponent.getRouter().navTo("login");
-          return;
-        }
-      }
-      
       // Đăng ký để nhận thông báo khi route thay đổi
-      oComponent.getRouter().getRoute("dashboard").attachPatternMatched(this._onRouteMatched, this);
+      this.getOwnerComponent().getRouter().getRoute("dashboard").attachPatternMatched(this._onRouteMatched, this);
     },
     
     _onRouteMatched: function() {
-      const oComponent = this.getOwnerComponent();
-      const oAuthModel = oComponent.getModel("auth");
-      
-      // Kiểm tra xem model đã tồn tại và có thuộc tính token chưa
-      if (!oAuthModel || !oAuthModel.getProperty("/token")) {
-        oComponent.getRouter().navTo("login");
+      const oSessionManager = this.getOwnerComponent().getSessionManager();
+      if (!oSessionManager.isLoggedIn()) {
+        this.getOwnerComponent().getRouter().navTo("login");
       }
     },
 
@@ -84,18 +60,19 @@ sap.ui.define([
               const oResult = oContext.getBoundContext().getObject();
               
               if (oResult && oResult.ID) {
-                // Cập nhật thông tin workspace vào model auth
-                const oAuthModel = this.getOwnerComponent().getModel("auth");
-                if (oAuthModel) {
-                  oAuthModel.setProperty("/user/WorkspaceID", oResult.ID);
-                  // Cập nhật localStorage
-                  localStorage.setItem("auth", JSON.stringify(oAuthModel.getData()));
-                }
+                // Cập nhật thông tin workspace vào SessionManager
+                const oSessionManager = this.getOwnerComponent().getSessionManager();
+                const oUser = oSessionManager.getUser();
+                oUser.WorkspaceID = oResult.ID;
+                oSessionManager.saveSession({
+                  token: oSessionManager.getToken(),
+                  user: oUser
+                });
                 
                 MessageBox.success("Tạo workspace thành công!");
                 oDialog.close();
                 
-                // Refresh binding để cập nhật UI (nếu cần)
+                // Refresh binding để cập nhật UI
                 if (this.getView().getBindingContext()) {
                   this.getView().getBindingContext().refresh();
                 }
@@ -141,19 +118,11 @@ sap.ui.define([
     },
 
     onLogoutPress: function () {
-      const oComponent = this.getOwnerComponent();
-      const oAuthModel = oComponent.getModel("auth");
-      
-      // Kiểm tra sự tồn tại của model trước khi cập nhật
-      if (oAuthModel) {
-        oAuthModel.setProperty("/token", null);
-        oAuthModel.setProperty("/user", null);
-        // Xóa localStorage
-        localStorage.removeItem("auth");
-      }
+      const oSessionManager = this.getOwnerComponent().getSessionManager();
+      oSessionManager.clearSession();
       
       // Điều hướng về trang đăng nhập
-      oComponent.getRouter().navTo("login");
+      this.getOwnerComponent().getRouter().navTo("login");
     }
   });
 });

@@ -1,26 +1,16 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/m/MessageBox",
-  "sap/ui/model/json/JSONModel",
   "sap/ui/model/odata/v4/ODataModel"
-], function (Controller, MessageBox, JSONModel, ODataModel) {
+], function (Controller, MessageBox, ODataModel) {
   "use strict";
 
   return Controller.extend("tourishui.controller.Login", {
     onInit: function () {
-      // Khởi tạo model để lưu token
-      const oComponent = this.getOwnerComponent();
-      if (!oComponent.getModel("auth")) {
-        oComponent.setModel(new JSONModel({ token: null, user: null }), "auth");
-      }
-
-      // Kiểm tra session từ localStorage
-      const sAuthData = localStorage.getItem("auth");
-      if (sAuthData) {
-        const oAuthData = JSON.parse(sAuthData);
-        const oAuthModel = oComponent.getModel("auth");
-        oAuthModel.setData(oAuthData);
-        oComponent.getRouter().navTo("dashboard");
+      // Kiểm tra session từ SessionManager
+      const oSessionManager = this.getOwnerComponent().getSessionManager();
+      if (oSessionManager.isLoggedIn()) {
+        this.getOwnerComponent().getRouter().navTo("dashboard");
       }
     },
 
@@ -50,13 +40,12 @@ sap.ui.define([
         const oResult = oContext.getBoundContext().getObject();
         console.log(oResult);
         if (oResult && oResult.success) {
-          // Lưu token và user vào model
-          const oAuthModel = this.getOwnerComponent().getModel("auth");
-          oAuthModel.setProperty("/token", oResult.token);
-          oAuthModel.setProperty("/user", oResult.user);
-
-          // Lưu vào localStorage
-          localStorage.setItem("auth", JSON.stringify(oAuthModel.getData()));
+          // Lưu session qua SessionManager
+          const oSessionManager = this.getOwnerComponent().getSessionManager();
+          oSessionManager.saveSession({
+            token: oResult.token,
+            user: oResult.user
+          });
 
           MessageBox.success("Đăng nhập thành công!");
           // Điều hướng đến dashboard
