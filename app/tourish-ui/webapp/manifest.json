@@ -70,6 +70,10 @@
           "autoExpandSelect": true,
           "earlyRequests": true
         }
+      },
+      "side": {
+        "type": "sap.ui.model.json.JSONModel",
+        "uri": "model/sideContent.json"
       }
     },
     "resources": {

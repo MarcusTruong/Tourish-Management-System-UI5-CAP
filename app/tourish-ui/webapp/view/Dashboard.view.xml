@@ -3,7 +3,7 @@
   xmlns:mvc="sap.ui.core.mvc"
   xmlns="sap.m"
   displayBlock="true">
-  <Page id="_IDGenPage1" title="Trang chủ">
+  <Page id="_IDGenPage1" title="Tourish Management System" titleAlignment="Center">
     <content>
       <VBox id="_IDGenVBox3" class="sapUiSmallMargin">
         <Text id="_IDGenText" text="Chào mừng bạn đến với hệ thống quản lý doanh nghiệp du lịch!"/>

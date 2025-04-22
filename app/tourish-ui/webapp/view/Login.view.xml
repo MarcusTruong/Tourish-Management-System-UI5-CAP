@@ -1,18 +1,108 @@
 <mvc:View
-  controllerName="tourishui.controller.Login"
-  xmlns:mvc="sap.ui.core.mvc"
-  xmlns="sap.m"
-  displayBlock="true">
-  <Page id="_IDGenPage" title="Đăng nhập">
-    <content>
-      <VBox id="_IDGenVBox" class="sapUiSmallMargin">
-        <Label id="_IDGenLabel" text="Tên người dùng" labelFor="usernameInput"/>
-        <Input id="usernameInput" placeholder="Nhập tên người dùng"/>
-        <Label id="_IDGenLabel1" text="Mật khẩu" labelFor="passwordInput"/>
-        <Input id="passwordInput" type="Password" placeholder="Nhập mật khẩu"/>
-        <Button id="_IDGenButton" text="Đăng nhập" press="onLoginPress" type="Emphasized"/>
-        <Link id="_IDGenLink1" text="Đăng ký tài khoản mới" press="onRegisterPress"/>
-      </VBox>
-    </content>
-  </Page>
+    controllerName="tourishui.controller.Login"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:l="sap.ui.layout"
+    displayBlock="true"
+>
+    <Page
+        id="_IDGenPage"
+        title="Đăng nhập"
+        showNavButton="false"
+        titleAlignment="Center"
+    >
+        <content>
+            <l:Grid
+                id="_IDGenGrid"
+                defaultSpan="XL12 L12 M12 S12"
+                class="sapUiMediumMargin"
+            >
+                <l:content>
+                    <FlexBox
+                        id="_IDGenFlexBox1"
+                        alignItems="Center"
+                        justifyContent="Center"
+                        alignContent="Center"
+                        wrap="Wrap"
+                    >
+                        <items>
+                            <VBox id="_IDGenVBox" width="40%" class="sapUiMediumMarginBegin">
+                                <form:SimpleForm
+                                    id="loginForm"
+                                    editable="true"
+                                    layout="ResponsiveGridLayout"
+                                    labelSpanXL="4"
+                                    labelSpanL="4"
+                                    labelSpanM="4"
+                                    labelSpanS="12"
+                                    adjustLabelSpan="false"
+                                    emptySpanXL="0"
+                                    emptySpanL="0"
+                                    emptySpanM="0"
+                                    emptySpanS="0"
+                                    columnsXL="1"
+                                    columnsL="1"
+                                    columnsM="1"
+                                    xmlns:form="sap.ui.layout.form"
+                                >
+                                    <form:content>
+                                        <Label id="_IDGenLabel" text="Tên người dùng" required="true" />
+                                        <Input id="usernameInput" placeholder="Nhập tên người dùng" />
+                                        
+                                        <Label id="_IDGenLabel1" text="Mật khẩu" required="true" />
+                                        <Input 
+                                            id="passwordInput" 
+                                            type="Password" 
+                                            placeholder="Nhập mật khẩu" 
+                                        />
+                                    </form:content>
+                                </form:SimpleForm>
+                                
+                                <Button
+                                    id="_IDGenButton"
+                                    text="Đăng nhập"
+                                    press="onLoginPress"
+                                    type="Emphasized"
+                                    width="100%"
+                                    class="sapUiSmallMarginTop"
+                                />
+                                
+                                <HBox
+                                    id="_IDGenHBox1"
+                                    justifyContent="SpaceBetween"
+                                    width="100%"
+                                    class="sapUiSmallMarginTop"
+                                >
+                                    <Link id="_IDGenLink1" text="Đăng ký tài khoản mới" press="onRegisterPress" />
+                                </HBox>
+                            </VBox>
+
+                            <VBox id="_IDGenVBox5" width="40%" class="sapUiMediumMarginBegin" alignItems="Center">
+                                <Image 
+                                    id="_IDGenImage2" 
+                                    src="https://www.neovasolutions.com/wp-content/uploads/2021/05/Travel-management-system-min.png" 
+                                    width="100%"
+                                    height="auto"
+                                    class="sapUiMediumMarginBottom" 
+                                />
+                                <Text 
+                                    id="_IDGenText3" 
+                                    text="Welcome back to" 
+                                    class="sapMTitleStyleH2" 
+                                    textAlign="Center"
+                                />
+                                <Text 
+                                    id="_IDGenText4" 
+                                    text="Tourish Management System!" 
+                                    class="sapUiMediumMarginBottom sapMTitleStyleH2" 
+                                    textAlign="Center"
+                                />
+                            </VBox>
+                        </items>
+                    </FlexBox>
+                </l:content>
+            </l:Grid>
+        </content>
+    </Page>
 </mvc:View>

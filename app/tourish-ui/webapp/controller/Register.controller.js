@@ -1,9 +1,10 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
+    "sap/m/MessageToast",
     "sap/m/MessageBox",
     "sap/ui/model/odata/v4/ODataModel",
     "../model/utils"
-  ], function (Controller, MessageBox, ODataModel, utils) {
+  ], function (Controller, MessageToast, MessageBox, ODataModel, utils) {
     "use strict";
   
     return Controller.extend("tourishui.controller.Register", {
@@ -79,7 +80,7 @@ sap.ui.define([
             if (sPassword === "") {
               oInput.setValueState("None");
             } else if (!validationResult.valid) {
-              oInput.setValueState("Error");
+              oInput.setValueState("None");
             } else {
               oInput.setValueState("Success");
             }

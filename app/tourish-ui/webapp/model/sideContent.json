@@ -1,0 +1,131 @@
+{
+    "selectedKey": "",
+    "navigation": [
+        {
+            "titleI18nKey": "Home",
+            "icon": "sap-icon://home",
+            "expanded": true,
+            "key": "",
+            "items": []
+        },
+        {
+            "titleI18nKey": "Tour management",
+            "icon": "sap-icon://bus-public-transport",
+            "expanded": true,
+            "items": [
+                {
+                    "titleI18nKey": "Create Sample Tour",
+                    "icon": "sap-icon://write-new",
+                    "key": "createSampleTour"
+                },
+                {
+                    "titleI18nKey": "Điều hành Tour",
+                    "key": "tourOperation",
+                    "icon": "sap-icon://manager-insight"
+                }
+            ]
+        },
+        {
+            "titleI18nKey": "Bussiness Management",
+            "icon": "sap-icon://business-by-design",
+            "expanded": true,
+            "key": "",
+            "items": [
+                {
+                    "titleI18nKey": "Customer Management",
+                    "key": "customer",
+                    "icon": "sap-icon://group"
+                },
+                {
+                    "titleI18nKey": "Contract Management",
+                    "key": "contract",
+                    "icon": "sap-icon://customer-order-entry"
+                },
+                {
+                    "titleI18nKey": "Promotion Management",
+                    "key": "promotion",
+                    "icon": "sap-icon://capital-projects"
+                }
+            ]
+        },
+        {
+            "titleI18nKey": "Order Management",
+            "icon": "sap-icon://cart",
+            "expanded": true,
+            "key": "order",
+            "items": []
+        },
+        {
+            "titleI18nKey": "Suppliers Management",
+            "icon": "sap-icon://supplier",
+            "expanded": true,
+            "items": [
+                {
+                    "titleI18nKey": "Supplier Infomation",
+                    "key": "supplierInfomation",
+                    "icon": "sap-icon://notes"
+                },
+                {
+                    "titleI18nKey": "Supplier Service",
+                    "key": "supplierService",
+                    "icon": "sap-icon://business-one"
+                }
+            ]
+        },
+        {
+            "titleI18nKey": "Financial Accounting",
+            "icon": "sap-icon://customer-financial-fact-sheet",
+            "expanded": true,
+            "key": "",
+            "items": [
+                {
+                    "titleI18nKey": "Bank Account Management",
+                    "key": "bank",
+                    "icon": "sap-icon://wallet"
+                },
+                {
+                    "titleI18nKey": "Financial Report",
+                    "key": "report",
+                    "icon": "sap-icon://manager-insight"
+                },
+                {
+                    "titleI18nKey": "Receipt",
+                    "key": "receipt",
+                    "icon": "sap-icon://receipt"
+                },
+                {
+                    "titleI18nKey": "Công nợ",
+                    "key": "debt",
+                    "icon": "sap-icon://sales-quote"
+                }
+            ]
+        }
+    ],
+    "masterSettings": [
+        {
+            "titleI18nKey": "sideContentSystemSettings",
+            "key": "systemSettings",
+            "selected": true
+        },
+        {
+            "titleI18nKey": "sideContentOrderSettings",
+            "key": "orderSettings",
+            "selected": false
+        },
+        {
+            "titleI18nKey": "sideContentSupplierSettings",
+            "key": "supplierSettings",
+            "selected": false
+        },
+        {
+            "titleI18nKey": "sideContentCampaignSettings",
+            "key": "campaignSettings",
+            "selected": false
+        },
+        {
+            "titleI18nKey": "sideContentShippingSettings",
+            "key": "shippingSettings",
+            "selected": false
+        }
+    ]
+}
