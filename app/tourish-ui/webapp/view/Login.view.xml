@@ -1,6 +1,18 @@
-<mvc:View controllerName="tourishui.controller.Login"
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m">
-    <Page id="page" title="{i18n>title}">
-    </Page>
+<mvc:View
+  controllerName="tourishui.controller.Login"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  displayBlock="true">
+  <Page id="_IDGenPage" title="Đăng nhập">
+    <content>
+      <VBox id="_IDGenVBox" class="sapUiSmallMargin">
+        <Label id="_IDGenLabel" text="Tên người dùng" labelFor="usernameInput"/>
+        <Input id="usernameInput" placeholder="Nhập tên người dùng"/>
+        <Label id="_IDGenLabel1" text="Mật khẩu" labelFor="passwordInput"/>
+        <Input id="passwordInput" type="Password" placeholder="Nhập mật khẩu"/>
+        <Button id="_IDGenButton" text="Đăng nhập" press="onLoginPress" type="Emphasized"/>
+        <Link id="_IDGenLink1" text="Đăng ký tài khoản mới" press="onRegisterPress"/>
+      </VBox>
+    </content>
+  </Page>
 </mvc:View>

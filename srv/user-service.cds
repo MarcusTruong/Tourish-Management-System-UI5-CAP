@@ -24,7 +24,7 @@ service UserService @(path: '/user-service') {
   };
 
   // Action để tạo Workspace
-  @(requires: 'admin')
+  @(requires: 'Admin')
   action createWorkspace(
     companyName: String,
     address: String,
@@ -39,7 +39,7 @@ service UserService @(path: '/user-service') {
   };
 
   // Action để thêm User vào Workspace
-  @(requires: 'admin')
+  @(requires: 'Admin')
   action addUser(
     username: String,
     password: String,
@@ -60,7 +60,7 @@ service UserService @(path: '/user-service') {
   };
 
   // Action để cập nhật quyền của User
-  @(requires: 'admin')
+  @(requires: 'Admin')
   action updateUserPermissions(
     userID: UUID,
     role: String  
@@ -111,7 +111,7 @@ service UserService @(path: '/user-service') {
   };
 
     // Action để Admin xem danh sách thành viên trong workspace của mình
-  @(requires: 'admin')
+  @(requires: 'Admin')
   action getWorkspaceMembers() returns array of {
     ID: UUID;
     Username: String(50);
@@ -122,7 +122,7 @@ service UserService @(path: '/user-service') {
     Status: String(20);
   };
   // Action để Admin update status user
-  @(requires: 'admin')
+  @(requires: 'Admin')
   action updateUserStatus(
     userID: UUID,
     status: String(20)
@@ -131,7 +131,7 @@ service UserService @(path: '/user-service') {
     message: String;
   };
   // Action để Admin xóa thành viên khỏi workspace
-  @(requires: 'admin')
+  @(requires: 'Admin')
   action removeUserFromWorkspace(
     userID: UUID
   ) returns {
@@ -170,7 +170,7 @@ action getWorkspaceInfo() returns {
   Email: String(100);
 };
 
-@(requires: 'admin')
+@(requires: 'Admin')
 action updateWorkspaceInfo(
   companyName: String,
   address: String,

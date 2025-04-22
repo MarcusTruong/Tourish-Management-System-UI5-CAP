@@ -93,17 +93,61 @@
       },
       "routes": [
         {
-          "name": "RouteLogin",
-          "pattern": ":?query:",
-          "target": [
-            "TargetLogin"
-          ]
+          "name": "login",
+          "pattern": "",
+          "target": "login"
+        },
+        {
+          "name": "register",
+          "pattern": "register",
+          "target": "register"
+        },
+        {
+          "name": "dashboard",
+          "pattern": "dashboard",
+          "target": "dashboard"
+        },
+        {
+          "name": "manageUsers",
+          "pattern": "manageUsers",
+          "target": "manageUsers"
+        },
+        {
+          "name": "changePassword",
+          "pattern": "changePassword",
+          "target": "changePassword"
         }
       ],
       "targets": {
-        "TargetLogin": {
-          "id": "Login",
-          "name": "Login"
+        "login": {
+          "viewId": "Login",
+          "viewName": "Login",
+          "viewLevel": 1
+        },
+        "register": {
+          "viewId": "Register",
+          "viewName": "Register",
+          "viewLevel": 2
+        },
+        "dashboard": {
+          "viewId": "Dashboard",
+          "viewName": "Dashboard",
+          "viewLevel": 2
+        },
+        "manageUsers": {
+          "viewId": "ManageUsers",
+          "viewName": "ManageUsers",
+          "viewLevel": 3
+        },
+        "changePassword": {
+          "viewId": "ChangePassword",
+          "viewName": "ChangePassword",
+          "viewLevel": 3
+        },
+        "notFound": {
+          "viewId": "NotFound",
+          "viewName": "NotFound",
+          "viewLevel": 4
         }
       }
     },

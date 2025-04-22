@@ -1,8 +1,6 @@
-POST http://localhost:4004/user-service/updateUserStatus
+POST http://localhost:4004/user-service/createUser
 Content-Type: application/json
-Authorization: Basic admin admin
 
 {
-    "userID": "73b1e036-b7d0-447a-adc5-1df0b2d272ea", 
-    "status": "Inactive"
+    "username": "newUser2", "password": "newPassword123", "email": "newUser@example.com", "phone": "0123456789"
 }
