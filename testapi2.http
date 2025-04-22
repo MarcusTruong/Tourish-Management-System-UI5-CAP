@@ -1,7 +1,5 @@
-POST http://localhost:4004/user-service/authenticate
+POST http://localhost:4004/user-service/logout
 Content-Type: application/json
+Authorization: Basic admin admin
 
-{
-  "username": "staff11",
-  "password": "staffpass123"
-}
+

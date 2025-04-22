@@ -104,12 +104,80 @@ service UserService @(path: '/user-service') {
     token: String;
   };
 
-    // Action để làm mới token
   @(requires: 'authenticated-user')
-  action refreshToken(
+  action logout() returns {
+    success: Boolean;
+    message: String;
+  };
+
+    // Action để Admin xem danh sách thành viên trong workspace của mình
+  @(requires: 'admin')
+  action getWorkspaceMembers() returns array of {
+    ID: UUID;
+    Username: String(50);
+    Role: String(20);
+    FullName: String(100);
+    Email: String(100);
+    Phone: String(20);
+    Status: String(20);
+  };
+  // Action để Admin update status user
+  @(requires: 'admin')
+  action updateUserStatus(
+    userID: UUID,
+    status: String(20)
+  ) returns {
+    success: Boolean;
+    message: String;
+  };
+  // Action để Admin xóa thành viên khỏi workspace
+  @(requires: 'admin')
+  action removeUserFromWorkspace(
     userID: UUID
   ) returns {
     success: Boolean;
-    token: String;
-  };
+    message: String;
+};
+
+  @(requires: 'authenticated-user')
+action getUserProfile() returns {
+  ID: UUID;
+  Username: String(50);
+  Role: String(20);
+  FullName: String(100);
+  Email: String(100);
+  Phone: String(20);
+  Status: String(20);
+  WorkspaceID: UUID;
+};
+
+@(requires: 'authenticated-user')
+action updateUserProfile(
+  fullName: String,
+  email: String,
+  phone: String
+) returns {
+  success: Boolean;
+  message: String;
+};
+
+@(requires: 'authenticated-user')
+action getWorkspaceInfo() returns {
+  ID: UUID;
+  CompanyName: String(100);
+  Address: String(200);
+  Phone: String(20);
+  Email: String(100);
+};
+
+@(requires: 'admin')
+action updateWorkspaceInfo(
+  companyName: String,
+  address: String,
+  phone: String,
+  email: String
+) returns {
+  success: Boolean;
+  message: String;
+};
 }

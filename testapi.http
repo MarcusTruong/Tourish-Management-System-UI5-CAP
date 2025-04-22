@@ -1,8 +1,8 @@
-POST http://localhost:4004/user-service/updateUserPermissions
+POST http://localhost:4004/user-service/updateUserStatus
 Content-Type: application/json
-Authorization: Basic truong 22082002
+Authorization: Basic admin admin
 
 {
-  "userID": "8e87762d-a391-495d-b1c7-f8942eef887f",
-  "role": "Manager"
+    "userID": "73b1e036-b7d0-447a-adc5-1df0b2d272ea", 
+    "status": "Inactive"
 }
