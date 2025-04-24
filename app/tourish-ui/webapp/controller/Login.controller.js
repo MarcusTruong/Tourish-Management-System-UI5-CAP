@@ -48,7 +48,6 @@ sap.ui.define([
           });
 
           MessageBox.success("Đăng nhập thành công!");
-          // Điều hướng đến dashboard
           this.getOwnerComponent().getRouter().navTo("dashboard");
         } else {
           MessageBox.error("Đăng nhập thất bại: Tên người dùng hoặc mật khẩu không đúng!");

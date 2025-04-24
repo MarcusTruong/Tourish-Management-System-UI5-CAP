@@ -48,7 +48,8 @@
       "minUI5Version": "1.134.1",
       "libs": {
         "sap.m": {},
-        "sap.ui.core": {}
+        "sap.ui.core": {},
+        "sap.tnt": {}
       }
     },
     "contentDensities": {
@@ -74,6 +75,9 @@
       "side": {
         "type": "sap.ui.model.json.JSONModel",
         "uri": "model/sideContent.json"
+      },
+      "auth": {
+        "type": "sap.ui.model.json.JSONModel"
       }
     },
     "resources": {
@@ -87,7 +91,7 @@
       "config": {
         "routerClass": "sap.m.routing.Router",
         "controlAggregation": "pages",
-        "controlId": "app",
+        "controlId": "mainContents",
         "transition": "slide",
         "type": "View",
         "viewType": "XML",
@@ -98,7 +102,7 @@
       "routes": [
         {
           "name": "login",
-          "pattern": "",
+          "pattern": "login",
           "target": "login"
         },
         {
@@ -120,38 +124,54 @@
           "name": "changePassword",
           "pattern": "changePassword",
           "target": "changePassword"
+        },
+        {
+          "name": "myWorkspace",
+          "pattern": "myWorkspace",
+          "target": "myWorkspace"
+        },
+        {
+          "name": "myProfile",
+          "pattern": "myProfile",
+          "target": "myProfile"
         }
       ],
       "targets": {
         "login": {
           "viewId": "Login",
           "viewName": "Login",
-          "viewLevel": 1
+          "controlAggregation": "pages",
+          "controlId": "app"
         },
         "register": {
           "viewId": "Register",
           "viewName": "Register",
-          "viewLevel": 2
+          "controlAggregation": "pages",
+          "controlId": "app"
         },
         "dashboard": {
           "viewId": "Dashboard",
-          "viewName": "Dashboard",
-          "viewLevel": 2
+          "viewName": "Dashboard"
         },
         "manageUsers": {
           "viewId": "ManageUsers",
-          "viewName": "ManageUsers",
-          "viewLevel": 3
+          "viewName": "ManageUsers"
         },
         "changePassword": {
           "viewId": "ChangePassword",
-          "viewName": "ChangePassword",
-          "viewLevel": 3
+          "viewName": "ChangePassword"
+        },
+        "myWorkspace": {
+          "viewId": "MyWorkspace",
+          "viewName": "MyWorkspace"
+        },
+        "myProfile": {
+          "viewId": "MyProfile",
+          "viewName": "MyProfile"
         },
         "notFound": {
           "viewId": "NotFound",
-          "viewName": "NotFound",
-          "viewLevel": 4
+          "viewName": "NotFound"
         }
       }
     },

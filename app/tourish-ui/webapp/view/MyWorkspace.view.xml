@@ -1,0 +1,14 @@
+<mvc:View
+    controllerName="tourishui.controller.MyWorkspace"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    displayBlock="true">
+    <Page id="_IDGenPage3" showHeader="false">
+        <content>
+            <VBox id="_IDGenVBox6" class="sapUiSmallMargin">
+                <Text id="_IDGenText6" text="Đây là trang My Workspace"/>
+                <Text id="_IDGenText7" text="Thông tin về workspace của bạn sẽ được hiển thị tại đây."/>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

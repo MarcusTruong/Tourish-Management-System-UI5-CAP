@@ -3,15 +3,11 @@
   xmlns:mvc="sap.ui.core.mvc"
   xmlns="sap.m"
   displayBlock="true">
-  <Page id="_IDGenPage1" title="Tourish Management System" titleAlignment="Center">
+  <Page id="_IDGenPage1" showHeader="false">
     <content>
       <VBox id="_IDGenVBox3" class="sapUiSmallMargin">
         <Text id="_IDGenText" text="Chào mừng bạn đến với hệ thống quản lý doanh nghiệp du lịch!"/>
         <Text id="welcomeText" text="Xin chào, {auth>/user/FullName}!"/>
-        <Button id="_IDGenButton2" text="Tạo Workspace" press="onCreateWorkspacePress" type="Emphasized" visible="{= ${auth>/user/Role} === 'Admin' &amp;&amp; !${auth>/user/WorkspaceID}}"/>
-        <Button id="_IDGenButton3" text="Quản lý thành viên" press="onManageUsersPress" type="Emphasized" visible="{= ${auth>/user/Role} === 'Admin' &amp;&amp; ${auth>/user/WorkspaceID}}"/>
-        <Button id="_IDGenButton4" text="Đổi mật khẩu" press="onChangePasswordPress"/>
-        <Button id="_IDGenButton5" text="Đăng xuất" press="onLogoutPress"/>
       </VBox>
     </content>
   </Page>

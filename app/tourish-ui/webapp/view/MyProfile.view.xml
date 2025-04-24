@@ -1,0 +1,43 @@
+<mvc:View
+    controllerName="tourishui.controller.MyProfile"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:form="sap.ui.layout.form"
+    displayBlock="true">
+    <Page id="_IDGenPage10" showHeader="false">
+        <content>
+            <VBox id="_IDGenVBox10" class="sapUiMediumMargin">
+                <Title id="_IDGenTitle1" text="{i18n>myProfile}" level="H2" class="sapUiSmallMarginBottom"/>
+                <form:SimpleForm
+                    id="profileForm"
+                    editable="true"
+                    layout="ResponsiveGridLayout"
+                    labelSpanXL="4"
+                    labelSpanL="4"
+                    labelSpanM="4"
+                    labelSpanS="12"
+                    adjustLabelSpan="false"
+                    emptySpanXL="0"
+                    emptySpanL="0"
+                    emptySpanM="0"
+                    emptySpanS="0"
+                    columnsXL="1"
+                    columnsL="1"
+                    columnsM="1">
+                    <form:content>
+                        <Label id="_IDGenLabel10" text="{i18n>fullName}" required="true"/>
+                        <Input id="fullNameInput0" value="{auth>/user/FullName}" placeholder="{i18n>enterFullName}"/>
+                        <Label id="_IDGenLabel20" text="{i18n>email}" required="true"/>
+                        <Input id="emailInput0" value="{auth>/user/Email}" type="Email" placeholder="{i18n>enterEmail}"/>
+                        <Label id="_IDGenLabel30" text="{i18n>phone}"/>
+                        <Input id="phoneInput0" value="{auth>/user/Phone}" type="Tel" placeholder="{i18n>enterPhone}"/>
+                    </form:content>
+                </form:SimpleForm>
+                <HBox id="_IDGenHBox10" class="sapUiSmallMarginTop">
+                    <Button id="updateButton" text="{i18n>updateProfile}" press=".onUpdateProfilePress" type="Emphasized"/>
+                    <Button id="changePasswordButton" text="{i18n>changePassword}" press=".onChangePasswordPress" class="sapUiSmallMarginBegin"/>
+                </HBox>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

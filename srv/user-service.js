@@ -370,6 +370,7 @@ const generateToken = (user) => {
 
                 // Kiểm tra user tồn tại
                 const currentUser = await tx.run(SELECT.one.from(Users).where({Username: user.id}));
+                console.log(currentUser)
                 if (! currentUser) {
                     return {
                             success: false, message: `User with ID ${
@@ -377,9 +378,11 @@ const generateToken = (user) => {
                         } not found`
                     };
                 }
-
+                console.log(currentPassword);
+                console.log(currentUser.Password);
                 // So sánh mật khẩu hiện tại
                 const isPasswordValid = await comparePassword(currentPassword, currentUser.Password);
+                console.log(isPasswordValid);
                 if (! isPasswordValid) {
                     return {success: false, message: `Current password is incorrect`};
                 }

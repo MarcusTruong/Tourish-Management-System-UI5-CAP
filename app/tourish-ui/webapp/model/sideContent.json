@@ -1,11 +1,25 @@
 {
-    "selectedKey": "",
+    "selectedKey": "dashboard",
     "navigation": [
         {
-            "titleI18nKey": "Home",
+            "titleI18nKey": "Dashboard",
             "icon": "sap-icon://home",
             "expanded": true,
-            "key": "",
+            "key": "dashboard",
+            "items": []
+        },
+        {
+            "titleI18nKey": "My Workspace",
+            "icon": "sap-icon://business-objects-experience",
+            "expanded": true,
+            "key": "myWorkspace",
+            "items": []
+        },
+        {
+            "titleI18nKey": "My Profile",
+            "icon": "sap-icon://employee",
+            "expanded": true,
+            "key": "myProfile",
             "items": []
         },
         {

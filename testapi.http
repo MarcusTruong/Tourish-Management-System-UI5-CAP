@@ -1,6 +1,9 @@
-POST http://localhost:4004/user-service/createUser
+POST localhost:4004/user-service/updateUserProfile
 Content-Type: application/json
+Authorization: truong 22082002
 
 {
-    "username": "newUser2", "password": "newPassword123", "email": "newUser@example.com", "phone": "0123456789"
+    "fullName": "Truong",
+    "email": "Tg@cm.com",
+    "phone": "09632432433"
 }
