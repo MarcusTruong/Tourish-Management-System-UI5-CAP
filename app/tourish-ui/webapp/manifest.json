@@ -133,6 +133,16 @@
           "name": "myProfile",
           "pattern": "myProfile",
           "target": "myProfile"
+        },
+        {
+          "pattern": "createSampleTour",
+          "name": "createSampleTour",
+          "target": "createSampleTour"
+        },
+        {
+          "pattern": "createTour",
+          "name": "createTour",
+          "target": "createTour"
         }
       ],
       "targets": {
@@ -179,9 +189,19 @@
           "controlAggregation": "pages",
           "parent": "appContent"
         },
-        "notFound": {
-          "viewId": "NotFound",
-          "viewName": "NotFound"
+        "createSampleTour": {
+          "viewId": "createSampleTour",
+          "viewName": "tour.Tour",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "createTour": {
+          "viewId": "createTour",
+          "viewName": "tour.CreateTourView",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
         }
       }
     },

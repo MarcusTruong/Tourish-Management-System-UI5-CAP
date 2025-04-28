@@ -1,0 +1,174 @@
+<mvc:View
+    controllerName="tourishui.controller.tour.CreateTourView"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:l="sap.ui.layout"
+    xmlns:upload="sap.m.upload"
+    xmlns:f="sap.ui.layout.form">
+    <Page
+        id="createTourPage"
+        title="{= ${tour>/tourName} ? ${tour>/tourName} : 'New Tour' }"
+        showNavButton="true"
+        navButtonPress=".onNavBack"
+        >
+        <headerContent>
+            <Button 
+                id="headerOpenForSaleButton"
+                text="Open Selling Tour" 
+                type="Emphasized" 
+                press=".onOpenForSale"
+                tooltip="Register tour to open for sale"/>
+        </headerContent>
+        <content>
+            <IconTabBar
+                id="tourTabBar"
+                expanded="true"
+                class="sapUiResponsiveContentPadding">
+                <items>
+                    <!-- Tab 1: Thông tin chung -->
+                    <IconTabFilter
+                    id="generalInfoTab"
+                    text="Generate Information"
+                    key="general"
+                    class=""
+                    icon="sap-icon://hint">
+                    <HBox id="_IDGenHBox9" >
+                    <VBox id="_IDGenVBox9" class="sapUiMediumMargin" width="60%">
+        <f:SimpleForm id="_IDGenSimpleForm"
+            editable="true"
+            layout="ResponsiveGridLayout"
+            labelSpanXL="3"
+            labelSpanL="3"
+            labelSpanM="3"
+            emptySpanXL="0"
+            emptySpanL="0"
+            emptySpanM="0"
+            columnsXL="1"
+            columnsL="1"
+            columnsM="1">
+            <f:content>
+                <Label id="_IDGenLabel21" text="Tour name" required="true"/>
+                <Input id="tourNameInput" value="{tour>/tourName}" change=".onTourNameChange" placeholder="Enter tour name"/>
+                
+                <Label id="_IDGenLabel22" text="Describe tour" required="true"/>
+                <TextArea id="tourDescription" value="{tour>/description}" rows="3" placeholder="Describe tour details..."/>
+                
+                <Label id="_IDGenLabel23" text="Numbers of Day" required="true"/>
+                <StepInput id="tourDays" 
+                    value="{tour>/days}" 
+                    min="1" 
+                    max="30" 
+                    change=".onDaysChange"/>
+                
+                <Label id="_IDGenLabel24" text="Numbers of Night" required="true"/>
+                <StepInput id="tourNights" 
+                    value="{tour>/nights}" 
+                    min="0" 
+                    max="29"/>
+                
+                <Label id="_IDGenLabel25" text="Tour Type"/>
+                <ComboBox id="tourType" selectedKey="{tour>/type}">
+                    <core:Item id="_IDGenItem" key="cultural" text="Cultural"/>
+                    <core:Item id="_IDGenItem1" key="adventure" text="Adventure"/>
+                    <core:Item id="_IDGenItem2" key="relax" text="Relax"/>
+                    <core:Item id="_IDGenItem3" key="food" text="Food"/>
+                    <core:Item id="_IDGenItem4" key="nature" text="Nature"/>
+                </ComboBox>
+            </f:content>
+        </f:SimpleForm>
+    </VBox>
+    <VBox id="_IDGenVBox11" class="sapUiMediumMargin" width="40%">
+    <upload:UploadSet
+        id="tourImageUpload"
+        multiple="true"
+        uploadEnabled="true"
+        uploadButtonInvisible="false"
+        mode="MultiSelect"
+        uploadCompleted=".onImageUploadComplete"
+        fileTypes="jpg,png,jpeg">
+        <upload:toolbar>
+            <OverflowToolbar id="_IDGenOverflowToolbar4">
+                <Title id="_IDGenTitle4" text="Illustration Picture" level="H4"/>
+                <ToolbarSpacer id="_IDGenToolbarSpacer9"/>
+            </OverflowToolbar>
+        </upload:toolbar>
+    </upload:UploadSet>
+</VBox>
+                    </HBox>
+        
+</IconTabFilter>
+                    
+                    <!-- Tab 2: Lịch trình -->
+                    <IconTabFilter
+                        id="itineraryTab"
+                        text="Schedule"
+                        key="itinerary"
+                        icon="sap-icon://calendar">
+                        <VBox id="_IDGenVBox12" class="sapUiMediumMargin">
+                            <HBox id="_IDGenHBox11" alignItems="Center" class="sapUiSmallMarginBottom">
+                                <Title id="_IDGenTitle5" text="Schedule details" level="H2"/>
+                                <ToolbarSpacer id="_IDGenToolbarSpacer10"/>
+                                <Button 
+                                    id="itineraryHelpButton"
+                                    icon="sap-icon://sys-help"
+                                    tooltip="Instructions for creating a schedule"
+                                    press=".onShowItineraryHelp"/>
+                            </HBox>
+                            
+                            <!-- Phần này sẽ được điền động bằng code từ controller -->
+                            <Panel id="dynamicItineraryContainer">
+                                <!-- Nội dung sẽ được tạo động từ controller -->
+                            </Panel>
+                        </VBox>
+                    </IconTabFilter>
+                    
+                    <!-- Tab 3: Giá bán & Điều khoản -->
+                    <IconTabFilter
+    id="pricingTab"
+    text="Price - Terms"
+    key="pricing"
+    icon="sap-icon://money-bills">
+    <VBox id="_IDGenVBox13" class="sapUiMediumMargin">
+        <f:SimpleForm id="_IDGenSimpleForm1"
+            editable="true"
+            layout="ResponsiveGridLayout"
+            labelSpanXL="2"
+            labelSpanL="2"
+            labelSpanM="2">
+            <f:content>
+                <Label id="_IDGenLabel26" text="Tour Price" required="true"/>
+                <Input id="tourPrice" type="Number" value="{tour>/price}" description="USD"/>
+                
+                <Label id="_IDGenLabel27" text="Children's price"/>
+                <Input id="tourChildPrice" type="Number" value="{tour>/childPrice}" description="USD"/>
+                
+                <Label id="_IDGenLabel28" text="Service's include"/>
+                <TextArea id="tourIncludes" value="{tour>/includes}" rows="3" placeholder="Services included in tour price"/>
+                
+                <Label id="_IDGenLabel29" text="Not included"/>
+                <TextArea id="tourExcludes" value="{tour>/excludes}" rows="3" placeholder="Any additional costs incurred must be paid by the customer"/>
+                
+                <Label id="_IDGenLabel31" text="Terms of tour cancellation"/>
+                <TextArea id="tourCancellationPolicy" value="{tour>/cancellationPolicy}" rows="3" placeholder="Cancellation and Refund Policy"/>
+                
+                <Label id="_IDGenLabel32" text="General Terms"/>
+                <TextArea id="tourTerms" value="{tour>/terms}" rows="5" placeholder="Other terms and conditions"/>
+            </f:content>
+        </f:SimpleForm>
+    </VBox>
+</IconTabFilter>
+                </items>
+            </IconTabBar>
+        </content>
+        <footer>
+            <Toolbar id="_IDGenToolbar">
+                <ToolbarSpacer id="_IDGenToolbarSpacer11"/>
+                <Button id="saveDraftButton" text="Save Draft" icon="sap-icon://save" press=".onSaveDraft"/>
+                <Button id="previewButton" text="Preview" icon="sap-icon://preview" press=".onPreview"/>
+                <Button id="openForSaleButton" text="Open Selling Tour" type="Emphasized" icon="sap-icon://begin" press=".onOpenForSale"/>
+                <Button id="cancelButton" text="Cancel" icon="sap-icon://decline" press=".onNavBack"/>
+            </Toolbar>
+        </footer>
+    </Page>
+</mvc:View>
