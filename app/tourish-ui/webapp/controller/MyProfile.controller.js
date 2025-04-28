@@ -82,6 +82,7 @@ sap.ui.define([
 
             oContext.execute().then(function () {
                 var oResult = oContext.getBoundContext().getObject();
+                console.log(oResult);
                 if (oResult.success) {
                     // Update auth model
                     oAuthModel.setProperty("/user/FullName", oUpdatedData.fullName);

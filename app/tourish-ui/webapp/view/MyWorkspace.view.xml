@@ -2,12 +2,49 @@
     controllerName="tourishui.controller.MyWorkspace"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
+    xmlns:form="sap.ui.layout.form"
     displayBlock="true">
     <Page id="_IDGenPage3" showHeader="false">
         <content>
             <VBox id="_IDGenVBox6" class="sapUiSmallMargin">
-                <Text id="_IDGenText6" text="Đây là trang My Workspace"/>
-                <Text id="_IDGenText7" text="Thông tin về workspace của bạn sẽ được hiển thị tại đây."/>
+                <Title id="_IDGenTitle" text="My Workspace" level="H2" class="sapUiSmallMarginBottom"></Title>
+                <!-- // when dont have workspace -->
+                <VBox id="noWorkspaceBox" visible="{= !${auth>/user/WorkspaceID}}">
+                    <Text text="You don't have a workspace, create now!" id="_IDGenText5"></Text>
+                    <Button id="createWorkSpaceButton" text="Create Workspace" press=".onCreateWorkspacePress" type="Emphasized"></Button>
+                </VBox>
+
+                <!-- Have workspace -->
+                <VBox id="workspaceInfoBox" visible="{= !!${auth>/user/WorkspaceID}}">
+                    <form:SimpleForm
+                        id="workspaceForm"
+                        editable="false"
+                        layout="ResponsiveGridLayout"
+                        labelSpanXL="4"
+                        labelSpanL="4"
+                        labelSpanM="4"
+                        labelSpanS="12"
+                        adjustLabelSpan="false"
+                        emptySpanXL="0"
+                        emptySpanL="0"
+                        emptySpanM="0"
+                        emptySpanS="0"
+                        columnsXL="1"
+                        columnsL="1"
+                        columnsM="1">
+                        <form:content>
+                            <Label id="_IDGenLabel8" text="Company Name"/>
+                            <Text id="_IDGenText6" text="{auth>/workspace/CompanyName}"/>
+                            <Label id="_IDGenLabel9"  text="Address"/>
+                            <Text id="_IDGenText7"  text="{auth>/workspace/Address}"/>
+                            <Label id="_IDGenLabel11"  text="Phone"/>
+                            <Text id="_IDGenText8"  text="{auth>/workspace/Phone}"/>
+                            <Label id="_IDGenLabel12"  text="Email"/>
+                            <Text id="_IDGenText9"  text="{auth>/workspace/Email}"/>
+                        </form:content>
+                    </form:SimpleForm>
+                </VBox>
+
             </VBox>
         </content>
     </Page>

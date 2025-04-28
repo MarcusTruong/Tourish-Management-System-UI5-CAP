@@ -94,6 +94,7 @@ service UserService @(path: '/user-service') {
     success: Boolean;
     user: {
       ID: UUID;
+      WorkspaceID: UUID;
       Username: String(50);
       Role: String(20);
       FullName: String(100);

@@ -139,6 +139,7 @@ const generateToken = (user) => {
                     success: true,
                     user: {
                         ID: user.ID,
+                        WorkspaceID: user.WorkspaceID,
                         Username: user.Username,
                         Role: user.Role,
                         FullName: user.FullName,
@@ -157,72 +158,64 @@ const generateToken = (user) => {
         });
 
         // Handler cho createWorkspace
-        this.on('createWorkspace', async (req) => {
-            console.log('>>> createWorkspace handler called with data:', req.data);
-            const {companyName, address, phone, email} = req.data;
-            const tx = cds.transaction(req);
+this.on('createWorkspace', async (req) => {
+    console.log('>>> createWorkspace handler called with data:', req.data);
+    const {companyName, address, phone, email} = req.data;
+    const tx = cds.transaction(req);
 
             try { // Lấy thông tin user từ yêu cầu (mock user hoặc JWT payload)
                 const user = req.user; // Trong môi trường mock, req.user được gán từ Authorization
                 console.log('>>> Current user:', user);
                 if (! user || ! user.id) {
                     req.error(401, `Unauthorized: User information not found in request`);
-                    return;
-                }
+            return;
+        }
 
-                // Kiểm tra user tồn tại và có role Admin
-                const adminUser = await tx.run(SELECT.one.from(Users).where({Username: user.id}));
-                if (! adminUser) {
-                    req.error(404, `User with ID ${
-                        user.id
-                    } not found`);
-                    return;
-                }
-                if (adminUser.Role !== 'Admin') {
-                    req.error(403, `User ${
-                        user.id
-                    } does not have Admin role`);
-                    return;
-                }
-                if (adminUser.WorkspaceID) {
-                    req.error(400, `User ${
-                        user.id
-                    } already has an assigned workspace`);
-                    return;
-                }
+        // Kiểm tra user tồn tại và có role Admin
+        const adminUser = await tx.run(SELECT.one.from(Users).where({Username: user.id}));
+        if (!adminUser) {
+            req.error(404, `User with ID ${user.id} not found`);
+            return;
+        }
+        if (adminUser.Role !== 'Admin') {
+            req.error(403, `User ${user.id} does not have Admin role`);
+            return;
+        }
+        if (adminUser.WorkspaceID) {
+            req.error(400, `User ${user.id} already has an assigned workspace`);
+            return;
+        }
 
-                // Tạo workspace
-                const workspace = {
-                    ID: cds.utils.uuid(),
-                    CompanyName: companyName,
-                    Address: address,
-                    Phone: phone,
-                    Email: email
-                };
-                await tx.run(INSERT.into(Workspaces).entries(workspace));
+        // Tạo workspace
+        const workspace = {
+            ID: cds.utils.uuid(),
+            CompanyName: companyName,
+            Address: address,
+            Phone: phone,
+            Email: email
+        };
+        await tx.run(INSERT.into(Workspaces).entries(workspace));
 
-                // Cập nhật WorkspaceID cho Admin
-                await tx.run(UPDATE(Users).set({WorkspaceID: workspace.ID}).where({ID: adminUser.ID}));
+        // Cập nhật WorkspaceID cho Admin
+        await tx.run(UPDATE(Users).set({WorkspaceID: workspace.ID}).where({ID: adminUser.ID}));
 
-                const createdWorkspace = await tx.run(SELECT.one.from(Workspaces).where({ID: workspace.ID}));
-                await tx.commit();
-                console.log('>>> Workspace created successfully:', createdWorkspace);
-                console.log('>>> Admin user updated with WorkspaceID:', adminUser.ID, workspace.ID);
-                return {
-                    ID: createdWorkspace.ID,
-                    CompanyName: createdWorkspace.CompanyName,
-                    Address: createdWorkspace.Address,
-                    Phone: createdWorkspace.Phone,
-                    Email: createdWorkspace.Email
-                };
-            } catch (error) {
-                console.error('>>> Error in createWorkspace:', error);
-                await tx.rollback();
-                req.error(500, `Failed to create workspace: ${
-                    error.message
-                }`);
-            }
-        });
+        const createdWorkspace = await tx.run(SELECT.one.from(Workspaces).where({ID: workspace.ID}));
+        await tx.commit();
+        console.log('>>> Workspace created successfully:', createdWorkspace);
+        console.log('>>> Admin user updated with WorkspaceID:', adminUser.ID, workspace.ID);
+        return {
+            ID: createdWorkspace.ID,
+            CompanyName: createdWorkspace.CompanyName,
+            Address: createdWorkspace.Address,
+            Phone: createdWorkspace.Phone,
+            Email: createdWorkspace.Email
+        };
+    } catch (error) {
+        console.error('>>> Error in createWorkspace:', error);
+        await tx.rollback();
+        req.error(500, `Failed to create workspace: ${error.message}`);
+    }
+});
 
         // Handler cho addUser (Admin thêm user vào workspace)
         this.on('addUser', async (req) => {
@@ -659,6 +652,7 @@ const generateToken = (user) => {
 
         // Handler cho getWorkspaceInfo
         this.on('getWorkspaceInfo', async (req) => {
+            console.log(req);
             console.log('>>> getWorkspaceInfo handler called');
             const tx = cds.transaction(req);
 

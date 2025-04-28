@@ -91,13 +91,12 @@
       "config": {
         "routerClass": "sap.m.routing.Router",
         "controlAggregation": "pages",
-        "controlId": "mainContents",
+        "controlId": "app",
         "transition": "slide",
         "type": "View",
         "viewType": "XML",
         "path": "tourishui.view",
-        "async": true,
-        "viewPath": "tourishui.view"
+        "async": true
       },
       "routes": [
         {
@@ -149,25 +148,36 @@
           "controlAggregation": "pages",
           "controlId": "app"
         },
+        "appContent": {
+          "viewId": "AppContent", 
+          "viewName": "AppContent",
+          "controlAggregation": "pages",
+          "controlId": "app"
+        },
         "dashboard": {
           "viewId": "Dashboard",
-          "viewName": "Dashboard"
+          "viewName": "Dashboard",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
         },
         "manageUsers": {
           "viewId": "ManageUsers",
           "viewName": "ManageUsers"
         },
-        "changePassword": {
-          "viewId": "ChangePassword",
-          "viewName": "ChangePassword"
-        },
         "myWorkspace": {
           "viewId": "MyWorkspace",
-          "viewName": "MyWorkspace"
+          "viewName": "MyWorkspace",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
         },
         "myProfile": {
           "viewId": "MyProfile",
-          "viewName": "MyProfile"
+          "viewName": "MyProfile",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
         },
         "notFound": {
           "viewId": "NotFound",
@@ -178,7 +188,7 @@
     "rootView": {
       "viewName": "tourishui.view.App",
       "type": "XML",
-      "id": "App",
+      "id": "app",
       "async": true
     }
   }

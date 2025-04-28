@@ -1,0 +1,76 @@
+<mvc:View
+    controllerName="tourishui.controller.AppContent"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:tnt="sap.tnt">
+    <tnt:ToolPage id="toolPage">
+        <tnt:header>
+            <tnt:ToolHeader id="_IDGenToolHeader1">
+                <!-- Your header content from App.view.xml -->
+                <Button
+                    id="sideNavigationToggleButton"
+                    icon="sap-icon://menu2"
+                    type="Transparent"
+                    press=".onSideNavButtonPress"
+                    tooltip="{i18n>collapseMenuButtonText}">
+                    <layoutData>
+                        <OverflowToolbarLayoutData id="_IDGenOverflowToolbarLayoutData" priority="NeverOverflow"/>
+                    </layoutData>
+                </Button>
+                <ToolbarSpacer id="_IDGenToolbarSpacer2"/>
+                <Title 
+                    text="{i18n>appTitle}"
+                    level="H2"
+                    id="header"
+                ></Title>
+                <ToolbarSpacer id="_IDGenToolbarSpacer3"/>
+                <MenuButton
+                    id="userButton"
+                    text="{auth>/user/FullName}"
+                    type="Transparent">
+                    <menu>
+                        <Menu id="_IDGenMenu">
+                            <items>
+                                <MenuItem id="_IDGenMenuItem" text="{i18n>myWorkspace}" icon="sap-icon://business-objects-experience" press=".onMenuItemPress" key="myWorkspace"/>
+                                <MenuItem id="_IDGenMenuItem4" text="{i18n>myProfile}" icon="sap-icon://employee" press=".onMenuItemPress" key="myProfile"/>
+                                <MenuItem id="_IDGenMenuItem5" text="{i18n>logout}" icon="sap-icon://log" press=".onMenuItemPress" key="logout"/>
+                            </items>
+                        </Menu>
+                    </menu>
+                </MenuButton>
+            </tnt:ToolHeader>
+        </tnt:header>
+        <tnt:sideContent>
+            <tnt:SideNavigation id="_IDGenSideNavigation"
+                expanded="true"
+                selectedKey="{side>/selectedKey}">
+                <tnt:NavigationList id="_IDGenNavigationList2" 
+                    items="{
+                        path: 'side>/navigation',
+                        templateShareable: false
+                    }">
+                    <tnt:NavigationListItem id="_IDGenNavigationListItem"
+                        text="{side>titleI18nKey}"
+                        icon="{side>icon}"
+                        expanded="{side>expanded}"
+                        items="{
+                            path: 'side>items',
+                            templateShareable: false
+                        }"
+                        key="{side>key}"
+                        href="#/{side>key}">
+                        <tnt:NavigationListItem id="_IDGenNavigationListItem3"
+                            text="{side>titleI18nKey}"
+                            key="{side>key}"
+                            icon="{side>icon}"
+                            href="#/{side>key}">
+                        </tnt:NavigationListItem>
+                    </tnt:NavigationListItem>
+                </tnt:NavigationList>
+            </tnt:SideNavigation>
+        </tnt:sideContent>
+        <tnt:mainContents>
+            <App id="mainContents"/>
+        </tnt:mainContents>
+    </tnt:ToolPage>
+</mvc:View>
