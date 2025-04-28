@@ -28,11 +28,11 @@ sap.ui.define([
             
             // Thêm các chỉ báo yêu cầu
             const aRequirements = [
-              { id: "minLength", text: "Ít nhất 8 ký tự" },
-              { id: "hasUpperCase", text: "Ít nhất một chữ cái in hoa" },
-              { id: "hasLowerCase", text: "Ít nhất một chữ cái thường" },
-              { id: "hasNumber", text: "Ít nhất một số" },
-              { id: "hasSpecialChar", text: "Ít nhất một ký tự đặc biệt" }
+              { id: "minLength", text: "At least 8 characters" },
+              { id: "hasUpperCase", text: "At least one uppercase letter" },
+              { id: "hasLowerCase", text: "At least one lowercase letter" },
+              { id: "hasNumber", text: "At least one number" },
+              { id: "hasSpecialChar", text: "At least one special character" }
             ];
             
             aRequirements.forEach(req => {
@@ -100,7 +100,7 @@ sap.ui.define([
         const sPhone = oView.byId("phoneInput").getValue();
   
         if (!sUsername || !sPassword || !sFullName || !sEmail || !sPhone) {
-          MessageBox.error("Vui lòng nhập đầy đủ thông tin!");
+          MessageBox.error("Please enter complete information!");
           return;
         }
   
@@ -131,14 +131,14 @@ sap.ui.define([
         oContext.execute().then(() => {
           const oResult = oContext.getBoundContext().getObject();
           if (oResult.ID) {
-            MessageBox.success("Đăng ký thành công! Vui lòng đăng nhập.");
+            MessageBox.success("Registration successful! Please login.");
             this.getOwnerComponent().getRouter().navTo("login");
           } else {
-            MessageBox.error("Đăng ký thất bại: Unknown error");
+            MessageBox.error("Register failed: Unknown error");
           }
         }).catch(error => {
           console.error("Error during registration:", error);
-          MessageBox.error("Đã xảy ra lỗi khi đăng ký: " + error.message);
+          MessageBox.error("An error occurred while registering: " + error.message);
         });
       }
     });

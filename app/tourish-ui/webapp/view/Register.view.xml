@@ -8,7 +8,7 @@
 >
     <Page
         id="_IDGenPage2"
-        title="Đăng ký"
+        title="Register Page"
         showNavButton="true"
         navButtonPress="onNavBack"
     >
@@ -45,15 +45,15 @@
                                     xmlns:form="sap.ui.layout.form"
                                 >
                                     <form:content>
-                                        <Label id="_IDGenLabel2" text="Tên người dùng" required="true" />
-                                        <Input id="usernameInput2" placeholder="Nhập tên người dùng" />
+                                        <Label id="_IDGenLabel2" text="User Name" required="true" />
+                                        <Input id="usernameInput2" placeholder="Enter your username" />
                                         
-                                        <Label id="_IDGenLabel3" text="Mật khẩu" required="true" />
+                                        <Label id="_IDGenLabel3" text="Password" required="true" />
                                         <VBox id="_IDGenVBox4" >
                                         <Input
                                             id="passwordInput2"
                                             type="Password"
-                                            placeholder="Nhập mật khẩu"
+                                            placeholder="Enter your password"
                                             liveChange="onPasswordLiveChange"
                                             valueLiveUpdate="true"
                                         />
@@ -62,20 +62,20 @@
                                         </VBox>
                                         </VBox>
                                         
-                                        <Label id="_IDGenLabel4" text="Họ và tên" required="true" />
-                                        <Input id="fullNameInput" placeholder="Nhập họ và tên" />
+                                        <Label id="_IDGenLabel4" text="Full name" required="true" />
+                                        <Input id="fullNameInput" placeholder="Enter your full name" />
                                         
                                         <Label id="_IDGenLabel5" text="Email" required="true" />
-                                        <Input id="emailInput" placeholder="Nhập email" />
+                                        <Input id="emailInput" placeholder="Enter your email" />
                                         
-                                        <Label id="_IDGenLabel6" text="Số điện thoại" />
-                                        <Input id="phoneInput" placeholder="Nhập số điện thoại" />
+                                        <Label id="_IDGenLabel6" text="Phone number" />
+                                        <Input id="phoneInput" placeholder="Enter your phone number" />
                                     </form:content>
                                 </form:SimpleForm>
                                 
                                 <Button
                                     id="_IDGenButton1"
-                                    text="Đăng ký"
+                                    text="Register"
                                     press="onRegisterPress"
                                     type="Emphasized"
                                     width="100%"

@@ -8,7 +8,7 @@
 >
     <Page
         id="_IDGenPage"
-        title="Đăng nhập"
+        title="Log In"
         showNavButton="false"
         titleAlignment="Center"
     >
@@ -47,21 +47,21 @@
                                     xmlns:form="sap.ui.layout.form"
                                 >
                                     <form:content>
-                                        <Label id="_IDGenLabel" text="Tên người dùng" required="true" />
-                                        <Input id="usernameInput" placeholder="Nhập tên người dùng" />
+                                        <Label id="_IDGenLabel" text="User name" required="true" />
+                                        <Input id="usernameInput" placeholder="Enter your user name" />
                                         
-                                        <Label id="_IDGenLabel1" text="Mật khẩu" required="true" />
+                                        <Label id="_IDGenLabel1" text="Password" required="true" />
                                         <Input 
                                             id="passwordInput" 
                                             type="Password" 
-                                            placeholder="Nhập mật khẩu" 
+                                            placeholder="Enter your password" 
                                         />
                                     </form:content>
                                 </form:SimpleForm>
                                 
                                 <Button
                                     id="_IDGenButton"
-                                    text="Đăng nhập"
+                                    text="Log in"
                                     press="onLoginPress"
                                     type="Emphasized"
                                     width="100%"
@@ -74,7 +74,7 @@
                                     width="100%"
                                     class="sapUiSmallMarginTop"
                                 >
-                                    <Link id="_IDGenLink1" text="Đăng ký tài khoản mới" press="onRegisterPress" />
+                                    <Link id="_IDGenLink1" text="Register new account" press="onRegisterPress" />
                                 </HBox>
                             </VBox>
 

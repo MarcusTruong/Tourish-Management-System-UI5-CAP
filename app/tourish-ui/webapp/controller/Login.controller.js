@@ -20,7 +20,7 @@ sap.ui.define([
       const sPassword = oView.byId("passwordInput").getValue();
 
       if (!sUsername || !sPassword) {
-        MessageBox.error("Vui lòng nhập tên người dùng và mật khẩu!");
+        MessageBox.error("Please enter username and password!");
         return;
       }
 
@@ -47,10 +47,10 @@ sap.ui.define([
             user: oResult.user
           });
 
-          MessageBox.success("Đăng nhập thành công!");
+          MessageBox.success("Login successful!");
           this.getOwnerComponent().getRouter().navTo("dashboard");
         } else {
-          MessageBox.error("Đăng nhập thất bại: Tên người dùng hoặc mật khẩu không đúng!");
+          MessageBox.error("Login failed: Incorrect username or password!");
         }
       }.bind(this)).catch(function(oError) {
         console.error("Error during login:", oError);
@@ -58,12 +58,12 @@ sap.ui.define([
         if (oError.response) {
           try {
             const oResponseData = JSON.parse(oError.response.body);
-            MessageBox.error(oResponseData.error.message || "Đăng nhập thất bại");
+            MessageBox.error(oResponseData.error.message || "Login failed");
           } catch (e) {
-            MessageBox.error("Đăng nhập thất bại: " + oError.message);
+            MessageBox.error("Login failed: " + oError.message);
           }
         } else {
-          MessageBox.error("Đã xảy ra lỗi khi đăng nhập: " + oError.message);
+          MessageBox.error("An error occurred while logging in: " + oError.message);
         }
       }.bind(this));
     },
