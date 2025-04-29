@@ -1,0 +1,290 @@
+### Biến môi trường 
+@host = http://localhost:4004
+@path = /supplier-service
+@baseUrl = {{host}}{{path}}
+@contentType = application/json
+
+@username = admin
+@password = password
+
+### Bước 1: Xác thực 
+# @name authenticate
+POST {{host}}/user-service/authenticate
+Content-Type: {{contentType}}
+
+{
+    "username": "truong",
+    "password": "Truong2208@"
+}
+
+### Lưu token sau khi xác thực
+@authToken = {{authenticate.response.body.token}}
+
+### =============================================================================
+### SUPPLIER TESTS
+### =============================================================================
+
+### Tạo nhà cung cấp mới
+# @name createSupplier
+POST {{baseUrl}}/createSupplier
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierName": "Khách sạn Sun",
+    "address": "123 Nguyễn Huệ, Quận 12, TP HCM",
+    "phone": "0987654320",
+    "email": "contact@sunhotel.com"
+}
+
+### Lưu ID của nhà cung cấp vừa tạo
+@supplierID = {{createSupplier.response.body.ID}}
+
+### Cập nhật thông tin nhà cung cấp
+POST {{baseUrl}}/updateSupplier
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierID": "{{supplierID}}",
+    "supplierName": "Khách sạn Sun & Moon",
+    "address": "123 Nguyễn Huệ, Quận 12, TP HCM",
+    "phone": "0987654321",
+    "email": "contact@sunmoonhotel.com"
+}
+
+### Tìm kiếm nhà cung cấp
+POST {{baseUrl}}/searchSuppliers
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "searchTerm": "Moon",
+    "skip": 0,
+    "limit": 10
+}
+
+### Lấy thông tin chi tiết nhà cung cấp
+POST {{baseUrl}}/getSupplierDetails
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierID": "{{supplierID}}"
+}
+
+### =============================================================================
+### SERVICE TESTS
+### =============================================================================
+
+### Tạo dịch vụ mới
+# @name createService
+POST {{baseUrl}}/createService
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierID": "{{supplierID}}",
+    "serviceName": "Phòng Deluxe",
+    "serviceType": "Accommodation",
+    "description": "Phòng sang trọng với view biển",
+    "price": 1500000
+}
+
+### Lưu ID của dịch vụ vừa tạo
+@serviceID = {{createService.response.body.ID}}
+
+### Tạo dịch vụ thứ hai
+POST {{baseUrl}}/createService
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierID": "{{supplierID}}",
+    "serviceName": "Phòng Standard",
+    "serviceType": "Accommodation",
+    "description": "Phòng tiêu chuẩn với đầy đủ tiện nghi",
+    "price": 800000
+}
+
+### Cập nhật thông tin dịch vụ
+POST {{baseUrl}}/updateService
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "serviceID": "{{serviceID}}",
+    "serviceName": "Phòng Deluxe Premium",
+    "serviceType": "Accommodation",
+    "description": "Phòng sang trọng với view biển và bồn tắm spa",
+    "price": 18600000
+}
+
+### Tìm kiếm dịch vụ nâng cao
+POST {{baseUrl}}/searchServices
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierID": "",
+    "serviceType": "Accommodation",
+    "searchTerm": "Phòng",
+    "minPrice": 500000,
+    "maxPrice": 2000000,
+    "skip": 0,
+    "limit": 10
+}
+
+### Lấy danh sách loại dịch vụ
+GET {{baseUrl}}/getServiceTypes
+Authorization: Basic {{base64 username:password}}
+
+### Lấy danh sách tất cả dịch vụ đang hoạt động
+POST {{baseUrl}}/getActiveServices
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "serviceType": "Accommodation",
+    "limit": 20
+}
+
+### =============================================================================
+### SUPPLIER DEBT TESTS
+### =============================================================================
+
+### Tạo khoản công nợ cho nhà cung cấp
+# @name createSupplierDebt
+POST {{baseUrl}}/createSupplierDebt
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierID": "{{supplierID}}",
+    "amount": 5000000,
+    "dueDate": "2025-05-30",
+    "status": "Pending"
+}
+
+### Lưu ID của khoản nợ vừa tạo
+@debtID = {{createSupplierDebt.response.body.ID}}
+
+### Tạo khoản công nợ thứ hai
+POST {{baseUrl}}/createSupplierDebt
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierID": "{{supplierID}}",
+    "amount": 3000000,
+    "dueDate": "2025-06-15",
+    "status": "Pending"
+}
+
+### Đánh dấu khoản nợ đã thanh toán
+POST {{baseUrl}}/markDebtAsPaid
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "debtID": "{{debtID}}"
+}
+
+### Lấy báo cáo công nợ nhà cung cấp
+POST {{baseUrl}}/getSupplierDebtReport
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "startDate": "2025-01-01",
+    "endDate": "2025-12-31",
+    "status": "Pending"
+}
+
+### =============================================================================
+### VALIDATION ERROR TESTS
+### =============================================================================
+
+### Tạo nhà cung cấp không có tên (validation error)
+POST {{baseUrl}}/createSupplier
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierName": "",
+    "address": "Test Address",
+    "phone": "123456789",
+    "email": "test@example.com"
+}
+
+### Tạo nhà cung cấp với email không hợp lệ (validation error)
+POST {{baseUrl}}/createSupplier
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierName": "Test Supplier",
+    "address": "Test Address",
+    "phone": "123456789",
+    "email": "invalid-email"
+}
+
+### Tạo dịch vụ với giá âm (validation error)
+POST {{baseUrl}}/createService
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierID": "{{supplierID}}",
+    "serviceName": "Test Service",
+    "serviceType": "Test",
+    "description": "Test Description",
+    "price": -100
+}
+
+### =============================================================================
+### CLEAN UP TESTS
+### =============================================================================
+
+### Xóa dịch vụ
+POST {{baseUrl}}/deleteService
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "serviceID": "{{serviceID}}"
+}
+
+### Xóa nhà cung cấp (sẽ thất bại vì còn dịch vụ và công nợ)
+POST {{baseUrl}}/deleteSupplier
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierID": "{{supplierID}}"
+}
+
+### Tạo nhà cung cấp mới để test xóa
+# @name createTempSupplier
+POST {{baseUrl}}/createSupplier
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierName": "Nhà Cung Cấp Tạm",
+    "address": "123 Test Street",
+    "phone": "0123456789",
+    "email": "temp@example.com"
+}
+
+### Lưu ID của nhà cung cấp tạm
+@tempSupplierID = {{createTempSupplier.response.body.ID}}
+
+### Xóa nhà cung cấp tạm (sẽ thành công vì không có dịch vụ hoặc công nợ)
+POST {{baseUrl}}/deleteSupplier
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+    "supplierID": "{{tempSupplierID}}"
+}

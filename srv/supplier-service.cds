@@ -105,20 +105,29 @@ service SupplierService @(path: '/supplier-service') {
     Status: String(20);
   };
 
-  // Các function tìm kiếm
+  // Chuyển function tìm kiếm thành action để tránh lỗi Method Not Allowed
   @(requires: 'authenticated-user')
-  function searchSuppliers(
-    searchTerm: String
-  ) returns array of {
-    ID: UUID;
-    SupplierName: String(100);
-    Address: String(200);
-    Phone: String(20);
-    Email: String(100);
+  action searchSuppliers(
+    searchTerm: String,
+    skip: Integer,
+    limit: Integer
+  ) returns {
+    items: array of {
+      ID: UUID;
+      SupplierName: String(100);
+      Address: String(200);
+      Phone: String(20);
+      Email: String(100);
+    };
+    pagination: {
+      total: Integer;
+      skip: Integer;
+      limit: Integer;
+    }
   };
 
   @(requires: 'authenticated-user')
-  function getSupplierDetails(
+  action getSupplierDetails(
     supplierID: UUID
   ) returns {
     supplier: {
@@ -143,10 +152,20 @@ service SupplierService @(path: '/supplier-service') {
       DueDate: Date;
       Status: String(20);
     };
+    debtStatistics: {
+      totalDebt: Decimal(15,2);
+      pendingDebt: Decimal(15,2);
+      completedDebt: Decimal(15,2);
+      debtCount: Integer;
+      pendingDebtCount: Integer;
+    }
   };
 
   @(requires: 'authenticated-user')
-  function getActiveServices() returns array of {
+  action getActiveServices(
+    serviceType: String,
+    limit: Integer
+  ) returns array of {
     ID: UUID;
     SupplierID: UUID;
     ServiceName: String(100);
@@ -154,4 +173,59 @@ service SupplierService @(path: '/supplier-service') {
     Description: String(500);
     Price: Decimal(15,2);
   };
+  
+  // Các action mới
+  
+  // Tìm kiếm dịch vụ nâng cao
+  @(requires: 'authenticated-user')
+  action searchServices(
+    supplierID: UUID,
+    serviceType: String,
+    searchTerm: String,
+    minPrice: Decimal,
+    maxPrice: Decimal,
+    skip: Integer,
+    limit: Integer
+  ) returns array of {
+    ID: UUID;
+    SupplierID: UUID;
+    SupplierName: String(100);
+    ServiceName: String(100);
+    ServiceType: String(50);
+    Description: String(500);
+    Price: Decimal(15,2);
+  };
+  
+  // Báo cáo công nợ nhà cung cấp
+  @(requires: 'authenticated-user')
+  action getSupplierDebtReport(
+    startDate: Date,
+    endDate: Date,
+    status: String
+  ) returns {
+    suppliers: array of {
+      supplierID: UUID;
+      supplierName: String(100);
+      totalDebt: Decimal(15,2);
+      pendingDebt: Decimal(15,2);
+      completedDebt: Decimal(15,2);
+      debts: array of {
+        ID: UUID;
+        Amount: Decimal(15,2);
+        DueDate: Date;
+        Status: String(20);
+      }
+    };
+    statistics: {
+      totalDebt: Decimal(15,2);
+      pendingDebt: Decimal(15,2);
+      completedDebt: Decimal(15,2);
+      supplierCount: Integer;
+      debtCount: Integer;
+    }
+  };
+  
+  // Lấy danh sách các loại dịch vụ
+  @(requires: 'authenticated-user')
+  function getServiceTypes() returns array of String(50);
 }
