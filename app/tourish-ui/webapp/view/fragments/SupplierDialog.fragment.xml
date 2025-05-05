@@ -1,0 +1,52 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="supplierDialog"
+        title="{= ${viewModel>/editMode} ? 'Edit Supplier' : 'Create New Supplier' }"
+        contentWidth="450px">
+        
+        <content>
+            <f:SimpleForm
+                id="supplierForm"
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4"
+                labelSpanL="4"
+                labelSpanM="4"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="0"
+                emptySpanL="0"
+                emptySpanM="0"
+                emptySpanS="0"
+                columnsXL="1"
+                columnsL="1"
+                columnsM="1">
+                <f:content>
+                    <Label id="_IDGenLabel13" text="Supplier Name *" required="true" />
+                    <Input id="supplierNameInput" value="{supplier>/supplierName}" maxLength="100" required="true" />
+                    
+                    <Label id="_IDGenLabel14" text="Address" />
+                    <Input id="addressInput" value="{supplier>/address}" maxLength="200" />
+                    
+                    <Label id="_IDGenLabel15" text="Phone" />
+                    <Input id="phoneInput" value="{supplier>/phone}" maxLength="20" />
+                    
+                    <Label id="_IDGenLabel16" text="Email" />
+                    <Input id="emailInput" value="{supplier>/email}" maxLength="100" />
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        
+        <beginButton>
+            <Button id="_IDGenButton21" text="Cancel" press=".onCancelSupplier" />
+        </beginButton>
+        
+        <endButton>
+            <Button id="_IDGenButton22" text="Save" type="Emphasized" press=".onSaveSupplier" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,8 @@
+<mvc:View
+	controllerName="tourishui.controller.App"
+	xmlns="sap.m"
+	xmlns:l="sap.ui.layout"
+	xmlns:core="sap.ui.core"
+	xmlns:mvc="sap.ui.core.mvc">
+   <Text id="_IDGenText" text="Hello Suppliers service"/>
+</mvc:View>

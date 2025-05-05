@@ -76,7 +76,7 @@
             "items": [
                 {
                     "titleI18nKey": "Supplier Infomation",
-                    "key": "supplierInfomation",
+                    "key": "supplierInformation",
                     "icon": "sap-icon://notes"
                 },
                 {

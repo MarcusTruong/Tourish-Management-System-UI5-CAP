@@ -12,10 +12,10 @@ sap.ui.define([
             // Get the router and attach route matched events for views that will be shown in mainContents
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.getRoute("dashboard").attachMatched(this._onRouteMatched, this);
-            oRouter.getRoute("manageUsers").attachMatched(this._onRouteMatched, this);
-            oRouter.getRoute("changePassword").attachMatched(this._onRouteMatched, this);
             oRouter.getRoute("myWorkspace").attachMatched(this._onRouteMatched, this);
             oRouter.getRoute("myProfile").attachMatched(this._onRouteMatched, this);
+            oRouter.getRoute("supplierInformation").attachMatched(this._onRouteMatched, this);
+            oRouter.getRoute("supplierDetail").attachMatched(this._onRouteMatched, this);
         },
 
         _onRouteMatched: function (oEvent) {

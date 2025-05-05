@@ -115,16 +115,6 @@
           "target": "dashboard"
         },
         {
-          "name": "manageUsers",
-          "pattern": "manageUsers",
-          "target": "manageUsers"
-        },
-        {
-          "name": "changePassword",
-          "pattern": "changePassword",
-          "target": "changePassword"
-        },
-        {
           "name": "myWorkspace",
           "pattern": "myWorkspace",
           "target": "myWorkspace"
@@ -143,6 +133,21 @@
           "pattern": "createTour",
           "name": "createTour",
           "target": "createTour"
+        },
+        {
+          "pattern": "supplierInformation",
+          "name": "supplierInformation",
+          "target": "supplierInformation"
+        },
+        {
+          "pattern": "supplierService",
+          "name": "supplierService",
+          "target": "supplierService"
+        },
+        {
+          "pattern": "supplierDetail/{supplierID}",
+          "name": "supplierDetail",
+          "target": "supplierDetail"
         }
       ],
       "targets": {
@@ -171,10 +176,6 @@
           "controlAggregation": "pages",
           "parent": "appContent"
         },
-        "manageUsers": {
-          "viewId": "ManageUsers",
-          "viewName": "ManageUsers"
-        },
         "myWorkspace": {
           "viewId": "MyWorkspace",
           "viewName": "MyWorkspace",
@@ -199,6 +200,27 @@
         "createTour": {
           "viewId": "createTour",
           "viewName": "tour.CreateTourView",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "supplierInformation": {
+          "viewId": "supplierInformation",
+          "viewName": "supplier.SupplierInformation",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "supplierService": {
+          "viewId": "supplierService",
+          "viewName": "supplier.SupplierService",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "supplierDetail": {
+          "viewId": "supplierDetail",
+          "viewName": "supplier.SupplierDetail",
           "controlId": "mainContents",
           "controlAggregation": "pages",
           "parent": "appContent"

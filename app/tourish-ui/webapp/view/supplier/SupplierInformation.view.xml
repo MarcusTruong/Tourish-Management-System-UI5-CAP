@@ -1,0 +1,123 @@
+<mvc:View
+    controllerName="tourishui.controller.supplier.SupplierInformation"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:smartFilterBar="sap.ui.comp.smartfilterbar"
+    xmlns:smartTable="sap.ui.comp.smarttable">
+
+    <Page id="supplierListReportPage" title="Suppliers" titleLevel="H2">
+        <f:DynamicPageHeader id="_IDGenDynamicPageHeader">
+                
+                    <HBox id="_IDGenHBox1" width="100%" justifyContent="SpaceBetween">
+							<HBox id="_IDGenHBox2" >
+								<SearchField id="supplierSearchField" placeholder="Search suppliers..." search=".onSearch" class="sapUiSmallMarginEnd"/>
+                        
+                            <Label id="_IDGenLabel9" text="Supplier ID:" class="sapUiSmallMarginEnd sapUiTinyMarginTop sapUiSmallMarginBegin" />
+                            <Input id="supplierIDFilter" width="12rem" class="sapUiSmallMarginEnd" />
+                            
+                            <Label id="_IDGenLabel10" text="Supplier Name:" class="sapUiSmallMarginEnd sapUiTinyMarginTop" />
+                            <Input id="supplierNameFilter" width="12rem" class="sapUiSmallMarginEnd" />
+                            
+                            <Label id="_IDGenLabel11" text="Address:" class="sapUiSmallMarginEnd sapUiTinyMarginTop" />
+                            <Input id="addressFilter" width="12rem" class="sapUiSmallMarginEnd" />
+							</HBox>
+                            
+                            <HBox id="_IDGenHBox3" >
+							<Button id="_IDGenButton10" text="Clear" press=".onClearFilters" class="sapUiSmallMarginBegin" />
+							<Button id="_IDGenButton11" text="Search" type="Emphasized" press=".onSearch" class="sapUiSmallMarginBegin"/>
+							</HBox>
+                            
+                        
+                    </HBox>
+                
+        </f:DynamicPageHeader>
+
+        <content>
+            <VBox id="_IDGenVBox3">
+                <OverflowToolbar id="_IDGenOverflowToolbar2">
+                    <Title id="_IDGenTitle2" text="Manage Suppliers Information" level="H2" />
+                    <ToolbarSpacer id="_IDGenToolbarSpacer3" />
+                    <Button id="_IDGenButton12"
+                        icon="sap-icon://add"
+                        tooltip="Add New Supplier"
+                        press=".onAddSupplier" />
+                    <Button id="_IDGenButton13"
+                        icon="sap-icon://download"
+                        tooltip="Export to Excel"
+                        press=".onExport" />
+                    <Button id="_IDGenButton14"
+                        icon="sap-icon://action-settings"
+                        tooltip="Table Settings"
+                        press=".onTableSettings" />
+                </OverflowToolbar>
+
+                <Table
+                    id="suppliersTable"
+                    inset="false"
+                    items="{
+                        path: '/Suppliers',
+                        sorter: {
+                            path: 'supplierID',
+                            descending: false
+                        }
+                    }"
+                    growing="true"
+                    growingThreshold="20"
+                    growingScrollToLoad="true"
+                    sticky="HeaderToolbar,ColumnHeaders"
+                    mode="MultiSelect"
+                    alternateRowColors="true">
+
+                    <columns>
+                        <Column id="_IDGenColumn6" minScreenWidth="Tablet" demandPopin="true">
+                            <Text id="_IDGenText18" text="Supplier ID" />
+                        </Column>
+                        <Column id="_IDGenColumn7" minScreenWidth="Tablet" demandPopin="true">
+                            <Text id="_IDGenText19" text="Supplier Name" />
+                        </Column>
+                        <Column id="_IDGenColumn8" minScreenWidth="Desktop" demandPopin="true">
+                            <Text id="_IDGenText20" text="Address" />
+                        </Column>
+                        <Column id="_IDGenColumn9" minScreenWidth="Desktop" demandPopin="true">
+                            <Text id="_IDGenText21" text="Phone" />
+                        </Column>
+                        <Column id="_IDGenColumn10" minScreenWidth="Desktop" demandPopin="true">
+                            <Text id="_IDGenText22" text="Email" />
+                        </Column>
+                        <Column id="_IDGenColumn11" width="8rem" hAlign="End">
+                            <Text id="_IDGenText23" text="Actions" />
+                        </Column>
+                    </columns>
+
+                    <items>
+                        <ColumnListItem id="_IDGenColumnListItem1" type="Navigation" press=".onSupplierPress">
+                            <cells>
+                                <Text id="_IDGenText24" text="{supplierID}" />
+                                <Text id="_IDGenText25" text="{supplierName}" />
+                                <Text id="_IDGenText26" text="{address}" />
+                                <Text id="_IDGenText27" text="{phone}" />
+                                <Text id="_IDGenText28" text="{email}" />
+                                <HBox id="_IDGenHBox4">
+                                    <Button id="_IDGenButton15" icon="sap-icon://edit" press=".onEditSupplier" tooltip="Edit" />
+                                    <Button id="_IDGenButton16" icon="sap-icon://delete" press=".onDeleteSupplier" tooltip="Delete" class="sapUiTinyMarginBegin" />
+                                </HBox>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+        </content>
+
+        <footer>
+            <OverflowToolbar id="_IDGenOverflowToolbar3">
+                <ToolbarSpacer id="_IDGenToolbarSpacer4" />
+                <Text id="tableCountText" text="Suppliers: {= ${/Suppliers}.length || 0}" />
+                <ToolbarSpacer id="_IDGenToolbarSpacer5" />
+                <Button id="_IDGenButton17" text="Delete Selected" type="Reject" press=".onDeleteSelected" />
+                <Button id="_IDGenButton18" text="Create Supplier" type="Emphasized" press=".onAddSupplier" />
+            </OverflowToolbar>
+        </footer>
+    </Page>
+</mvc:View>
