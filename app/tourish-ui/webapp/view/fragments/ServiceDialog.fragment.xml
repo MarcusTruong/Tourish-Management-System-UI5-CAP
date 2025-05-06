@@ -44,10 +44,10 @@
                         <core:Item id="_IDGenItem5" key="{serviceTypes>}" text="{serviceTypes>}" />
                     </ComboBox>
                     
-                    <Label id="_IDGenLabel1" text="Description" />
+                    <Label id="_IDGenLabel123" text="Description" />
                     <TextArea id="serviceDescriptionTextArea" value="{newService>/Description}" rows="4" maxLength="500" />
                     
-                    <Label id="_IDGenLabel2" text="Price *" required="true" />
+                    <Label id="_IDGenLabel222" text="Price *" required="true" />
                     <Input id="servicePriceInput" 
                         value="{newService>/Price}" 
                         type="Number" 

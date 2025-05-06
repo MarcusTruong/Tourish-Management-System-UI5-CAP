@@ -6,8 +6,9 @@ sap.ui.define([
     "sap/m/MessageBox",
     "sap/m/MessageToast",
     "sap/ui/export/Spreadsheet",
-    "sap/ui/export/library"
-], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Spreadsheet, exportLibrary) {
+    "sap/ui/export/library",
+    "sap/ui/core/Fragment"
+], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Spreadsheet, exportLibrary, Fragment) {
     "use strict";
 
     var EdmType = exportLibrary.EdmType;
@@ -63,7 +64,7 @@ sap.ui.define([
                 var oTypesModel = new JSONModel({
                     types: aTypes.value
                 });
-                this.getView().setModel(oTypesModel, "types");
+                this.getView().setModel(oTypesModel, "serviceTypes");
             }.bind(this)).catch(function (oError) {
                 var sMessage = "Failed to load service types!";
                 try {
@@ -208,42 +209,58 @@ sap.ui.define([
         
         onEditService: function (oEvent) {
             // Ngăn sự kiện navigation
-            oEvent.stopPropagation();
+            // oEvent.stopPropagation();
             
             // Lấy service đã chọn
             var oSource = oEvent.getSource();
             var oContext = oSource.getBindingContext();
             var oService = oContext.getObject();
             
-            // Hiển thị dialog để sửa service
-            if (!this._oServiceDialog) {
-                this._oServiceDialog = sap.ui.xmlfragment("tourishui.view.fragments.ServiceDialog", this);
-                this.getView().addDependent(this._oServiceDialog);
+            // Tạo hoặc tái sử dụng dialog
+            if (!this._pServiceDialog) {
+                this._pServiceDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "tourishui.view.fragments.ServiceDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
             }
             
-            // Set model
-            var oServiceModel = new JSONModel({
-                ID: oService.ID,
-                supplierID: oService.SupplierID, // Giữ nguyên supplier
-                serviceName: oService.ServiceName,
-                serviceType: oService.ServiceType,
-                description: oService.Description,
-                price: oService.Price
-            });
-            this.getView().setModel(oServiceModel, "newService");
-            
-            // Cài đặt tiêu đề
-            sap.ui.getCore().byId("serviceDialogTitle").setText("Edit Service");
-            
-            // Ẩn/disable trường chọn supplier trong dialog (giữ nguyên supplier)
-            var oSupplierField = sap.ui.getCore().byId("supplierComboBox");
-            if (oSupplierField) {
-                oSupplierField.setEnabled(false);
-            }
-            
-            // Mở dialog
-            this._oServiceDialog.open();
+            this._pServiceDialog.then(function(oDialog) {
+                // Set model
+                var oServiceModel = new JSONModel({
+                    ID: oService.ID,
+                    SupplierID: oService.SupplierID, // Giữ nguyên supplier
+                    ServiceName: oService.ServiceName,
+                    ServiceType: oService.ServiceType,
+                    Description: oService.Description,
+                    Price: oService.Price
+                });
+                this.getView().setModel(oServiceModel, "newService");
+                
+                // Cài đặt tiêu đề
+                var oDialogTitle = oDialog.getCustomHeader().getContent()[0];
+                if (oDialogTitle) {
+                    oDialogTitle.setText("Edit Service");
+                }
+                
+                // Ẩn/disable trường chọn supplier trong dialog (giữ nguyên supplier)
+                var oSupplierField = this._findFormElement(oDialog, "supplierComboBox");
+                if (oSupplierField) {
+                    oSupplierField.setEnabled(false);
+                }
+                
+                // Mở dialog
+                oDialog.open();
+            }.bind(this));
         },
+        
+            _findFormElement: function(oDialog, sId) {
+            return sap.ui.getCore().byId(this.getView().getId() + "--" + sId) || 
+                   sap.ui.getCore().byId(sId);
+            },
         
         onDeleteService: function (oEvent) {
             // Ngăn sự kiện navigation
@@ -308,7 +325,7 @@ sap.ui.define([
             // Đặt busy state
             sap.ui.core.BusyIndicator.show(0);
             
-            // Update existing service (không có trường hợp create mới)
+            // Update existing service
             this._updateService(oServiceData);
         },
         
@@ -317,13 +334,13 @@ sap.ui.define([
             var oServiceData = oServiceModel.getData();
             
             // Validate required fields
-            if (!oServiceData.serviceName || oServiceData.serviceName.trim() === "") {
+            if (!oServiceData.ServiceName || oServiceData.ServiceName.trim() === "") {
                 MessageBox.error("Service Name is required");
                 return false;
             }
             
             // Validate price
-            if (isNaN(oServiceData.price) || oServiceData.price < 0) {
+            if (isNaN(oServiceData.Price) || oServiceData.Price < 0) {
                 MessageBox.error("Price must be a valid number greater than or equal to 0");
                 return false;
             }
@@ -337,10 +354,10 @@ sap.ui.define([
             // Gọi action updateService
             var oUpdateContext = this._oODataModel.bindContext("/updateService(...)");
             oUpdateContext.setParameter("serviceID", oServiceData.ID);
-            oUpdateContext.setParameter("serviceName", oServiceData.serviceName);
-            oUpdateContext.setParameter("serviceType", oServiceData.serviceType);
-            oUpdateContext.setParameter("description", oServiceData.description);
-            oUpdateContext.setParameter("price", oServiceData.price);
+            oUpdateContext.setParameter("serviceName", oServiceData.ServiceName);
+            oUpdateContext.setParameter("serviceType", oServiceData.ServiceType);
+            oUpdateContext.setParameter("description", oServiceData.Description);
+            oUpdateContext.setParameter("price", oServiceData.Price);
             
             oUpdateContext.execute().then(function () {
                 var oResult = oUpdateContext.getBoundContext().getObject();
@@ -352,8 +369,18 @@ sap.ui.define([
                 // Hiển thị thông báo
                 MessageToast.show("Service updated successfully");
                 
-                // Đóng dialog
-                that._oServiceDialog.close();
+                // Đóng dialog bằng cách sử dụng promise
+            if (that._pServiceDialog) {
+                that._pServiceDialog.then(function(oDialog) {
+                // Bật lại trường chọn supplier (nếu cần)
+                var oSupplierField = that._findFormElement(oDialog, "supplierComboBox");
+                if (oSupplierField) {
+                    oSupplierField.setEnabled(true);
+                }
+                
+                oDialog.close();
+            });
+        }
                 
                 // Bật lại trường chọn supplier (nếu cần)
                 var oSupplierField = sap.ui.getCore().byId("supplierComboBox");
@@ -381,14 +408,16 @@ sap.ui.define([
         },
         
         onCancelService: function () {
-            // Bật lại trường chọn supplier (nếu cần)
-            var oSupplierField = sap.ui.getCore().byId("supplierComboBox");
-            if (oSupplierField) {
-                oSupplierField.setEnabled(true);
-            }
-            
-            // Đóng dialog
-            this._oServiceDialog.close();
+            this._pServiceDialog.then(function(oDialog) {
+                // Bật lại trường chọn supplier (nếu cần)
+                var oSupplierField = this._findFormElement(oDialog, "supplierComboBox");
+                if (oSupplierField) {
+                    oSupplierField.setEnabled(true);
+                }
+                
+                // Đóng dialog
+                oDialog.close();
+            }.bind(this));
         },
         
         onExport: function () {

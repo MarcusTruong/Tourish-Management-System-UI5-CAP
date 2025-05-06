@@ -26,8 +26,8 @@
                     <VBox id="_IDGenVBox3">
                         <Label id="_IDGenLabel3" text="Service Type" />
                         <ComboBox id="serviceTypeFilter" placeholder="Select Type..." class="sapUiSmallMarginEnd" width="100%" 
-                            items="{path: 'types>/types'}">
-                            <core:Item id="_IDGenItem2" key="{types>}" text="{types>}" />
+                            items="{path: 'serviceTypes>/types'}">
+                            <core:Item id="_IDGenItem2" key="{serviceTypes>}" text="{serviceTypes>}" />
                         </ComboBox>
                     </VBox>
 
