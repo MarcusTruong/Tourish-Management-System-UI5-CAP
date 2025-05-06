@@ -120,7 +120,7 @@ sap.ui.define([
         };
   
         // Sử dụng OData model để gọi action createUser
-        const oModel = this.getOwnerComponent().getModel();
+        const oModel = this.getOwnerComponent().getModel("userService");
         const oContext = oModel.bindContext("/createUser(...)");
         oContext.setParameter("username", oData.username);
         oContext.setParameter("password", oData.password);

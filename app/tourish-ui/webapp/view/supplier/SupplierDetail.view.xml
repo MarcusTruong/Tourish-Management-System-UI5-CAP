@@ -3,133 +3,130 @@
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:f="sap.f"
-    xmlns:form="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
-    xmlns:l="sap.ui.layout">
+    xmlns:l="sap.ui.layout"
+    xmlns:form="sap.ui.layout.form">
 
-    <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
-        <f:title>
-            <f:DynamicPageTitle id="_IDGenDynamicPageTitle1">
+    <Page id="supplierDetailPage" toggleHeaderOnTitleClick="false"  showNavButton="true" navButtonPress=".onNavBack"> 
+
+            <f:DynamicPageTitle id="_IDGenDynamicPageTitle">
                 <f:heading>
-                    <Title id="_IDGenTitle" text="Global Parts Co." level="H2" />
+                    <Title id="detailPageTitle" text="Supplier Details" level="H2" />
                 </f:heading>
-                <f:expandedContent>
-                    <Text id="_IDGenText1" text="ID: {supplierID}" />
-                </f:expandedContent>
-                <f:actions>
-                    <Button id="_IDGenButton" text="Edit" type="Emphasized" press=".onEditSupplier" />
-                    <Button id="_IDGenButton1" text="Delete" type="Negative" press=".onDeleteSupplier" />
-                    <Button id="_IDGenButton2" icon="sap-icon://action" press=".onActionPress" />
-                </f:actions>
             </f:DynamicPageTitle>
-        </f:title>
+        
+            <f:DynamicPageHeader id="_IDGenDynamicPageHeader2" pinnable="false">
+                <l:HorizontalLayout id="_IDGenHorizontalLayout" allowWrapping="true">
+                    <l:VerticalLayout id="_IDGenVerticalLayout" class="sapUiMediumMarginEnd">
+                        <ObjectAttribute id="_IDGenObjectAttribute" title="Address" text="{supplier>/Address}" />
+                        <ObjectAttribute id="_IDGenObjectAttribute1" title="Phone" text="{supplier>/Phone}" />
+                        <ObjectAttribute id="_IDGenObjectAttribute2" title="Email" text="{supplier>/Email}" />
+                    </l:VerticalLayout>
+                </l:HorizontalLayout>
+            </f:DynamicPageHeader>
 
-        <f:content>
-            <IconTabBar id="idIconTabBar" class="sapUiResponsiveContentPadding" expandable="false">
+
+        <content>
+            <IconTabBar id="supplierDetailTabBar" select=".onTabSelect" class="sapUiResponsiveContentPadding">
                 <items>
-                    <IconTabFilter id="generalTab" text="General Information" key="general">
-                        <VBox id="_IDGenVBox">
-                            <Panel id="_IDGenPanel" headerText="Company Details" expandable="true" expanded="true" class="sapUiSmallMarginBottom">
-                                <form:SimpleForm id="_IDGenSimpleForm2"
-                                    editable="false"
-                                    layout="ResponsiveGridLayout">
-                                    <form:content>
-                                        <Label id="_IDGenLabel" text="Founded Year" />
-                                        <Text id="_IDGenText2" text="{foundedYear}" />
-                                        <Label id="_IDGenLabel1" text="Website" />
-                                        <Link id="_IDGenLink" text="{website}" href="{website}" target="_blank" />
-                                        <Label id="_IDGenLabel2" text="Tax ID" />
-                                        <Text id="_IDGenText3" text="{taxID}" />
-                                        <Label id="_IDGenLabel3" text="Company Size" />
-                                        <Text id="_IDGenText4" text="{companySize}" />
-                                        <Label id="_IDGenLabel4" text="Industry" />
-                                        <Text id="_IDGenText5" text="{industry}" />
-                                    </form:content>
-                                </form:SimpleForm>
-                            </Panel>
-
-                            <Panel id="_IDGenPanel1" headerText="Contact Person" expandable="true" expanded="true" class="sapUiSmallMarginBottom">
-                                <form:SimpleForm id="_IDGenSimpleForm3"
-                                    editable="false"
-                                    layout="ResponsiveGridLayout">
-                                    <form:content>
-                                        <Label id="_IDGenLabel5" text="Name" />
-                                        <Text id="_IDGenText6" text="{contactPerson/name}" />
-                                        <Label id="_IDGenLabel6" text="Position" />
-                                        <Text id="_IDGenText7" text="{contactPerson/position}" />
-                                        <Label id="_IDGenLabel7" text="Phone" />
-                                        <Text id="_IDGenText8" text="{contactPerson/phone}" />
-                                        <Label id="_IDGenLabel8" text="Email" />
-                                        <Link id="_IDGenLink1" text="{contactPerson/email}" href="mailto:{contactPerson/email}" />
-                                    </form:content>
-                                </form:SimpleForm>
-                            </Panel>
-                        </VBox>
+                    <!-- Tab: Basic Information -->
+                    <IconTabFilter id="basicInfoTab" icon="sap-icon://hint" key="info" text="Basic Information">
+                        <form:SimpleForm
+                            id="supplierForm2"
+                            editable="{viewModel>/editMode}"
+                            layout="ResponsiveGridLayout"
+                            labelSpanXL="4"
+                            labelSpanL="4"
+                            labelSpanM="4"
+                            labelSpanS="12"
+                            adjustLabelSpan="false"
+                            emptySpanXL="0"
+                            emptySpanL="0"
+                            emptySpanM="0"
+                            emptySpanS="0"
+                            columnsXL="1"
+                            columnsL="1"
+                            columnsM="1">
+                            <form:content>
+                                <Label id="_IDGenLabel5" text="Supplier ID" />
+                                <HBox >
+                                <Text id="supplierIDText" text="{supplier>/ID}" visible="{= !!${supplier>/ID} }" />
+                                <Text id="_IDGenText1" text="Will be generated automatically" visible="{= !${supplier>/ID} }" />
+                                </HBox>
+                                
+                                <Label id="_IDGenLabel6" text="Supplier Name" required="{viewModel>/editMode}" />
+                                <HBox>
+                                    <Input id="supplierNameInput2" value="{supplier>/SupplierName}" maxLength="100" visible="{viewModel>/editMode}" />
+                                    <Text id="supplierNameText" text="{supplier>/SupplierName}" visible="{= !${viewModel>/editMode} }" />
+                                </HBox>
+                                
+                                
+                                <Label id="_IDGenLabel7" text="Address" required="{viewModel>/editMode}" />
+                                <HBox>
+                                    <Input id="addressInput2" value="{supplier>/Address}" maxLength="200" visible="{viewModel>/editMode}" />
+                                    <Text id="addressText" text="{supplier>/Address}" visible="{= !${viewModel>/editMode} }" />
+                                </HBox>
+                                
+                                
+                                <Label id="_IDGenLabel8" text="Phone" required="{viewModel>/editMode}"/>
+                                <HBox>
+                                    <Input id="phoneInput2" value="{supplier>/Phone}" maxLength="20" visible="{viewModel>/editMode}" />
+                                    <Text id="phoneText" text="{supplier>/Phone}" visible="{= !${viewModel>/editMode} }" />
+                                </HBox>
+                                
+                                <Label id="_IDGenLabel12" text="Email" required="{viewModel>/editMode}"/>
+                                <HBox>
+                                    <Input id="emailInput2" value="{supplier>/Email}" maxLength="100" visible="{viewModel>/editMode}" />
+                                    <Text id="emailText" text="{supplier>/Email}" visible="{= !${viewModel>/editMode} }" />
+                                </HBox>
+                            </form:content>
+                        </form:SimpleForm>
                     </IconTabFilter>
-
-                    <IconTabFilter id="servicesTab" text="Services" key="services" count="{= ${services}.length}">
+                    
+                    <!-- Tab: Services -->
+                    <IconTabFilter id="servicesTab" icon="sap-icon://product" key="services" text="Services">
                         <VBox id="_IDGenVBox1">
-                            <OverflowToolbar id="_IDGenOverflowToolbar">
-                                <Title id="_IDGenTitle1" text="Services Offered" level="H3" />
-                                <ToolbarSpacer id="_IDGenToolbarSpacer" />
-                                <Button id="_IDGenButton3" 
-                                    icon="sap-icon://add"
-                                    tooltip="Add New Service"
-                                    press=".onAddService" />
-                                <Button id="_IDGenButton4"
-                                    icon="sap-icon://excel-attachment"
-                                    tooltip="Export to Excel"
-                                    press=".onExportServices" />
-                            </OverflowToolbar>
-
+                            <Toolbar id="_IDGenToolbar1">
+                                <Title id="_IDGenTitle1" text="Supplier Services" level="H3" />
+                                <ToolbarSpacer id="_IDGenToolbarSpacer1" />
+                                <Button id="addServiceButton" icon="sap-icon://add" tooltip="Add New Service" press=".onAddService" />
+                            </Toolbar>
+                            
                             <Table
                                 id="servicesTable"
-                                inset="false"
-                                items="{
-                                    path: 'services',
-                                    sorter: {
-                                        path: 'serviceName',
-                                        descending: false
-                                    }
-                                }"
+                                items="{services>/services}"
+                                noDataText="No services available"
                                 growing="true"
                                 growingThreshold="10"
-                                alternateRowColors="true">
-
+                                growingScrollToLoad="true">
                                 <columns>
-                                    <Column id="_IDGenColumn">
-                                        <Text id="_IDGenText9" text="Service Name" />
+                                    <Column id="_IDGenColumn1" width="15%">
+                                        <Text id="_IDGenText2" text="Service Name" />
                                     </Column>
-                                    <Column id="_IDGenColumn1" minScreenWidth="Tablet" demandPopin="true">
-                                        <Text id="_IDGenText10" text="Service Type" />
+                                    <Column id="_IDGenColumn2" width="15%">
+                                        <Text id="_IDGenText3" text="Type" />
                                     </Column>
-                                    <Column id="_IDGenColumn2" minScreenWidth="Tablet" demandPopin="true" hAlign="Right">
-                                        <Text id="_IDGenText11" text="Number of Guests" />
+                                    <Column id="_IDGenColumn3" width="45%">
+                                        <Text id="_IDGenText4" text="Description" />
                                     </Column>
-                                    <Column id="_IDGenColumn3" minScreenWidth="Tablet" demandPopin="true" hAlign="Right">
-                                        <Text id="_IDGenText12" text="Price" />
+                                    <Column id="_IDGenColumn4" width="15%" hAlign="End">
+                                        <Text id="_IDGenText5" text="Price" />
                                     </Column>
-                                    <Column id="_IDGenColumn4" minScreenWidth="Desktop" demandPopin="true">
-                                        <Text id="_IDGenText13" text="Description" />
-                                    </Column>
-                                    <Column id="_IDGenColumn5" width="6rem" hAlign="End">
-                                        <Text id="_IDGenText14" text="Actions" />
+                                    <Column id="_IDGenColumn5" width="10%" hAlign="End">
+                                        <Text id="_IDGenText6" text="Actions" />
                                     </Column>
                                 </columns>
-
+                                
                                 <items>
-                                    <ColumnListItem id="_IDGenColumnListItem" type="Detail">
+                                    <ColumnListItem id="_IDGenColumnListItem2">
                                         <cells>
-                                            <ObjectIdentifier id="_IDGenObjectIdentifier" title="{serviceName}" />
-                                            <Text id="_IDGenText15" text="{serviceType}" />
-                                            <Text id="_IDGenText16" text="{guests}" />
-                                            <ObjectNumber id="_IDGenObjectNumber" 
-                                                number="{price}" 
-                                                unit="USD" />
-                                            <Text id="_IDGenText17" text="{description}" />
-                                            <HBox id="_IDGenHBox">
-                                                <Button id="_IDGenButton5" icon="sap-icon://edit" press=".onEditService" tooltip="Edit" />
-                                                <Button id="_IDGenButton6" icon="sap-icon://delete" press=".onDeleteService" tooltip="Delete" class="sapUiTinyMarginBegin" />
+                                            <Text id="_IDGenText7" text="{services>ServiceName}" />
+                                            <Text id="_IDGenText8" text="{services>ServiceType}" />
+                                            <Text id="_IDGenText9" text="{services>Description}" />
+                                            <ObjectNumber id="_IDGenObjectNumber1" number="{services>Price}" unit="USD" textAlign="End"/>
+                                            <HBox id="_IDGenHBox5" justifyContent="End">
+                                                <Button id="editServiceButton" icon="sap-icon://edit" press=".onEditService" tooltip="Edit" />
+                                                <Button id="deleteServiceButton" icon="sap-icon://delete" press=".onDeleteService" tooltip="Delete" class="sapUiTinyMarginBegin" />
                                             </HBox>
                                         </cells>
                                     </ColumnListItem>
@@ -137,23 +134,101 @@
                             </Table>
                         </VBox>
                     </IconTabFilter>
-
-                    <IconTabFilter id="historyTab" text="History" key="history">
+                    
+                    <!-- Tab: Debts -->
+                    <IconTabFilter id="debtsTab" icon="sap-icon://money-bills" key="debts" text="Debts">
                         <VBox id="_IDGenVBox2">
+                            <Toolbar id="_IDGenToolbar2">
+                                <Title id="_IDGenTitle3" text="Supplier Debts" level="H3" />
+                                <ToolbarSpacer id="_IDGenToolbarSpacer2" />
+                                <Button id="addDebtButton" icon="sap-icon://add" tooltip="Add New Debt" press=".onAddDebt" />
+                            </Toolbar>
                             
+                            <!-- Debt Summary Panel -->
+                            <Panel id="debtSummaryPanel" expandable="false" class="sapUiSmallMarginBottom">
+                                <l:Grid id="_IDGenGrid1" defaultSpan="XL4 L4 M6 S12">
+                                    <l:content>
+                                        <ObjectStatus
+                                            id="_IDGenObjectStatus1"
+                                            title="Total Debt"
+                                            text="{debts>/debtStatistics/totalDebt} USD"
+                                            state="Information" />
+                                        <ObjectStatus
+                                            id="_IDGenObjectStatus2"
+                                            title="Pending"
+                                            text="{debts>/debtStatistics/pendingDebt} USD"
+                                            state="Warning" />
+                                        <ObjectStatus
+                                            id="_IDGenObjectStatus3"
+                                            title="Completed"
+                                            text="{debts>/debtStatistics/completedDebt} USD"
+                                            state="Success" />
+                                    </l:content>
+                                </l:Grid>
+                            </Panel>
+                            
+                            <!-- Debts Table -->
+                            <Table
+                                id="debtsTable"
+                                items="{debts>/debts}"
+                                noDataText="No debts available"
+                                growing="true"
+                                growingThreshold="10"
+                                growingScrollToLoad="true">
+                                <columns>
+                                    <Column id="_IDGenColumn12" width="15%">
+                                        <Text id="_IDGenText10" text="Debt ID" />
+                                    </Column>
+                                    <Column id="_IDGenColumn13" width="20%">
+                                        <Text id="_IDGenText11" text="Amount" />
+                                    </Column>
+                                    <Column id="_IDGenColumn14" width="20%">
+                                        <Text id="_IDGenText12" text="Due Date" />
+                                    </Column>
+                                    <Column id="_IDGenColumn15" width="20%">
+                                        <Text id="_IDGenText13" text="Status" />
+                                    </Column>
+                                    <Column id="_IDGenColumn16" width="25%" hAlign="End">
+                                        <Text id="_IDGenText14" text="Actions" />
+                                    </Column>
+                                </columns>
+                                
+                                <items>
+                                    <ColumnListItem id="_IDGenColumnListItem3">
+                                        <cells>
+                                            <Text id="_IDGenText15" text="{debts>ID}" />
+                                            <ObjectNumber id="_IDGenObjectNumber2" number="{debts>Amount}" unit="USD" />
+                                            <Text id="_IDGenText16" text="{path: 'debts>DueDate', formatter: '.formatDate'}" />
+                                            <ObjectStatus
+                                                id="_IDGenObjectStatus4"
+                                                text="{debts>Status}"
+                                                state="{= ${debts>Status} === 'Pending' ? 'Warning' : 'Success' }" />
+                                            <HBox id="_IDGenHBox111" justifyContent="End">
+                                                <Button
+                                                    id="markAsPaidButton"
+                                                    text="Mark as Paid"
+                                                    type="Emphasized"
+                                                    visible="{= ${debts>Status} === 'Pending' }"
+                                                    press=".onMarkDebtAsPaid" />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
                         </VBox>
                     </IconTabFilter>
                 </items>
             </IconTabBar>
-        </f:content>
-
-        <f:footer>
+        </content>
+        
+        <footer>
             <OverflowToolbar id="_IDGenOverflowToolbar1">
-                <ToolbarSpacer id="_IDGenToolbarSpacer1" />
-                <Button id="_IDGenButton7" type="Emphasized" text="Save" visible="false" />
-                <Button id="_IDGenButton8" text="Cancel" visible="false" />
-                <Button id="_IDGenButton9" text="Close" press=".onNavBack" />
+                <ToolbarSpacer id="_IDGenToolbarSpacer66" />
+                <Button id="cancelButton2" text="Cancel" visible="{viewModel>/editMode}" press=".onCancel" />
+                <Button id="deleteButton" text="Delete" type="Reject" visible="{viewModel>/deleteAllowed}" press=".onDelete" />
+                <Button id="editButton" text="Edit" type="Emphasized" visible="{= ${viewModel>/editAllowed} &amp;&amp; !${viewModel>/editMode} }" press=".onEdit" />
+                <Button id="saveButton" text="Save" type="Emphasized" visible="{viewModel>/editMode}" press=".onSave" />
             </OverflowToolbar>
-        </f:footer>
-    </f:DynamicPage>
+        </footer>
+    </Page>
 </mvc:View>

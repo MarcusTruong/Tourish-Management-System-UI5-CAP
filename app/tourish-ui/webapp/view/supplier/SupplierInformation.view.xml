@@ -59,7 +59,7 @@
                     items="{
                         path: '/Suppliers',
                         sorter: {
-                            path: 'supplierID',
+                            path: 'supplierName',
                             descending: false
                         }
                     }"
@@ -94,12 +94,12 @@
                     <items>
                         <ColumnListItem id="_IDGenColumnListItem1" type="Navigation" press=".onSupplierPress">
                             <cells>
-                                <Text id="_IDGenText24" text="{supplierID}" />
-                                <Text id="_IDGenText25" text="{supplierName}" />
-                                <Text id="_IDGenText26" text="{address}" />
-                                <Text id="_IDGenText27" text="{phone}" />
-                                <Text id="_IDGenText28" text="{email}" />
-                                <HBox id="_IDGenHBox4">
+                                <Text id="_IDGenText24" text="{ID}" />
+                                <Text id="_IDGenText25" text="{SupplierName}" />
+                                <Text id="_IDGenText26" text="{Address}" />
+                                <Text id="_IDGenText27" text="{Phone}" />
+                                <Text id="_IDGenText28" text="{Email}" />
+                                <HBox id="_IDGenHBox4" justifyContent="End">
                                     <Button id="_IDGenButton15" icon="sap-icon://edit" press=".onEditSupplier" tooltip="Edit" />
                                     <Button id="_IDGenButton16" icon="sap-icon://delete" press=".onDeleteSupplier" tooltip="Delete" class="sapUiTinyMarginBegin" />
                                 </HBox>

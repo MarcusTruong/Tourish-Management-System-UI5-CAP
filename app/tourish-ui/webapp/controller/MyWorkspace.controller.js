@@ -39,7 +39,7 @@ sap.ui.define([
             var oView = this.getView();
             var oViewModel = oView.getModel();
             var oAuthModel = this.getOwnerComponent().getModel("auth");
-            var oODataModel = this.getOwnerComponent().getModel();
+            var oODataModel = this.getOwnerComponent().getModel("userService");
             var sWorkspaceId = oAuthModel.getProperty("/user/WorkspaceID");
 
             oViewModel.setProperty("/busy", true);
@@ -76,7 +76,7 @@ sap.ui.define([
         _loadWorkspaceMembers: function() {
             var oView = this.getView();
             var oViewModel = oView.getModel();
-            var oODataModel = this.getOwnerComponent().getModel();
+            var oODataModel = this.getOwnerComponent().getModel("userService");
             
             // Load workspace members using getWorkspaceMembers action
             var oMembersContext = oODataModel.bindContext("/getWorkspaceMembers(...)");
@@ -131,7 +131,7 @@ sap.ui.define([
                     type: "Emphasized",
                     press: function () {
                         var oViewModel = oView.getModel();
-                        var oODataModel = this.getOwnerComponent().getModel();
+                        var oODataModel = this.getOwnerComponent().getModel("userService");
                         var oAuthModel = this.getOwnerComponent().getModel("auth");
         
                         var oWorkspaceData = {
@@ -260,7 +260,7 @@ sap.ui.define([
                     type: "Emphasized",
                     press: function () {
                         var oViewModel = oView.getModel();
-                        var oODataModel = this.getOwnerComponent().getModel();
+                        var oODataModel = this.getOwnerComponent().getModel("userService");
         
                         var oWorkspaceData = {
                             companyName: oCompanyNameInput.getValue(),
@@ -370,7 +370,7 @@ sap.ui.define([
                     type: "Emphasized",
                     press: function () {
                         var oViewModel = oView.getModel();
-                        var oODataModel = this.getOwnerComponent().getModel();
+                        var oODataModel = this.getOwnerComponent().getModel("userService");
         
                         var oUserData = {
                             username: oUsernameInput.getValue(),
@@ -497,7 +497,7 @@ sap.ui.define([
                     type: "Emphasized",
                     press: function () {
                         var oViewModel = oView.getModel();
-                        var oODataModel = this.getOwnerComponent().getModel();
+                        var oODataModel = this.getOwnerComponent().getModel("userService");
                         var sNewRole = oRoleSelect.getSelectedKey();
                         
                         // If role didn't change, just close dialog
@@ -575,7 +575,7 @@ sap.ui.define([
                     
                     oViewModel.setProperty("/busy", true);
                     
-                    var oODataModel = this.getOwnerComponent().getModel();
+                    var oODataModel = this.getOwnerComponent().getModel("userService");
                     var oContext = oODataModel.bindContext("/updateUserStatus(...)");
                     oContext.setParameter("userID", oUser.ID);
                     oContext.setParameter("status", sNewStatus);
@@ -622,7 +622,7 @@ sap.ui.define([
                     
                     oViewModel.setProperty("/busy", true);
                     
-                    var oODataModel = this.getOwnerComponent().getModel();
+                    var oODataModel = this.getOwnerComponent().getModel("userService");
                     var oContext = oODataModel.bindContext("/removeUserFromWorkspace(...)");
                     oContext.setParameter("userID", oUser.ID);
     

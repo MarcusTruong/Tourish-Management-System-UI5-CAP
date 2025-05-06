@@ -1,0 +1,17 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    
+    <TableSelectDialog
+        id="tableSettingsDialog"
+        title="Table Settings"
+        noDataText="No settings available"
+        confirm=".onCloseTableSettings"
+        cancel=".onCloseTableSettings">
+        <ColumnListItem id="_IDGenColumnListItem4">
+            <cells>
+                <Text id="_IDGenText17" text="{name}" />
+            </cells>
+        </ColumnListItem>
+    </TableSelectDialog>
+</core:FragmentDefinition>

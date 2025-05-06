@@ -1,293 +1,772 @@
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
-    "sap/ui/core/routing/History",
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageBox",
     "sap/m/MessageToast",
-    "sap/ui/export/Spreadsheet",
-    "sap/ui/export/library"
-], function (Controller, History, JSONModel, MessageBox, MessageToast, Spreadsheet, exportLibrary) {
+    "sap/ui/core/Fragment",
+    "sap/ui/core/format/DateFormat"
+], function (Controller, JSONModel, MessageBox, MessageToast, Fragment, DateFormat) {
     "use strict";
-
-    var EdmType = exportLibrary.EdmType;
 
     return Controller.extend("tourishui.controller.supplier.SupplierDetail", {
         onInit: function () {
-            console.log('1')
+            // Khởi tạo model và binding
+            this._oODataModel = this.getOwnerComponent().getModel("supplierService");
+            
+            // Model để lưu trữ state
+            var oViewModel = new JSONModel({
+                busy: false,
+                delay: 0,
+                editMode: false,
+                editAllowed: true,
+                deleteAllowed: true
+            });
+            this.getView().setModel(oViewModel, "viewModel");
+            
+            // Model cho supplier
+            var oSupplierModel = new JSONModel({
+                ID: "",
+                supplierName: "",
+                address: "",
+                phone: "",
+                email: ""
+            });
+            this.getView().setModel(oSupplierModel, "supplier");
+            
+            // Đăng ký event patternMatched cho routing
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.getRoute("supplierDetail").attachPatternMatched(this._onSupplierMatched, this);
-            console.log('11')
         },
-
+        
         _onSupplierMatched: function (oEvent) {
             var sSupplierID = oEvent.getParameter("arguments").supplierID;
-            console.log(sSupplierID)
-            // In a real app, you would fetch this data from a backend service
-            var oModel = this.getView().getModel();
-
-            // Check if model exists
-            if (!oModel) {
-                console.error("Model not found");
-                return;
-            }
-
-            var aSuppliers = oModel.getProperty("/Suppliers");
-
-            // Check if suppliers data exists
-            if (!aSuppliers || !Array.isArray(aSuppliers)) {
-                console.error("Suppliers data not available");
-                return;
-            }
-
-            // Find the selected supplier
-            var oSelectedSupplier = aSuppliers.find(function (supplier) {
-                // Make sure we're comparing the same data types
-                return supplier.supplierID === sSupplierID;
-            });
-
-            if (!oSelectedSupplier) {
-                // Handle supplier not found
-                sap.m.MessageBox.error("Supplier not found");
-                this.onNavBack();
-                return;
-            }
-
-            // Enhance supplier with additional mock data for the detail page
-            if (!oSelectedSupplier.status) {
-                // Enrich the supplier data with additional fields if they don't exist yet
-                oSelectedSupplier = this._enrichSupplierData(oSelectedSupplier);
-
-                // Update the model
-                var iIndex = aSuppliers.findIndex(function (supplier) {
-                    return supplier.supplierID === sSupplierID;
-                });
-
-                if (iIndex >= 0) {
-                    oModel.setProperty("/Suppliers/" + iIndex, oSelectedSupplier);
-                }
-            }
-
-            // Set the context for the view
-            var oContext = new sap.ui.model.Context(oModel, "/Suppliers/" + aSuppliers.indexOf(oSelectedSupplier));
-            this.getView().setBindingContext(oContext);
-        },
-
-        _enrichSupplierData: function (oSupplier) {
-            // Add additional mock data for the detail page
-            oSupplier.status = "Active";
-            oSupplier.statusState = "Success"; // Success, Warning, Error, None
-            oSupplier.foundedYear = "1995";
-            oSupplier.website = "http://www." + oSupplier.supplierName.toLowerCase().replace(/\s+/g, '') + ".com";
-            oSupplier.taxID = "TAX" + oSupplier.supplierID.substring(3);
-            oSupplier.companySize = "Medium Enterprise (100-500 employees)";
-            oSupplier.industry = "Technology";
-
-            oSupplier.contactPerson = {
-                name: "John Smith",
-                position: "Account Manager",
-                phone: "+1 (555) 987-6543",
-                email: "john.smith@" + oSupplier.supplierName.toLowerCase().replace(/\s+/g, '') + ".com"
-            };
-
-            // Add mock services
-            oSupplier.services = [
-                {
-                    serviceName: "Basic Tour Package",
-                    serviceType: "Standard",
-                    guests: 25,
-                    price: 1299.99,
-                    description: "Standard tour package including transportation and guide."
-                },
-                {
-                    serviceName: "Premium Tour Package",
-                    serviceType: "Premium",
-                    guests: 15,
-                    price: 2499.99,
-                    description: "Premium tour with luxury transportation, guide, and exclusive locations."
-                },
-                {
-                    serviceName: "Custom Group Tour",
-                    serviceType: "Custom",
-                    guests: 50,
-                    price: 3999.99,
-                    description: "Customized tour for large groups with special requirements."
-                },
-                {
-                    serviceName: "VIP Experience",
-                    serviceType: "VIP",
-                    guests: 6,
-                    price: 5999.99,
-                    description: "Exclusive VIP experience with private transportation and personal guide."
-                }
-            ];
-
-            // Add interaction history
-            oSupplier.interactions = [
-                {
-                    date: "2025-03-10T14:00:00",
-                    title: "Contract Signed",
-                    text: "Annual contract signed for tour services provision.",
-                    icon: "sap-icon://document-text"
-                },
-                {
-                    date: "2025-02-15T10:30:00",
-                    title: "Service Review",
-                    text: "Quarterly service review meeting with supplier representatives.",
-                    icon: "sap-icon://meeting-room"
-                },
-                {
-                    date: "2025-01-05T09:00:00",
-                    title: "New Service Added",
-                    text: "VIP Experience added to service catalog.",
-                    icon: "sap-icon://add"
-                },
-                {
-                    date: "2024-12-18T11:15:00",
-                    title: "Price Negotiation",
-                    text: "Successfully negotiated 5% discount on all services for 2025.",
-                    icon: "sap-icon://money-bills"
-                }
-            ];
-
-            return oSupplier;
-        },
-
-        onNavBack: function () {
-            var oHistory = History.getInstance();
-            var sPreviousHash = oHistory.getPreviousHash();
-
-            if (sPreviousHash !== undefined) {
-                window.history.go(-1);
+            
+            if (sSupplierID === "create") {
+                // Trường hợp tạo mới
+                this._setCreateMode();
             } else {
-                var oRouter = this.getOwnerComponent().getRouter();
-                oRouter.navTo("listReport", {}, true);
+                // Trường hợp xem/sửa
+                this._loadSupplier(sSupplierID);
             }
         },
-
-        onEditSupplier: function () {
-            var oSupplier = this.getView().getBindingContext().getObject();
-            MessageBox.information("Edit supplier: " + oSupplier.supplierName);
-            // In a real application, this would open an edit dialog or navigate to an edit page
-        },
-
-        onDeleteSupplier: function () {
-            var oSupplier = this.getView().getBindingContext().getObject();
-
-            MessageBox.confirm("Are you sure you want to delete supplier '" + oSupplier.supplierName + "'?", {
-                onClose: function (sAction) {
-                    if (sAction === MessageBox.Action.OK) {
-                        MessageToast.show("Supplier deleted: " + oSupplier.supplierName);
-                        this.onNavBack();
-                        // In a real application, you would delete the supplier from your backend
-                    }
-                }.bind(this)
+        
+        _setCreateMode: function () {
+            var oViewModel = this.getView().getModel("viewModel");
+            var oSupplierModel = this.getView().getModel("supplier");
+            
+            // Reset supplier model
+            oSupplierModel.setData({
+                ID: "",
+                supplierName: "",
+                address: "",
+                phone: "",
+                email: ""
             });
+            
+            // Reset services model
+            var oServicesModel = new JSONModel({
+                services: []
+            });
+            this.getView().setModel(oServicesModel, "services");
+            
+            // Reset debts model
+            var oDebtsModel = new JSONModel({
+                debts: [],
+                debtStatistics: {
+                    totalDebt: 0,
+                    pendingDebt: 0,
+                    completedDebt: 0,
+                    debtCount: 0,
+                    pendingDebtCount: 0
+                }
+            });
+            this.getView().setModel(oDebtsModel, "debts");
+            
+            // Set view state
+            oViewModel.setProperty("/editMode", true);
+            oViewModel.setProperty("/editAllowed", false); // Không cho phép edit khi đang tạo mới
+            oViewModel.setProperty("/deleteAllowed", false); // Không cho phép xóa khi đang tạo mới
+            
+            // Cập nhật tiêu đề
+            this.byId("detailPageTitle").setText("New Supplier");
         },
-
-        onActionPress: function () {
-            MessageToast.show("Additional actions would be shown here");
+        
+        _loadSupplier: function (sSupplierID) {
+            var oView = this.getView();
+            var oViewModel = oView.getModel("viewModel");
+            var oSupplierModel = oView.getModel("supplier");
+            
+            // Set busy indicator
+            oViewModel.setProperty("/busy", true);
+            
+            // Gọi getSupplierDetails action để lấy thông tin supplier
+            var oContext = this._oODataModel.bindContext("/getSupplierDetails(...)");
+            oContext.setParameter("supplierID", sSupplierID);
+            
+            oContext.execute().then(function () {
+                var oResult = oContext.getBoundContext().getObject();
+                console.log("Supplier details loaded:", oResult);
+                
+                // Set data vào supplier model
+                oSupplierModel.setData(oResult.supplier);
+                
+                // Cập nhật services model
+                var oServicesModel = new JSONModel({
+                    services: oResult.services || []
+                });
+                oView.setModel(oServicesModel, "services");
+                
+                // Cập nhật debts model
+                var oDebtsModel = new JSONModel({
+                    debts: oResult.debts || [],
+                    debtStatistics: oResult.debtStatistics || {
+                        totalDebt: 0,
+                        pendingDebt: 0,
+                        completedDebt: 0,
+                        debtCount: 0,
+                        pendingDebtCount: 0
+                    }
+                });
+                oView.setModel(oDebtsModel, "debts");
+                
+                // Cập nhật view state
+                oViewModel.setProperty("/editMode", false);
+                oViewModel.setProperty("/editAllowed", true);
+                oViewModel.setProperty("/deleteAllowed", true);
+                
+                // Cập nhật tiêu đề
+                this.byId("detailPageTitle").setText("Supplier: " + oResult.supplier.SupplierName);
+                
+                // Tắt busy indicator
+                oViewModel.setProperty("/busy", false);
+            }.bind(this)).catch(function (oError) {
+                oViewModel.setProperty("/busy", false);
+                var sMessage = "Failed to load supplier details!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error loading supplier details:", sMessage);
+                MessageBox.error(sMessage);
+                
+                // Navigate back to list
+                this.onNavBack();
+            }.bind(this));
         },
-
-        onAddService: function () {
-            MessageBox.information("Add new service functionality would be implemented here.");
+        
+        onNavBack: function () {
+            // Navigate trở lại trang danh sách
+            var oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("supplierList", {}, true);
         },
-
-        onEditService: function (oEvent) {
-            var oContext = oEvent.getSource().getBindingContext();
-            var oService = oContext.getObject();
-            MessageBox.information("Edit service: " + oService.serviceName);
+        
+        onEdit: function () {
+            // Chuyển sang chế độ edit
+            var oViewModel = this.getView().getModel("viewModel");
+            oViewModel.setProperty("/editMode", true);
         },
-
-        onDeleteService: function (oEvent) {
-            var oContext = oEvent.getSource().getBindingContext();
-            var oService = oContext.getObject();
-
-            MessageBox.confirm("Are you sure you want to delete service '" + oService.serviceName + "'?", {
+        
+        onDelete: function () {
+            var that = this;
+            var oSupplierModel = this.getView().getModel("supplier");
+            var sSupplierID = oSupplierModel.getProperty("/ID");
+            var sSupplierName = oSupplierModel.getProperty("/SupplierName");
+            
+            // Xác nhận xóa
+            MessageBox.confirm("Are you sure you want to delete supplier '" + sSupplierName + "'?", {
+                title: "Confirm Delete",
                 onClose: function (sAction) {
                     if (sAction === MessageBox.Action.OK) {
-                        var sPath = oContext.getPath();
-                        var oModel = this.getView().getModel();
-
-                        // Get the services array
-                        var aServices = oContext.getObject("..").services;
-
-                        // Find and remove the service
-                        var iIndex = aServices.findIndex(function (s) {
-                            return s.serviceName === oService.serviceName;
+                        // Gọi action deleteSupplier
+                        var oDeleteContext = that._oODataModel.bindContext("/deleteSupplier(...)");
+                        oDeleteContext.setParameter("supplierID", sSupplierID);
+                        
+                        oDeleteContext.execute().then(function () {
+                            MessageToast.show("Supplier deleted successfully");
+                            that.onNavBack(); // Navigate back to list
+                        }).catch(function (oError) {
+                            var sMessage = "Failed to delete supplier!";
+                            try {
+                                var oResponse = JSON.parse(oError.responseText);
+                                sMessage = oResponse.error.message || sMessage;
+                            } catch (e) {
+                                // Fallback to default message
+                            }
+                            console.error("Error deleting supplier:", sMessage);
+                            MessageBox.error(sMessage);
                         });
-
-                        if (iIndex >= 0) {
-                            aServices.splice(iIndex, 1);
-
-                            // Update the model
-                            var sSupplierPath = oContext.getPath().split("/services")[0];
-                            oModel.setProperty(sSupplierPath + "/services", aServices);
-
-                            MessageToast.show("Service deleted: " + oService.serviceName);
-                        }
                     }
-                }.bind(this)
+                }
             });
         },
-
-        onExportServices: function () {
-            var oSupplier = this.getView().getBindingContext().getObject();
-            var aServices = oSupplier.services;
-
-            if (!aServices || aServices.length === 0) {
-                MessageToast.show("No services to export");
+        
+        onSave: function () {
+            // Validate input
+            if (!this._validateSupplierForm()) {
                 return;
             }
-
-            var aColumns = [
-                {
-                    label: "Service Name",
-                    property: "serviceName",
-                    type: EdmType.String
-                },
-                {
-                    label: "Service Type",
-                    property: "serviceType",
-                    type: EdmType.String
-                },
-                {
-                    label: "Number of Guests",
-                    property: "guests",
-                    type: EdmType.Number
-                },
-                {
-                    label: "Price",
-                    property: "price",
-                    type: EdmType.Number,
-                    scale: 2,
-                    delimiter: true
-                },
-                {
-                    label: "Description",
-                    property: "description",
-                    type: EdmType.String
+            
+            var oViewModel = this.getView().getModel("viewModel");
+            var oSupplierModel = this.getView().getModel("supplier");
+            var oSupplierData = oSupplierModel.getData();
+            
+            // Set busy indicator
+            oViewModel.setProperty("/busy", true);
+            
+            if (!oSupplierData.ID) {
+                // Create new supplier
+                this._createSupplier(oSupplierData);
+            } else {
+                // Update existing supplier
+                this._updateSupplier(oSupplierData);
+            }
+        },
+        
+        _validateSupplierForm: function () {
+            var oSupplierModel = this.getView().getModel("supplier");
+            var oSupplierData = oSupplierModel.getData();
+            
+            // Validate required fields
+            if (!oSupplierData.SupplierName || oSupplierData.SupplierName.trim() === "") {
+                MessageBox.error("Supplier Name is required");
+                return false;
+            }
+            
+            // Validate email format nếu có
+            if (oSupplierData.Email && !this._isValidEmail(oSupplierData.Email)) {
+                MessageBox.error("Invalid email format");
+                return false;
+            }
+            
+            return true;
+        },
+        
+        _isValidEmail: function (sEmail) {
+            var regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return regex.test(sEmail);
+        },
+        
+        _createSupplier: function (oSupplierData) {
+            var that = this;
+            var oViewModel = this.getView().getModel("viewModel");
+            
+            // Gọi action createSupplier
+            var oCreateContext = this._oODataModel.bindContext("/createSupplier(...)");
+            oCreateContext.setParameter("supplierName", oSupplierData.SupplierName);
+            oCreateContext.setParameter("address", oSupplierData.Address);
+            oCreateContext.setParameter("phone", oSupplierData.Phone);
+            oCreateContext.setParameter("email", oSupplierData.Email);
+            
+            oCreateContext.execute().then(function () {
+                var oResult = oCreateContext.getBoundContext().getObject();
+                console.log("Supplier created:", oResult);
+                
+                // Tắt busy indicator
+                oViewModel.setProperty("/busy", false);
+                
+                // Hiển thị thông báo
+                MessageToast.show("Supplier created successfully");
+                
+                // Navigate to detail view of new supplier
+                var oRouter = that.getOwnerComponent().getRouter();
+                oRouter.navTo("supplierDetail", {
+                    supplierID: oResult.ID
+                }, true);
+            }).catch(function (oError) {
+                // Tắt busy indicator
+                oViewModel.setProperty("/busy", false);
+                
+                var sMessage = "Failed to create supplier!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
                 }
-            ];
-
-            var mSettings = {
-                workbook: {
-                    columns: aColumns,
-                    context: {
-                        title: "Services for " + oSupplier.supplierName,
-                        sheetName: "Services",
-                        application: "SAPUI5 Application"
-                    }
-                },
-                dataSource: aServices,
-                fileName: oSupplier.supplierName + "_Services.xlsx"
-            };
-
-            var oSpreadsheet = new Spreadsheet(mSettings);
-            oSpreadsheet.build().finally(function () {
-                oSpreadsheet.destroy();
+                console.error("Error creating supplier:", sMessage);
+                MessageBox.error(sMessage);
             });
+        },
+        
+        _updateSupplier: function (oSupplierData) {
+            var that = this;
+            var oViewModel = this.getView().getModel("viewModel");
+            
+            // Gọi action updateSupplier
+            var oUpdateContext = this._oODataModel.bindContext("/updateSupplier(...)");
+            oUpdateContext.setParameter("supplierID", oSupplierData.ID);
+            oUpdateContext.setParameter("supplierName", oSupplierData.SupplierName);
+            oUpdateContext.setParameter("address", oSupplierData.Address);
+            oUpdateContext.setParameter("phone", oSupplierData.Phone);
+            oUpdateContext.setParameter("email", oSupplierData.Email);
+            
+            oUpdateContext.execute().then(function () {
+                var oResult = oUpdateContext.getBoundContext().getObject();
+                console.log("Supplier updated:", oResult);
+                
+                // Update model với dữ liệu từ server
+                var oSupplierModel = that.getView().getModel("supplier");
+                oSupplierModel.setData(oResult);
+                
+                // Tắt busy indicator
+                oViewModel.setProperty("/busy", false);
+                oViewModel.setProperty("/editMode", false);
+                
+                // Hiển thị thông báo
+                MessageToast.show("Supplier updated successfully");
+                
+                // Cập nhật tiêu đề
+                that.byId("detailPageTitle").setText("Supplier: " + oResult.supplierName);
+            }).catch(function (oError) {
+                // Tắt busy indicator
+                oViewModel.setProperty("/busy", false);
+                
+                var sMessage = "Failed to update supplier!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error updating supplier:", sMessage);
+                MessageBox.error(sMessage);
+            });
+        },
+        
+        onCancel: function () {
+            var oViewModel = this.getView().getModel("viewModel");
+            var oSupplierModel = this.getView().getModel("supplier");
+            var sSupplierID = oSupplierModel.getProperty("/ID");
+            
+            if (!sSupplierID) {
+                // Đối với trường hợp tạo mới, quay lại trang danh sách
+                this.onNavBack();
+            } else {
+                // Đối với trường hợp chỉnh sửa, quay lại chế độ xem
+                oViewModel.setProperty("/editMode", false);
+                
+                // Reload dữ liệu từ server để hủy các thay đổi
+                this._loadSupplier(sSupplierID);
+            }
+        },
+        
+        // Service Tab Methods
+        onAddService: function () {
+            // Hiển thị dialog để thêm dịch vụ mới
+            if (!this._oServiceDialog) {
+                this._oServiceDialog = sap.ui.xmlfragment("tourishui.view.fragments.ServiceDialog", this);
+                this.getView().addDependent(this._oServiceDialog);
+            }
+            
+            // Reset model
+            var oServiceModel = new JSONModel({
+                ID: "",
+                supplierID: this.getView().getModel("supplier").getProperty("/ID"),
+                serviceName: "",
+                serviceType: "",
+                description: "",
+                price: 0
+            });
+            this.getView().setModel(oServiceModel, "newService");
+            
+            // Lấy danh sách service types
+            this._loadServiceTypes();
+            
+            // Cài đặt tiêu đề
+            sap.ui.getCore().byId("serviceDialogTitle").setText("Add New Service");
+            
+            // Mở dialog
+            this._oServiceDialog.open();
+        },
+        
+        _loadServiceTypes: function () {
+            // Gọi action để lấy danh sách service types
+            var oContext = this._oODataModel.bindContext("/getServiceTypes(...)");
+            
+            oContext.execute().then(function () {
+                var aTypes = oContext.getBoundContext().getObject() || [];
+                console.log("Service types loaded:", aTypes);
+                
+                // Tạo model
+                var oTypesModel = new JSONModel({
+                    types: aTypes.value
+                });
+                this.getView().setModel(oTypesModel, "serviceTypes");
+            }.bind(this)).catch(function (oError) {
+                var sMessage = "Failed to load service types!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error loading service types:", sMessage);
+            });
+        },
+        
+        onEditService: function (oEvent) {
+            // Lấy service đã chọn
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("services");
+            var oService = oContext.getObject();
+            
+            // Hiển thị dialog để sửa service
+            if (!this._oServiceDialog) {
+                this._oServiceDialog = sap.ui.xmlfragment("tourishui.view.fragments.ServiceDialog", this);
+                this.getView().addDependent(this._oServiceDialog);
+            }
+            
+            // Set model
+            var oServiceModel = new JSONModel(oService);
+            this.getView().setModel(oServiceModel, "newService");
+            
+            // Lấy danh sách service types
+            this._loadServiceTypes();
+            
+            // Cài đặt tiêu đề
+            sap.ui.getCore().byId("serviceDialogTitle").setText("Edit Service");
+            
+            // Mở dialog
+            this._oServiceDialog.open();
+        },
+        
+        onDeleteService: function (oEvent) {
+            var that = this;
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("services");
+            var oService = oContext.getObject();
+            
+            // Xác nhận xóa
+            MessageBox.confirm("Are you sure you want to delete service '" + oService.ServiceName + "'?", {
+                title: "Confirm Delete",
+                onClose: function (sAction) {
+                    if (sAction === MessageBox.Action.OK) {
+                        // Gọi action deleteService
+                        var oDeleteContext = that._oODataModel.bindContext("/deleteService(...)");
+                        oDeleteContext.setParameter("serviceID", oService.ID);
+                        
+                        oDeleteContext.execute().then(function () {
+                            MessageToast.show("Service deleted successfully");
+                            // Reload service list
+                            that._loadSupplier(that.getView().getModel("supplier").getProperty("/ID"));
+                        }).catch(function (oError) {
+                            var sMessage = "Failed to delete service!";
+                            try {
+                                var oResponse = JSON.parse(oError.responseText);
+                                sMessage = oResponse.error.message || sMessage;
+                            } catch (e) {
+                                // Fallback to default message
+                            }
+                            console.error("Error deleting service:", sMessage);
+                            MessageBox.error(sMessage);
+                        });
+                    }
+                }
+            });
+        },
+        
+        onSaveService: function () {
+            // Validate input
+            if (!this._validateServiceForm()) {
+                return;
+            }
+            
+            var oServiceModel = this.getView().getModel("newService");
+            console.log(oServiceModel)
 
-            MessageToast.show("Exporting services for " + oSupplier.supplierName);
+            var oServiceData = oServiceModel.getData();
+            console.log(oServiceData)
+
+            // Đặt busy state
+            sap.ui.core.BusyIndicator.show(0);
+            
+            if (!oServiceData.ID) {
+                // Create new service
+                this._createService(oServiceData);
+            } else {
+                // Update existing service
+                this._updateService(oServiceData);
+            }
+        },
+        
+        _validateServiceForm: function () {
+            var oServiceModel = this.getView().getModel("newService");
+            var oServiceData = oServiceModel.getData();
+            
+            // Validate required fields
+            if (!oServiceData.ServiceName || oServiceData.ServiceName.trim() === "") {
+                MessageBox.error("Service Name is required");
+                return false;
+            }
+            
+            // Validate price
+            if (isNaN(oServiceData.Price) || oServiceData.Price < 0) {
+                MessageBox.error("Price must be a valid number greater than or equal to 0");
+                return false;
+            }
+            
+            return true;
+        },
+        
+        _createService: function (oServiceData) {
+            var that = this;
+            
+            // Gọi action createService
+            var oCreateContext = this._oODataModel.bindContext("/createService(...)");
+            console.log(oServiceData);
+            console.log(oCreateContext)
+            oCreateContext.setParameter("supplierID", oServiceData.supplierID);
+            oCreateContext.setParameter("serviceName", oServiceData.ServiceName);
+            oCreateContext.setParameter("serviceType", oServiceData.ServiceType);
+            oCreateContext.setParameter("description", oServiceData.Description);
+            oCreateContext.setParameter("price", oServiceData.Price);
+            
+            oCreateContext.execute().then(function () {
+                var oResult = oCreateContext.getBoundContext().getObject();
+                console.log("Service created:", oResult);
+                
+                // Tắt busy indicator
+                sap.ui.core.BusyIndicator.hide();
+                
+                // Hiển thị thông báo
+                MessageToast.show("Service created successfully");
+                
+                // Đóng dialog
+                that._oServiceDialog.close();
+                
+                // Reload supplier details
+                that._loadSupplier(that.getView().getModel("supplier").getProperty("/ID"));
+            }).catch(function (oError) {
+                // Tắt busy indicator
+                sap.ui.core.BusyIndicator.hide();
+                
+                var sMessage = "Failed to create service!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error creating service:", sMessage);
+                MessageBox.error(sMessage);
+            });
+        },
+        
+        _updateService: function (oServiceData) {
+            var that = this;
+            
+            // Gọi action updateService
+            var oUpdateContext = this._oODataModel.bindContext("/updateService(...)");
+            oUpdateContext.setParameter("serviceID", oServiceData.ID);
+            oUpdateContext.setParameter("serviceName", oServiceData.ServiceName);
+            oUpdateContext.setParameter("serviceType", oServiceData.ServiceType);
+            oUpdateContext.setParameter("description", oServiceData.Description);
+            oUpdateContext.setParameter("price", oServiceData.Price);
+            
+            oUpdateContext.execute().then(function () {
+                var oResult = oUpdateContext.getBoundContext().getObject();
+                console.log("Service updated:", oResult);
+                
+                // Tắt busy indicator
+                sap.ui.core.BusyIndicator.hide();
+                
+                // Hiển thị thông báo
+                MessageToast.show("Service updated successfully");
+                
+                // Đóng dialog
+                that._oServiceDialog.close();
+                
+                // Reload supplier details
+                that._loadSupplier(that.getView().getModel("supplier").getProperty("/ID"));
+            }).catch(function (oError) {
+                // Tắt busy indicator
+                sap.ui.core.BusyIndicator.hide();
+                
+                var sMessage = "Failed to update service!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error updating service:", sMessage);
+                MessageBox.error(sMessage);
+            });
+        },
+        
+        onCancelService: function () {
+            // Đóng dialog
+            this._oServiceDialog.close();
+        },
+        
+        // Debt Tab Methods
+        onAddDebt: function () {
+            // Hiển thị dialog để thêm công nợ mới
+            if (!this._oDebtDialog) {
+                this._oDebtDialog = sap.ui.xmlfragment("tourishui.view.fragments.DebtDialog", this);
+                this.getView().addDependent(this._oDebtDialog);
+            }
+            
+            // Reset model
+            var oDebtModel = new JSONModel({
+                ID: "",
+                supplierID: this.getView().getModel("supplier").getProperty("/ID"),
+                amount: 0,
+                dueDate: new Date(),
+                status: "Pending"
+            });
+            this.getView().setModel(oDebtModel, "newDebt");
+            
+            // Cài đặt tiêu đề
+            sap.ui.getCore().byId("debtDialogTitle").setText("Add New Debt");
+            
+            // Mở dialog
+            this._oDebtDialog.open();
+        },
+        
+        onMarkDebtAsPaid: function (oEvent) {
+            var that = this;
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext("debts");
+            var oDebt = oContext.getObject();
+            
+            // Xác nhận thanh toán
+            MessageBox.confirm("Are you sure you want to mark this debt as paid?", {
+                title: "Confirm Payment",
+                onClose: function (sAction) {
+                    if (sAction === MessageBox.Action.OK) {
+                        // Gọi action markDebtAsPaid
+                        var oMarkContext = that._oODataModel.bindContext("/markDebtAsPaid(...)");
+                        oMarkContext.setParameter("debtID", oDebt.ID);
+                        
+                        oMarkContext.execute().then(function () {
+                            MessageToast.show("Debt marked as paid successfully");
+                            // Reload supplier details
+                            that._loadSupplier(that.getView().getModel("supplier").getProperty("/ID"));
+                        }).catch(function (oError) {
+                            var sMessage = "Failed to mark debt as paid!";
+                            try {
+                                var oResponse = JSON.parse(oError.responseText);
+                                sMessage = oResponse.error.message || sMessage;
+                            } catch (e) {
+                                // Fallback to default message
+                            }
+                            console.error("Error marking debt as paid:", sMessage);
+                            MessageBox.error(sMessage);
+                        });
+                    }
+                }
+            });
+        },
+        
+        onSaveDebt: function () {
+            // Validate input
+            if (!this._validateDebtForm()) {
+                return;
+            }
+            
+            var oDebtModel = this.getView().getModel("newDebt");
+            var oDebtData = oDebtModel.getData();
+            
+            // Set busy indicator
+            sap.ui.core.BusyIndicator.show(0);
+            
+            // Create new debt
+            this._createDebt(oDebtData);
+        },
+        
+        _validateDebtForm: function () {
+            var oDebtModel = this.getView().getModel("newDebt");
+            var oDebtData = oDebtModel.getData();
+            
+            // Validate amount
+            if (isNaN(oDebtData.amount) || oDebtData.amount <= 0) {
+                MessageBox.error("Amount must be a valid number greater than 0");
+                return false;
+            }
+            
+            // Validate due date
+            if (!oDebtData.dueDate) {
+                MessageBox.error("Due Date is required");
+                return false;
+            }
+            
+            return true;
+        },
+        
+        _createDebt: function (oDebtData) {
+            var that = this;
+            
+            // Format date object to string
+            var sDueDate = "";
+            if (oDebtData.dueDate instanceof Date) {
+                sDueDate = oDebtData.dueDate.toISOString().split('T')[0];
+            } else {
+                sDueDate = oDebtData.dueDate;
+            }
+            
+            // Gọi action createSupplierDebt
+            var oCreateContext = this._oODataModel.bindContext("/createSupplierDebt(...)");
+            oCreateContext.setParameter("supplierID", oDebtData.supplierID);
+            oCreateContext.setParameter("amount", oDebtData.amount);
+            oCreateContext.setParameter("dueDate", sDueDate);
+            oCreateContext.setParameter("status", oDebtData.status);
+            
+            oCreateContext.execute().then(function () {
+                var oResult = oCreateContext.getBoundContext().getObject();
+                console.log("Debt created:", oResult);
+                
+                // Tắt busy indicator
+                sap.ui.core.BusyIndicator.hide();
+                
+                // Hiển thị thông báo
+                MessageToast.show("Debt created successfully");
+                
+                // Đóng dialog
+                that._oDebtDialog.close();
+                
+                // Reload supplier details
+                that._loadSupplier(that.getView().getModel("supplier").getProperty("/ID"));
+            }).catch(function (oError) {
+                // Tắt busy indicator
+                sap.ui.core.BusyIndicator.hide();
+                
+                var sMessage = "Failed to create debt!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error creating debt:", sMessage);
+                MessageBox.error(sMessage);
+            });
+        },
+        
+        onCancelDebt: function () {
+            // Đóng dialog
+            this._oDebtDialog.close();
+        },
+        
+        // Hàm định dạng ngày
+        formatDate: function (oDate) {
+            if (!oDate) {
+                return "";
+            }
+            
+            // Nếu là chuỗi ISO, chuyển thành đối tượng Date
+            if (typeof oDate === "string") {
+                oDate = new Date(oDate);
+            }
+            
+            // Định dạng ngày tháng
+            var oDateFormat = DateFormat.getDateInstance({
+                pattern: "dd/MM/yyyy"
+            });
+            
+            return oDateFormat.format(oDate);
         }
     });
 });

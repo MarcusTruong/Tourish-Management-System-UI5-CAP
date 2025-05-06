@@ -76,12 +76,12 @@
             "items": [
                 {
                     "titleI18nKey": "Supplier Infomation",
-                    "key": "supplierInformation",
+                    "key": "suppliers",
                     "icon": "sap-icon://notes"
                 },
                 {
                     "titleI18nKey": "Supplier Service",
-                    "key": "supplierService",
+                    "key": "services",
                     "icon": "sap-icon://business-one"
                 }
             ]

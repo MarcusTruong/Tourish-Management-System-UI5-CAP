@@ -25,7 +25,7 @@ sap.ui.define([
       }
 
       // Sử dụng OData model để gọi action authenticate
-      const oModel = this.getOwnerComponent().getModel();
+      const oModel = this.getOwnerComponent().getModel("userService");
       
       // Bind đến action authenticate
       const oContext = oModel.bindContext("/authenticate(...)");

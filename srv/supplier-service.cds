@@ -105,7 +105,6 @@ service SupplierService @(path: '/supplier-service') {
     Status: String(20);
   };
 
-  // Chuyển function tìm kiếm thành action để tránh lỗi Method Not Allowed
   @(requires: 'authenticated-user')
   action searchSuppliers(
     searchTerm: String,

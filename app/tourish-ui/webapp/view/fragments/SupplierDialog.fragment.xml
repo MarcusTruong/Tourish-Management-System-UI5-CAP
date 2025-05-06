@@ -27,16 +27,16 @@
                 columnsM="1">
                 <f:content>
                     <Label id="_IDGenLabel13" text="Supplier Name *" required="true" />
-                    <Input id="supplierNameInput" value="{supplier>/supplierName}" maxLength="100" required="true" />
+                    <Input id="supplierNameInput" value="{supplier>/SupplierName}" maxLength="100" required="true" />
                     
                     <Label id="_IDGenLabel14" text="Address" />
-                    <Input id="addressInput" value="{supplier>/address}" maxLength="200" />
+                    <Input id="addressInput" value="{supplier>/Address}" maxLength="200" />
                     
                     <Label id="_IDGenLabel15" text="Phone" />
-                    <Input id="phoneInput" value="{supplier>/phone}" maxLength="20" />
+                    <Input id="phoneInput" value="{supplier>/Phone}" maxLength="20" />
                     
                     <Label id="_IDGenLabel16" text="Email" />
-                    <Input id="emailInput" value="{supplier>/email}" maxLength="100" />
+                    <Input id="emailInput" value="{supplier>/Email}" maxLength="100" />
                 </f:content>
             </f:SimpleForm>
         </content>

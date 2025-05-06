@@ -1,0 +1,68 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="serviceDialog"
+        title="Service"
+        contentWidth="450px">
+        
+        <customHeader>
+            <Toolbar id="_IDGenToolbar3">
+                <Title id="serviceDialogTitle" text="Service" />
+                <ToolbarSpacer id="_IDGenToolbarSpacer7" />
+            </Toolbar>
+        </customHeader>
+        
+        <content>
+            <f:SimpleForm
+                id="serviceForm"
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4"
+                labelSpanL="4"
+                labelSpanM="4"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="0"
+                emptySpanL="0"
+                emptySpanM="0"
+                emptySpanS="0"
+                columnsXL="1"
+                columnsL="1"
+                columnsM="1">
+                <f:content>
+                    <Label id="_IDGenLabel" text="Service Name *" required="true" />
+                    <Input id="serviceNameInput" value="{newService>/ServiceName}" maxLength="100" required="true" />
+                    
+                    <Label id="_IDGenLabel19" text="Service Type" />
+                    <ComboBox
+                        id="serviceTypeComboBox"
+                        items="{serviceTypes>/types}"
+                        selectedKey="{newService>/ServiceType}">
+                        <core:Item id="_IDGenItem5" key="{serviceTypes>}" text="{serviceTypes>}" />
+                    </ComboBox>
+                    
+                    <Label id="_IDGenLabel1" text="Description" />
+                    <TextArea id="serviceDescriptionTextArea" value="{newService>/Description}" rows="4" maxLength="500" />
+                    
+                    <Label id="_IDGenLabel2" text="Price *" required="true" />
+                    <Input id="servicePriceInput" 
+                        value="{newService>/Price}" 
+                        type="Number" 
+                        required="true"
+                        description="USDT" />
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        
+        <beginButton>
+            <Button id="_IDGenButton3" text="Cancel" press=".onCancelService" />
+        </beginButton>
+        
+        <endButton>
+            <Button id="_IDGenButton4" text="Save" type="Emphasized" press=".onSaveService" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

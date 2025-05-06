@@ -1,0 +1,67 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="debtDialog"
+        title="Debt"
+        contentWidth="450px">
+        
+        <customHeader>
+            <Toolbar id="_IDGenToolbar4">
+                <Title id="debtDialogTitle" text="Debt" />
+                <ToolbarSpacer id="_IDGenToolbarSpacer8" />
+            </Toolbar>
+        </customHeader>
+        
+        <content>
+            <f:SimpleForm
+                id="debtForm"
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4"
+                labelSpanL="4"
+                labelSpanM="4"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="0"
+                emptySpanL="0"
+                emptySpanM="0"
+                emptySpanS="0"
+                columnsXL="1"
+                columnsL="1"
+                columnsM="1">
+                <f:content>
+                    <Label id="_IDGenLabel17" text="Amount *" required="true" />
+                    <Input id="debtAmountInput" 
+                        value="{newDebt>/amount}" 
+                        type="Number" 
+                        required="true"
+                        description="USD" />
+                    
+                    <Label id="_IDGenLabel18" text="Due Date *" required="true" />
+                    <DatePicker id="debtDueDatePicker" 
+                        value="{newDebt>/dueDate}" 
+                        valueFormat="yyyy-MM-dd"
+                        displayFormat="long"
+                        required="true" />
+                    
+                    <Label id="_IDGenLabel3"  text="Status" />
+                    <Select id="debtStatusSelect" selectedKey="{newDebt>/status}">
+                        <core:Item id="_IDGenItem7" key="Pending" text="Pending" />
+                        <core:Item id="_IDGenItem8" key="Completed" text="Completed" />
+                    </Select>
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        
+        <beginButton>
+            <Button id="_IDGenButton5" text="Cancel" press=".onCancelDebt" />
+        </beginButton>
+        
+        <endButton>
+            <Button id="_IDGenButton6" text="Save" type="Emphasized" press=".onSaveDebt" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

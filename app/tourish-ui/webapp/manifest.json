@@ -140,14 +140,19 @@
           "target": "supplierInformation"
         },
         {
-          "pattern": "supplierService",
-          "name": "supplierService",
-          "target": "supplierService"
+          "pattern": "suppliers",
+          "name": "supplierList",
+          "target": "supplierList"
         },
         {
           "pattern": "supplierDetail/{supplierID}",
           "name": "supplierDetail",
           "target": "supplierDetail"
+        },
+        {
+          "pattern": "services",
+          "name": "serviceList",
+          "target": "serviceList"
         }
       ],
       "targets": {
@@ -204,16 +209,16 @@
           "controlAggregation": "pages",
           "parent": "appContent"
         },
-        "supplierInformation": {
+        "supplierList": {
           "viewId": "supplierInformation",
           "viewName": "supplier.SupplierInformation",
           "controlId": "mainContents",
           "controlAggregation": "pages",
           "parent": "appContent"
         },
-        "supplierService": {
-          "viewId": "supplierService",
-          "viewName": "supplier.SupplierService",
+        "serviceList": {
+          "viewId": "serviceList",
+          "viewName": "supplier.ServiceList",
           "controlId": "mainContents",
           "controlAggregation": "pages",
           "parent": "appContent"

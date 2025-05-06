@@ -53,11 +53,11 @@ sap.ui.define([
                     break;
                 case "logout":
                     oSessionManager.clearSession();
-                    MessageBox.success("Đăng xuất thành công!");
+                    MessageBox.success("Login successfully!");
                     oRouter.navTo("login", {}, true);
                     break;
                 default:
-                    MessageBox.error("Chức năng chưa được triển khai!");
+                    MessageBox.error("Not implemented yet!");
             }
         }
     });

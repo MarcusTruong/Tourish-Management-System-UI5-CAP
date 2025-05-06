@@ -19,7 +19,7 @@ sap.ui.define([
         _loadUserProfile: function () {
             var oView = this.getView();
             var oAuthModel = this.getOwnerComponent().getModel("auth");
-            var oODataModel = this.getOwnerComponent().getModel();
+            var oODataModel = this.getOwnerComponent().getModel("userService");
             var sUserId = oAuthModel.getProperty("/user/ID");
 
             // Check if user data exists in auth model
@@ -53,7 +53,7 @@ sap.ui.define([
 
         onUpdateProfilePress: function () {
             var oView = this.getView();
-            var oODataModel = this.getOwnerComponent().getModel();
+            var oODataModel = this.getOwnerComponent().getModel("userService");
             var oAuthModel = this.getOwnerComponent().getModel("auth");
 
             var oUpdatedData = {
@@ -149,7 +149,7 @@ sap.ui.define([
                             return;
                         }
         
-                        var oODataModel = this.getOwnerComponent().getModel();
+                        var oODataModel = this.getOwnerComponent().getModel("userService");
                         var oContext = oODataModel.bindContext("/changePassword(...)");
                         oContext.setParameter("currentPassword", sCurrentPassword);
                         oContext.setParameter("newPassword", sNewPassword);

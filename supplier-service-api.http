@@ -59,7 +59,7 @@ Content-Type: {{contentType}}
 Authorization: Basic {{base64 username:password}}
 
 {
-    "searchTerm": "Moon",
+    "searchTerm": "",
     "skip": 0,
     "limit": 10
 }
@@ -127,10 +127,10 @@ Authorization: Basic {{base64 username:password}}
 
 {
     "supplierID": "",
-    "serviceType": "Accommodation",
-    "searchTerm": "Phòng",
-    "minPrice": 500000,
-    "maxPrice": 2000000,
+    "serviceType": "",
+    "searchTerm": "",
+    "minPrice": 0,
+    "maxPrice": 100000000,
     "skip": 0,
     "limit": 10
 }

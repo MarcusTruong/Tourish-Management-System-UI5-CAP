@@ -12,227 +12,411 @@ sap.ui.define([
 
     var EdmType = exportLibrary.EdmType;
 
-    return Controller.extend("tourishui.controller.supplier.SupplierDetail", {
+    return Controller.extend("tourishui.controller.supplier.SupplierInformation", {
         onInit: function () {
-            // Initialize the model with sample data
-            var oModel = new JSONModel({
-                Suppliers: [
-                    {
-                        supplierID: "SUP001",
-                        supplierName: "Tech Solutions Inc.",
-                        address: "123 Main St, New York, NY 10001",
-                        phone: "+1 (555) 123-4567",
-                        email: "contact@techsolutions.com"
-                    },
-                    {
-                        supplierID: "SUP002",
-                        supplierName: "Global Parts Co.",
-                        address: "456 Park Ave, Chicago, IL 60601",
-                        phone: "+1 (555) 987-6543",
-                        email: "info@globalparts.com"
-                    },
-                    {
-                        supplierID: "SUP003",
-                        supplierName: "Premium Components Ltd.",
-                        address: "789 Market St, San Francisco, CA 94103",
-                        phone: "+1 (555) 456-7890",
-                        email: "sales@premiumcomponents.com"
-                    },
-                    {
-                        supplierID: "SUP004",
-                        supplierName: "Quality Supplies Unlimited",
-                        address: "321 Oak Dr, Houston, TX 77001",
-                        phone: "+1 (555) 789-0123",
-                        email: "support@qualitysupplies.com"
-                    },
-                    {
-                        supplierID: "SUP005",
-                        supplierName: "Innovative Materials Inc.",
-                        address: "654 Pine St, Seattle, WA 98101",
-                        phone: "+1 (555) 234-5678",
-                        email: "info@innovativematerials.com"
-                    }
-                ]
+            // Khởi tạo model và binding
+            this._oODataModel = this.getOwnerComponent().getModel("supplierService");
+            
+            // Model để lưu trữ state
+            var oViewModel = new JSONModel({
+                busy: false,
+                delay: 0,
+                tableTitle: "Suppliers",
+                countTitle: "Suppliers: 0",
+                selectedItems: []
             });
-            this.getView().setModel(oModel);
-
-            // Store the original data for filter reset
-            this._originalData = oModel.getData().Suppliers.slice();
+            this.getView().setModel(oViewModel, "viewModel");
+            
+            // Khởi tạo model JSON rỗng để lưu danh sách suppliers
+            var oSupplierListModel = new JSONModel({
+                Suppliers: []
+            });
+            this.getView().setModel(oSupplierListModel);
+            
+            // Đăng ký event patternMatched cho routing
+            var oRouter = this.getOwnerComponent().getRouter();
+            oRouter.getRoute("supplierList").attachPatternMatched(this._onPatternMatched, this);
+            
+            // Khởi tạo bộ lọc
+            this._initializeFilters();
         },
-
+        
+        _onPatternMatched: function (oEvent) {
+            // Load data khi route được matched
+            this._loadSuppliers();
+        },
+        
+        _initializeFilters: function () {
+            // Khởi tạo model và binding cho filters
+            var oFilterModel = new JSONModel({
+                supplierID: "",
+                supplierName: "",
+                address: ""
+            });
+            this.getView().setModel(oFilterModel, "filters");
+            
+            // Bind các filter input
+            this.byId("supplierIDFilter").bindProperty("value", "filters>/supplierID");
+            this.byId("supplierNameFilter").bindProperty("value", "filters>/supplierName");
+            this.byId("addressFilter").bindProperty("value", "filters>/address");
+        },
+        
+        _loadSuppliers: function () {
+            var oView = this.getView();
+            var oViewModel = oView.getModel("viewModel");
+            var oODataModel = this._oODataModel;
+            
+            // Set busy indicator
+            oViewModel.setProperty("/busy", true);
+            
+            // Sử dụng searchSuppliers action để lấy danh sách suppliers
+            var oContext = oODataModel.bindContext("/searchSuppliers(...)");
+            oContext.setParameter("searchTerm", "");
+            oContext.setParameter("skip", 0);
+            oContext.setParameter("limit", 100);
+            
+            oContext.execute().then(function () {
+                var oResult = oContext.getBoundContext().getObject();
+                console.log("Suppliers loaded:", oResult);
+                
+                // Cập nhật model
+                var oModel = oView.getModel();
+                oModel.setData({
+                    Suppliers: oResult.items || []
+                });
+                
+                // Cập nhật số lượng nhà cung cấp
+                var iCount = (oResult.items || []).length;
+                oViewModel.setProperty("/countTitle", "Suppliers: " + iCount);
+                this.byId("tableCountText").setText("Suppliers: " + iCount);
+                
+                // Tắt busy indicator
+                oViewModel.setProperty("/busy", false);
+            }.bind(this)).catch(function (oError) {
+                oViewModel.setProperty("/busy", false);
+                var sMessage = "Failed to load suppliers!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error loading suppliers:", sMessage);
+                MessageBox.error(sMessage);
+            });
+        },
+        
         onSearch: function (oEvent) {
-            // Build filter array
-            var aFilter = [];
-            var sQuery = this.getView().byId("supplierSearchField").getValue();
-            var sSupplierID = this.getView().byId("supplierIDFilter").getValue();
-            var sSupplierName = this.getView().byId("supplierNameFilter").getValue();
-            var sAddress = this.getView().byId("addressFilter").getValue();
-
-            if (sQuery) {
-                // General search - look in multiple fields
-                aFilter.push(new Filter({
-                    filters: [
-                        new Filter("supplierID", FilterOperator.Contains, sQuery),
-                        new Filter("supplierName", FilterOperator.Contains, sQuery),
-                        new Filter("address", FilterOperator.Contains, sQuery),
-                        new Filter("phone", FilterOperator.Contains, sQuery),
-                        new Filter("email", FilterOperator.Contains, sQuery)
-                    ],
-                    and: false
-                }));
-            }
-
-            // Specific field filters
-            if (sSupplierID) {
-                aFilter.push(new Filter("supplierID", FilterOperator.Contains, sSupplierID));
-            }
-            if (sSupplierName) {
-                aFilter.push(new Filter("supplierName", FilterOperator.Contains, sSupplierName));
-            }
-            if (sAddress) {
-                aFilter.push(new Filter("address", FilterOperator.Contains, sAddress));
-            }
-
-            // Apply filters to the table binding
-            var oTable = this.getView().byId("suppliersTable");
-            var oBinding = oTable.getBinding("items");
+            var oView = this.getView();
+            var oViewModel = oView.getModel("viewModel");
+            var oODataModel = this._oODataModel;
+            var oFilterModel = this.getView().getModel("filters");
+            var oFilterData = oFilterModel.getData();
+            var sSearchTerm = this.byId("supplierSearchField").getValue();
             
-            if (aFilter.length > 0) {
-                oBinding.filter(new Filter({
-                    filters: aFilter,
-                    and: true
-                }));
-            } else {
-                oBinding.filter([]);
+            // Kết hợp các filter
+            var sFinalSearchTerm = sSearchTerm || "";
+            if (oFilterData.supplierID) {
+                sFinalSearchTerm += oFilterData.supplierID;
             }
-
-            // Update counter
-            var sText = "Suppliers: " + oBinding.getLength();
-            this.getView().byId("tableCountText").setText(sText);
+            if (oFilterData.supplierName) {
+                sFinalSearchTerm += oFilterData.supplierName;
+            }
+            if (oFilterData.address) {
+                sFinalSearchTerm += oFilterData.address;
+            }
+            
+            // Set busy indicator
+            oViewModel.setProperty("/busy", true);
+            
+            // Sử dụng searchSuppliers action để lấy danh sách suppliers theo filter
+            var oContext = oODataModel.bindContext("/searchSuppliers(...)");
+            oContext.setParameter("searchTerm", sFinalSearchTerm.trim());
+            oContext.setParameter("skip", 0);
+            oContext.setParameter("limit", 100);
+            
+            oContext.execute().then(function () {
+                var oResult = oContext.getBoundContext().getObject();
+                console.log("Filtered suppliers loaded:", oResult);
+                
+                // Cập nhật model
+                var oModel = oView.getModel();
+                oModel.setData({
+                    Suppliers: oResult.items || []
+                });
+                
+                // Cập nhật số lượng nhà cung cấp
+                var iCount = (oResult.items || []).length;
+                oViewModel.setProperty("/countTitle", "Suppliers: " + iCount);
+                this.byId("tableCountText").setText("Suppliers: " + iCount);
+                
+                // Tắt busy indicator
+                oViewModel.setProperty("/busy", false);
+            }.bind(this)).catch(function (oError) {
+                oViewModel.setProperty("/busy", false);
+                var sMessage = "Failed to search suppliers!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error searching suppliers:", sMessage);
+                MessageBox.error(sMessage);
+            });
         },
-
+        
         onClearFilters: function () {
-            // Clear all search fields
-            this.getView().byId("supplierSearchField").setValue("");
-            this.getView().byId("supplierIDFilter").setValue("");
-            this.getView().byId("supplierNameFilter").setValue("");
-            this.getView().byId("addressFilter").setValue("");
-
-            // Reset filters
-            var oTable = this.getView().byId("suppliersTable");
-            var oBinding = oTable.getBinding("items");
-            oBinding.filter([]);
-
-            // Restore original data count
-            var sText = "Suppliers: " + this._originalData.length;
-            this.getView().byId("tableCountText").setText(sText);
-        },
-
-        onSupplierPress: function (oEvent) {
-            var oSupplier = oEvent.getSource().getBindingContext().getObject();
+            // Reset các filter fields
+            var oFilterModel = this.getView().getModel("filters");
+            oFilterModel.setData({
+                supplierID: "",
+                supplierName: "",
+                address: ""
+            });
             
-            // Điều hướng đến trang chi tiết supplier
+            // Clear search field
+            this.byId("supplierSearchField").setValue("");
+            
+            // Refresh data
+            this._loadSuppliers();
+        },
+        
+        onAddSupplier: function () {
+            // Navigate tới trang tạo mới supplier
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.navTo("supplierDetail", {
-                supplierID: oSupplier.supplierID
+                supplierID: "create"
             });
         },
-
-        onAddSupplier: function () {
-            MessageBox.information("Add new supplier functionality would be implemented here.");
-        },
-
+        
         onEditSupplier: function (oEvent) {
-            var oSupplier = oEvent.getSource().getBindingContext().getObject();
-            MessageBox.information("Edit supplier: " + oSupplier.supplierName);
-        },
-
-        onDeleteSupplier: function (oEvent) {
-            var oSupplier = oEvent.getSource().getBindingContext().getObject();
+            // Lấy context của item được click
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext();
+            var sSupplierID = oContext.getProperty("ID");
             
-            MessageBox.confirm("Are you sure you want to delete supplier '" + oSupplier.supplierName + "'?", {
+            // Navigate tới trang chi tiết supplier để chỉnh sửa
+            var oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("supplierDetail", {
+                supplierID: sSupplierID
+            });
+            
+            // Dừng sự kiện để không navigate theo onSupplierPress
+            oEvent.stopPropagation();
+        },
+        
+        onSupplierPress: function (oEvent) {
+            var oItem = oEvent.getSource();
+            var oContext = oItem.getBindingContext();
+            var sSupplierID = oContext.getProperty("ID");
+            
+            // Navigate tới trang chi tiết supplier
+            var oRouter = this.getOwnerComponent().getRouter();
+            oRouter.navTo("supplierDetail", {
+                supplierID: sSupplierID
+            });
+        },
+        
+        onDeleteSupplier: function (oEvent) {
+            var that = this;
+            var oSource = oEvent.getSource();
+            var oContext = oSource.getBindingContext();
+            var sSupplierID = oContext.getProperty("ID");
+            var sSupplierName = oContext.getProperty("SupplierName");
+            
+            // Xác nhận xóa
+            MessageBox.confirm("Are you sure you want to delete supplier '" + sSupplierName + "'?", {
+                title: "Confirm Delete",
                 onClose: function (sAction) {
                     if (sAction === MessageBox.Action.OK) {
-                        MessageToast.show("Supplier deleted: " + oSupplier.supplierName);
-                        // Actual deletion logic would go here
+                        // Gọi action deleteSupplier
+                        var oDeleteContext = that._oODataModel.bindContext("/deleteSupplier(...)");
+                        oDeleteContext.setParameter("supplierID", sSupplierID);
+                        
+                        oDeleteContext.execute().then(function () {
+                            MessageToast.show("Supplier deleted successfully");
+                            that._loadSuppliers(); // Reload the list
+                        }).catch(function (oError) {
+                            var sMessage = "Failed to delete supplier!";
+                            try {
+                                var oResponse = JSON.parse(oError.responseText);
+                                sMessage = oResponse.error.message || sMessage;
+                            } catch (e) {
+                                // Fallback to default message
+                            }
+                            console.error("Error deleting supplier:", sMessage);
+                            MessageBox.error(sMessage);
+                        });
                     }
                 }
             });
+            
         },
-
+        
         onDeleteSelected: function () {
-            var oTable = this.getView().byId("suppliersTable");
+            var oTable = this.byId("suppliersTable");
             var aSelectedItems = oTable.getSelectedItems();
             
             if (aSelectedItems.length === 0) {
-                MessageToast.show("No suppliers selected");
+                MessageBox.information("Please select at least one supplier to delete");
                 return;
             }
             
-            var sMessage = "Are you sure you want to delete " + aSelectedItems.length + " selected supplier(s)?";
-            MessageBox.confirm(sMessage, {
+            // Xác nhận xóa
+            MessageBox.confirm("Are you sure you want to delete " + aSelectedItems.length + " selected suppliers?", {
+                title: "Confirm Delete",
                 onClose: function (sAction) {
                     if (sAction === MessageBox.Action.OK) {
-                        MessageToast.show(aSelectedItems.length + " supplier(s) deleted");
-                        // Actual deletion logic would go here
+                        this._deleteSelectedSuppliers(aSelectedItems);
                     }
-                }
+                }.bind(this)
             });
         },
-
+        
+        _deleteSelectedSuppliers: function (aSelectedItems) {
+            var that = this;
+            var oViewModel = this.getView().getModel("viewModel");
+            var iSuccessCount = 0;
+            var iFailCount = 0;
+            var iTotalCount = aSelectedItems.length;
+            var iProcessedCount = 0;
+            
+            // Set busy state
+            oViewModel.setProperty("/busy", true);
+            
+            // Xử lý từng item một
+            var aPromises = aSelectedItems.map(function(oItem) {
+                var oContext = oItem.getBindingContext();
+                var sSupplierID = oContext.getProperty("ID");
+                
+                var oDeleteContext = that._oODataModel.bindContext("/deleteSupplier(...)");
+                oDeleteContext.setParameter("supplierID", sSupplierID);
+                
+                return oDeleteContext.execute()
+                    .then(function() {
+                        iSuccessCount++;
+                        return true;
+                    })
+                    .catch(function() {
+                        iFailCount++;
+                        return false;
+                    });
+            });
+            
+            // Đợi tất cả các action hoàn thành
+            Promise.all(aPromises)
+                .then(function() {
+                    // Tất cả đã hoàn thành
+                    oViewModel.setProperty("/busy", false);
+                    
+                    // Hiển thị thông báo
+                    if (iFailCount === 0) {
+                        MessageToast.show(iSuccessCount + " suppliers deleted successfully");
+                    } else {
+                        MessageBox.warning(iSuccessCount + " suppliers deleted successfully, " + iFailCount + " failed");
+                    }
+                    
+                    // Reload danh sách
+                    that._loadSuppliers();
+                    
+                    // Clear selection
+                    that.byId("suppliersTable").removeSelections();
+                });
+        },
+        
         onExport: function () {
-            var oTable = this.getView().byId("suppliersTable");
-            var oRowBinding = oTable.getBinding("items");
-            var oModel = oRowBinding.getModel();
-            var oModelData = oModel.getData();
+            var oTable = this.byId("suppliersTable");
+            var oBinding = oTable.getBinding("items");
+            var aItems = oBinding.getContexts().map(function (oContext) {
+                return oContext.getObject();
+            });
             
-            var aColumns = [
-                {
-                    label: "Supplier ID",
-                    property: "supplierID",
-                    type: EdmType.String
-                },
-                {
-                    label: "Supplier Name",
-                    property: "supplierName",
-                    type: EdmType.String
-                },
-                {
-                    label: "Address",
-                    property: "address",
-                    type: EdmType.String
-                },
-                {
-                    label: "Phone",
-                    property: "phone",
-                    type: EdmType.String
-                },
-                {
-                    label: "Email",
-                    property: "email",
-                    type: EdmType.String
-                }
-            ];
-            
-            var mSettings = {
+            var oSettings = {
                 workbook: {
-                    columns: aColumns,
+                    columns: [
+                        {
+                            label: "Supplier ID",
+                            property: "ID",
+                            type: EdmType.String
+                        },
+                        {
+                            label: "Supplier Name",
+                            property: "SupplierName",
+                            type: EdmType.String
+                        },
+                        {
+                            label: "Address",
+                            property: "Address",
+                            type: EdmType.String
+                        },
+                        {
+                            label: "Phone",
+                            property: "Phone",
+                            type: EdmType.String
+                        },
+                        {
+                            label: "Email",
+                            property: "Email",
+                            type: EdmType.String
+                        }
+                    ],
                     hierarchyLevel: "Level"
                 },
-                dataSource: oModelData.Suppliers,
+                dataSource: aItems,
                 fileName: "Suppliers.xlsx"
             };
             
-            var oSpreadsheet = new Spreadsheet(mSettings);
-            oSpreadsheet.build().finally(function() {
-                oSpreadsheet.destroy();
+            var oSpreadsheet = new Spreadsheet(oSettings);
+            oSpreadsheet.build()
+                .then(function () {
+                    MessageToast.show("Spreadsheet export has finished");
+                })
+                .catch(function (sMessage) {
+                    MessageBox.error("Export error: " + sMessage);
+                });
+        },
+        
+        onTableSettings: function () {
+            // Mở dialog cài đặt bảng (columns visibility, sorting)
+            if (!this._oTableSettingsDialog) {
+                this._oTableSettingsDialog = sap.ui.xmlfragment("tourishui.view.fragments.TableSettingsDialog", this);
+                this.getView().addDependent(this._oTableSettingsDialog);
+            }
+            
+            // Mở dialog
+            this._oTableSettingsDialog.open();
+        },
+        
+        onCloseTableSettings: function (oEvent) {
+            // Lưu và áp dụng cài đặt
+            var mParams = oEvent.getParameters();
+            var oTable = this.byId("suppliersTable");
+            
+            // Áp dụng sort
+            var aSorters = [];
+            if (mParams.sortItem) {
+                var sPath = mParams.sortItem.getKey();
+                var bDescending = mParams.sortDescending;
+                aSorters.push(new sap.ui.model.Sorter(sPath, bDescending));
+            }
+            
+            var oBinding = oTable.getBinding("items");
+            oBinding.sort(aSorters);
+            
+            // Áp dụng column visibility
+            mParams.columns.forEach(function (oColumn) {
+                oTable.getColumns().forEach(function (oTableColumn) {
+                    if (oTableColumn.getData() === oColumn.columnKey) {
+                        oTableColumn.setVisible(oColumn.visible);
+                    }
+                });
             });
             
-            MessageToast.show("Exporting data...");
-        },
-
-        onTableSettings: function () {
-            MessageToast.show("Table settings dialog would be implemented here.");
+            // Đóng dialog
+            if (this._oTableSettingsDialog) {
+                this._oTableSettingsDialog.close();
+            }
         }
     });
 });
