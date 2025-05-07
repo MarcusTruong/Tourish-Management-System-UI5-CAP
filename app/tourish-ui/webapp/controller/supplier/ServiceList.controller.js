@@ -264,7 +264,7 @@ sap.ui.define([
         
         onDeleteService: function (oEvent) {
             // Ngăn sự kiện navigation
-            oEvent.stopPropagation();
+            // oEvent.stopPropagation();
             
             var that = this;
             var oSource = oEvent.getSource();
@@ -421,7 +421,7 @@ sap.ui.define([
         },
         
         onExport: function () {
-            var oTable = this.byId("servicesTable");
+            var oTable = this.byId("servicesTable2");
             var oBinding = oTable.getBinding("items");
             var aItems = oBinding.getContexts().map(function (oContext) {
                 return oContext.getObject();
@@ -478,45 +478,81 @@ sap.ui.define([
         },
         
         onTableSettings: function () {
-            // Mở dialog cài đặt bảng (columns visibility, sorting)
-            if (!this._oTableSettingsDialog) {
-                this._oTableSettingsDialog = sap.ui.xmlfragment("tourishui.view.fragments.TableSettingsDialog", this);
-                this.getView().addDependent(this._oTableSettingsDialog);
+            // Mở dialog cài đặt bảng
+            if (!this._pTableSettingsDialog) {
+                this._pTableSettingsDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "tourishui.view.fragments.TableSettingsDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    
+                    // Thêm các loại dịch vụ vào filter nếu có dữ liệu
+                    var oTypesModel = this.getView().getModel("types");
+                    if (oTypesModel) {
+                        var aTypes = oTypesModel.getProperty("/types") || [];
+                        var oFilterItem = oDialog.getFilterItems()[0]; // ServiceType filter
+                        
+                        if (oFilterItem) {
+                            // Xóa các item cũ trừ "All Types"
+                            var aItems = oFilterItem.getItems();
+                            for (var i = aItems.length - 1; i > 0; i--) {
+                                oFilterItem.removeItem(aItems[i]);
+                            }
+                            
+                            // Thêm các loại dịch vụ vào filter
+                            aTypes.forEach(function(sType) {
+                                oFilterItem.addItem(new sap.m.ViewSettingsItem({
+                                    key: sType,
+                                    text: sType
+                                }));
+                            });
+                        }
+                    }
+                    
+                    return oDialog;
+                }.bind(this));
             }
             
-            // Mở dialog
-            this._oTableSettingsDialog.open();
+            this._pTableSettingsDialog.then(function(oDialog) {
+                // Mở dialog
+                oDialog.open();
+            });
         },
         
-        onCloseTableSettings: function (oEvent) {
-            // Lưu và áp dụng cài đặt
+        onConfirmTableSettings: function (oEvent) {
             var mParams = oEvent.getParameters();
-            var oTable = this.byId("servicesTable");
-            
-            // Áp dụng sort
-            var aSorters = [];
-            if (mParams.sortItem) {
-                var sPath = mParams.sortItem.getKey();
-                var bDescending = mParams.sortDescending;
-                aSorters.push(new sap.ui.model.Sorter(sPath, bDescending));
-            }
-            
+            var oTable = this.byId("servicesTable2");
             var oBinding = oTable.getBinding("items");
-            oBinding.sort(aSorters);
             
-            // Áp dụng column visibility
-            mParams.columns.forEach(function (oColumn) {
-                oTable.getColumns().forEach(function (oTableColumn) {
-                    if (oTableColumn.getData() === oColumn.columnKey) {
-                        oTableColumn.setVisible(oColumn.visible);
-                    }
-                });
+                // Áp dụng sắp xếp
+    if (mParams.sortItem) {
+        var sPath = mParams.sortItem.getKey();
+        var bDescending = mParams.sortDescending;
+        
+        // Kiểm tra nếu là trường Price thì xử lý đặc biệt
+        if (sPath === "Price") {
+            // Tạo sorter với hàm so sánh để xử lý giá trị số
+            var oSorter = new sap.ui.model.Sorter(sPath, bDescending, false, function(vValue1, vValue2) {
+                // Chuyển đổi sang số trước khi so sánh
+                var fValue1 = parseFloat(vValue1) || 0;
+                var fValue2 = parseFloat(vValue2) || 0;
+                
+                if (fValue1 < fValue2) return -1;
+                if (fValue1 > fValue2) return 1;
+                return 0;
             });
             
-            // Đóng dialog
-            if (this._oTableSettingsDialog) {
-                this._oTableSettingsDialog.close();
-            }
+            oBinding.sort(oSorter);
+        } else {
+            // Các trường khác sử dụng sorter bình thường
+            var oSorter = new sap.ui.model.Sorter(sPath, bDescending);
+            oBinding.sort(oSorter);
+        }
+    }
+        },
+        
+        onCancelTableSettings: function () {
         }
     });
 });

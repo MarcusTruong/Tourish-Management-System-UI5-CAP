@@ -1,0 +1,17 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    
+    <ViewSettingsDialog
+        id="supplierTableSettingsDialog"
+        confirm=".onConfirmSupplierTableSettings"
+        cancel=".onCancelSupplierTableSettings">
+        <sortItems>
+            <ViewSettingsItem id="sortSupplierId" key="ID" text="Supplier ID" />
+            <ViewSettingsItem id="sortSupplierName" key="SupplierName" text="Supplier Name" />
+            <ViewSettingsItem id="sortAddress" key="Address" text="Address" />
+            <ViewSettingsItem id="sortPhone" key="Phone" text="Phone" />
+            <ViewSettingsItem id="sortEmail" key="Email" text="Email" />
+        </sortItems>
+    </ViewSettingsDialog>
+</core:FragmentDefinition>

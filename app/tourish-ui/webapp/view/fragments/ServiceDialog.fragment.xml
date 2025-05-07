@@ -39,9 +39,19 @@
                     <Label id="_IDGenLabel19" text="Service Type" />
                     <ComboBox
                         id="serviceTypeComboBox"
-                        items="{serviceTypes>/types}"
                         selectedKey="{newService>/ServiceType}">
-                        <core:Item id="_IDGenItem5" key="{serviceTypes>}" text="{serviceTypes>}" />
+                        <core:Item id="_IDGenItem13" key="Accommodation" text="Accommodation" />
+                        <core:Item id="_IDGenItem21" key="FoodAndBeverage" text="Food And Beverage" />
+                        <core:Item id="_IDGenItem32" key="Transportation" text="Car/Transportation" />
+                        <core:Item id="_IDGenItem43" key="Airplane" text="Airplane" />
+                        <core:Item id="_IDGenItem5" key="Train" text="Train" />
+                        <core:Item id="_IDGenItem6" key="LuxuryCruise" text="Luxury Cruise" />
+                        <core:Item id="_IDGenItem74" key="SightseeingTicket" text="Sightseeing Ticket" />
+                        <core:Item id="_IDGenItem82" key="EventOrganization" text="Event Organization" />
+                        <core:Item id="_IDGenItem9" key="Spa" text="Spa" />
+                        <core:Item id="_IDGenItem10" key="Insurance" text="Insurance" />
+                        <core:Item id="_IDGenItem11" key="TourGuide" text="Tour Guide" />
+                        <core:Item id="_IDGenItem12" key="Others" text="Others" />
                     </ComboBox>
                     
                     <Label id="_IDGenLabel123" text="Description" />

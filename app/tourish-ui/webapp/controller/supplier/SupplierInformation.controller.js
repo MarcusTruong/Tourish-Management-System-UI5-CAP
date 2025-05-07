@@ -6,8 +6,9 @@ sap.ui.define([
     "sap/m/MessageBox",
     "sap/m/MessageToast",
     "sap/ui/export/Spreadsheet",
-    "sap/ui/export/library"
-], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Spreadsheet, exportLibrary) {
+    "sap/ui/export/library",
+    "sap/ui/core/Fragment"
+], function (Controller, JSONModel, Filter, FilterOperator, MessageBox, MessageToast, Spreadsheet, exportLibrary, Fragment) {
     "use strict";
 
     var EdmType = exportLibrary.EdmType;
@@ -378,45 +379,42 @@ sap.ui.define([
         },
         
         onTableSettings: function () {
-            // Mở dialog cài đặt bảng (columns visibility, sorting)
-            if (!this._oTableSettingsDialog) {
-                this._oTableSettingsDialog = sap.ui.xmlfragment("tourishui.view.fragments.TableSettingsDialog", this);
-                this.getView().addDependent(this._oTableSettingsDialog);
+            // Mở dialog cài đặt bảng
+            if (!this._pSupplierTableSettingsDialog) {
+                this._pSupplierTableSettingsDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "tourishui.view.fragments.SupplierTableSettingsDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
             }
             
-            // Mở dialog
-            this._oTableSettingsDialog.open();
+            this._pSupplierTableSettingsDialog.then(function(oDialog) {
+                // Mở dialog
+                oDialog.open();
+            });
         },
         
-        onCloseTableSettings: function (oEvent) {
-            // Lưu và áp dụng cài đặt
+        onConfirmSupplierTableSettings: function (oEvent) {
             var mParams = oEvent.getParameters();
             var oTable = this.byId("suppliersTable");
+            var oBinding = oTable.getBinding("items");
             
-            // Áp dụng sort
-            var aSorters = [];
+            // Áp dụng sắp xếp
             if (mParams.sortItem) {
                 var sPath = mParams.sortItem.getKey();
                 var bDescending = mParams.sortDescending;
-                aSorters.push(new sap.ui.model.Sorter(sPath, bDescending));
+                
+                // Tạo sorter
+                var oSorter = new sap.ui.model.Sorter(sPath, bDescending);
+                oBinding.sort(oSorter);
             }
-            
-            var oBinding = oTable.getBinding("items");
-            oBinding.sort(aSorters);
-            
-            // Áp dụng column visibility
-            mParams.columns.forEach(function (oColumn) {
-                oTable.getColumns().forEach(function (oTableColumn) {
-                    if (oTableColumn.getData() === oColumn.columnKey) {
-                        oTableColumn.setVisible(oColumn.visible);
-                    }
-                });
-            });
-            
-            // Đóng dialog
-            if (this._oTableSettingsDialog) {
-                this._oTableSettingsDialog.close();
-            }
+        },
+        
+        onCancelSupplierTableSettings: function () {
+            // Không làm gì, dialog sẽ tự đóng
         }
     });
 });

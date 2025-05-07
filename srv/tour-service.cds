@@ -8,7 +8,7 @@ service TourService @(path: '/tour-service') {
   entity TourServices as projection on tm.TourService;
 
   // Action để tạo tour mẫu (bao gồm lịch trình)
-  @(requires: ['admin', 'staff'])
+  @(requires: 'authenticated-user')
   action createTour(
     tour: {
       TourName: String(100);
@@ -37,7 +37,7 @@ service TourService @(path: '/tour-service') {
   };
 
   // Action để cập nhật trạng thái tour
-  @(requires: ['admin', 'staff'])
+  @(requires: 'authenticated-user')
   action updateTourStatus(
     tourID: UUID,
     status: String(20)
@@ -53,7 +53,7 @@ service TourService @(path: '/tour-service') {
   };
 
   // Action để thêm dịch vụ vào tour
-  @(requires: ['admin', 'staff'])
+  @(requires: 'authenticated-user')
   action addTourService(
     tourID: UUID,
     serviceID: UUID
@@ -64,7 +64,7 @@ service TourService @(path: '/tour-service') {
   };
 
   // Action để ghi lịch sử chỉnh sửa tour
-  @(requires: ['admin', 'staff'])
+  @(requires: 'authenticated-user')
   action logTourHistory(
     tourID: UUID,
     modifiedBy: String,

@@ -2,16 +2,16 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core">
     
-    <TableSelectDialog
+    <ViewSettingsDialog
         id="tableSettingsDialog"
-        title="Table Settings"
-        noDataText="No settings available"
-        confirm=".onCloseTableSettings"
-        cancel=".onCloseTableSettings">
-        <ColumnListItem id="_IDGenColumnListItem4">
-            <cells>
-                <Text id="_IDGenText17" text="{name}" />
-            </cells>
-        </ColumnListItem>
-    </TableSelectDialog>
+        confirm=".onConfirmTableSettings"
+        cancel=".onCancelTableSettings">
+        <sortItems>
+            <ViewSettingsItem id="sortId" key="ID" text="ID" />
+            <ViewSettingsItem id="sortName" key="ServiceName" text="Service Name" />
+            <ViewSettingsItem id="sortType" key="ServiceType" text="Service Type" />
+            <ViewSettingsItem id="sortSupplier" key="SupplierName" text="Supplier" />
+            <ViewSettingsItem id="sortPrice" key="Price" text="Price" />
+        </sortItems>
+    </ViewSettingsDialog>
 </core:FragmentDefinition>
