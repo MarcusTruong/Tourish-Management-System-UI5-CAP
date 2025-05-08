@@ -4,9 +4,6 @@
 @baseUrl = {{host}}{{path}}
 @contentType = application/json
 
-@username = admin
-@password = password
-
 ### Bước 1: Xác thực 
 # @name authenticate
 POST {{host}}/user-service/authenticate
@@ -14,11 +11,11 @@ Content-Type: {{contentType}}
 
 {
     "username": "truong",
-    "password": "Truong2208@"
+    "password": "Truong@2208"
 }
 
 ### Lưu token sau khi xác thực
-@authToken = {{authenticate.response.body.token}}
+ @authToken = {{authenticate.response.body.token}}
 
 ### =============================================================================
 ### SUPPLIER TESTS

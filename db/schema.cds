@@ -19,42 +19,151 @@ entity User {
   Email : String(100);
   Phone : String(20);
   Status : String(20) default 'Active'; // Active/Inactive
-  Tours : Association to many Tour on Tours.CreatedByID = $self.ID;
+  CreatedTourTemplates : Association to many TourTemplate on CreatedTourTemplates.CreatedByID = $self.ID;
+  ManagedActiveTours : Association to many ActiveTour on ManagedActiveTours.ResponsiblePersonID = $self.ID;
 }
 
-entity Tour {
+// Tour Template entities
+entity TourTemplate {
   key ID : UUID;
-  TourName : String(100) not null;
+  TemplateName : String(100) not null;
   Description : String(500);
   NumberDays : Integer;
   NumberNights : Integer;
-  TourType: String(20);
-  Price : Decimal(15,2);
-  Status : String(20) default 'Draft'; // Draft/Open/Canceled
-  CreatedByID : UUID; // Khóa ngoại tham chiếu đến User.ID
-  Orders : Association to many Order on Orders.TourID = $self.ID;
-  Contracts : Association to many Contract on Contracts.TourID = $self.ID;
-  Schedules : Association to many TourSchedule on Schedules.TourID = $self.ID;
-  Histories : Association to many TourHistory on Histories.TourID = $self.ID;
-  TourServices : Association to many TourService on TourServices.TourID = $self.ID;
+  TourType : String(20);
+  CreatedByID : UUID; // Reference to User.ID
+  CreatedAt : Timestamp;
+  UpdatedAt : Timestamp;
+  Status : String(20) default 'Draft'; // Draft/Published/Archived
+  Images : Association to many TourTemplateImage on Images.TourTemplateID = $self.ID;
+  Schedules : Association to many TourTemplateSchedule on Schedules.TourTemplateID = $self.ID;
+  PriceTerms : Association to one TourTemplatePriceTerms on PriceTerms.TourTemplateID = $self.ID;
+  ActiveTours : Association to many ActiveTour on ActiveTours.TemplateID = $self.ID;
+  Histories : Association to many TourTemplateHistory on Histories.TourTemplateID = $self.ID;
 }
 
-entity TourSchedule {
+entity TourTemplateImage {
   key ID : UUID;
-  TourID : UUID; // Khóa ngoại tham chiếu đến Tour.ID
+  TourTemplateID : UUID; // Reference to TourTemplate.ID
+  ImageURL : String(500);
+  Caption : String(200);
+  IsMain : Boolean default false;
+}
+
+entity TourTemplateSchedule {
+  key ID : UUID;
+  TourTemplateID : UUID; // Reference to TourTemplate.ID
   DayNumber : Integer not null;
-  Activity : String(200);
+  DayTitle : String(100);
+  Overview : String(500);
+  BreakfastIncluded : Boolean default false;
+  LunchIncluded : Boolean default false;
+  DinnerIncluded : Boolean default false;
+  Activities : Association to many TourTemplateActivity on Activities.ScheduleID = $self.ID;
+}
+
+entity TourTemplateActivity {
+  key ID : UUID;
+  ScheduleID : UUID; // Reference to TourTemplateSchedule.ID
+  StartTime : String(20); // Format: HH:MM
+  EndTime : String(20); // Format: HH:MM
+  Title : String(100);
   Description : String(500);
 }
 
-entity TourHistory {
+entity TourTemplatePriceTerms {
   key ID : UUID;
-  TourID : UUID; // Khóa ngoại tham chiếu đến Tour.ID
+  TourTemplateID : UUID; // Reference to TourTemplate.ID
+  AdultPrice : Decimal(15,2);
+  ChildrenPrice : Decimal(15,2);
+  ServicesIncluded : String(1000);
+  ServicesNotIncluded : String(1000);
+  CancellationTerms : String(1000);
+  GeneralTerms : String(1000);
+}
+
+entity TourTemplateHistory {
+  key ID : UUID;
+  TourTemplateID : UUID; // Reference to TourTemplate.ID
   ModifiedDate : Timestamp;
   ModifiedBy : String(100);
   Changes : String(500);
 }
 
+// Active Tour entities
+entity ActiveTour {
+  key ID : UUID;
+  TemplateID : UUID; // Reference to TourTemplate.ID
+  TourName : String(100) not null;
+  DepartureDate : Date;
+  ReturnDate : Date;
+  SaleStartDate : Date;
+  SaleEndDate : Date;
+  MaxCapacity : Integer;
+  CurrentBookings : Integer default 0;
+  ResponsiblePersonID : UUID; // Reference to User.ID
+  Status : String(20) default 'Open'; // Open/Closed/Canceled/Completed
+  CreatedAt : Timestamp;
+  UpdatedAt : Timestamp;
+  Passengers : Association to many Passenger on Passengers.ActiveTourID = $self.ID;
+  TourServices : Association to many ActiveTourService on TourServices.ActiveTourID = $self.ID;
+  Estimate : Association to one TourEstimate on Estimate.ActiveTourID = $self.ID;
+  Orders : Association to many Order on Orders.ActiveTourID = $self.ID;
+  Histories : Association to many ActiveTourHistory on Histories.ActiveTourID = $self.ID;
+}
+
+entity Passenger {
+  key ID : UUID;
+  ActiveTourID : UUID; // Reference to ActiveTour.ID
+  CustomerID : UUID; // Reference to Customer.ID (optional)
+  FullName : String(100);
+  Gender : String(10);
+  BirthDate : Date;
+  IDNumber : String(50);
+  Phone : String(20);
+  Email : String(100);
+  SpecialRequirements : String(500);
+}
+
+entity ActiveTourService {
+  key ID : UUID;
+  ActiveTourID : UUID; // Reference to ActiveTour.ID
+  ServiceID : UUID; // Reference to Service.ID
+  Quantity : Integer default 1;
+  UnitPrice : Decimal(15,2);
+  TotalPrice : Decimal(15,2);
+  Notes : String(500);
+}
+
+entity TourEstimate {
+  key ID : UUID;
+  ActiveTourID : UUID; // Reference to ActiveTour.ID
+  EstimatedCost : Decimal(15,2);
+  EstimatedRevenue : Decimal(15,2);
+  EstimatedProfit : Decimal(15,2);
+  LastUpdated : Timestamp;
+  Notes : String(500);
+  CostItems : Association to many TourCostItem on CostItems.EstimateID = $self.ID;
+}
+
+entity TourCostItem {
+  key ID : UUID;
+  EstimateID : UUID; // Reference to TourEstimate.ID
+  ItemName : String(100);
+  Category : String(50);
+  Cost : Decimal(15,2);
+  Notes : String(200);
+}
+
+entity ActiveTourHistory {
+  key ID : UUID;
+  ActiveTourID : UUID; // Reference to ActiveTour.ID
+  ModifiedDate : Timestamp;
+  ModifiedBy : String(100);
+  Changes : String(500);
+}
+
+// Original entities with updated references
 entity Customer {
   key ID : UUID;
   FullName : String(100) not null;
@@ -67,6 +176,7 @@ entity Customer {
   Contracts : Association to many Contract on Contracts.CustomerID = $self.ID;
   Orders : Association to many Order on Orders.CustomerID = $self.ID;
   TransactionHistories : Association to many CustomerTransactionHistory on TransactionHistories.CustomerID = $self.ID;
+  Passengers : Association to many Passenger on Passengers.CustomerID = $self.ID;
 }
 
 entity CustomerTransactionHistory {
@@ -80,7 +190,7 @@ entity CustomerTransactionHistory {
 entity Contract {
   key ID : UUID;
   CustomerID : UUID; // Khóa ngoại tham chiếu đến Customer.ID
-  TourID : UUID; // Khóa ngoại tham chiếu đến Tour.ID
+  ActiveTourID : UUID; // Reference to ActiveTour.ID (updated)
   ContractDate : Date;
   TotalAmount : Decimal(15,2);
   Status : String(20) default 'Pending'; // Pending/Completed/Canceled
@@ -113,19 +223,13 @@ entity Service {
   ServiceType : String(50);
   Description : String(500);
   Price : Decimal(15,2);
-  TourServices : Association to many TourService on TourServices.ServiceID = $self.ID;
-}
-
-entity TourService {
-  key ID : UUID;
-  TourID : UUID; // Khóa ngoại tham chiếu đến Tour.ID
-  ServiceID : UUID; // Khóa ngoại tham chiếu đến Service.ID
+  ActiveTourServices : Association to many ActiveTourService on ActiveTourServices.ServiceID = $self.ID;
 }
 
 entity Order {
   key ID : UUID;
   CustomerID : UUID; // Khóa ngoại tham chiếu đến Customer.ID
-  TourID : UUID; // Khóa ngoại tham chiếu đến Tour.ID
+  ActiveTourID : UUID; // Updated reference to ActiveTour.ID
   OrderDate : Date;
   TotalAmount : Decimal(15,2);
   Status : String(20) default 'Pending'; // Pending/Completed/Canceled

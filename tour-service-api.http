@@ -1,0 +1,645 @@
+### Biến môi trường 
+@host = http://localhost:4004
+@path = /tour-service
+@baseUrl = {{host}}{{path}}
+@contentType = application/json
+
+### Bước 1: Xác thực 
+# @name authenticate
+POST {{host}}/user-service/authenticate
+Content-Type: {{contentType}}
+
+{
+    "username": "truong",
+    "password": "Truong@2208"
+}
+
+### Lưu token sau khi xác thực
+ @authToken = {{authenticate.response.body.token}}
+
+
+### Variables to store IDs from responses
+@templateId = ab93ef0d-c4e6-4445-9763-4d34c57f4715
+@scheduleId = 00000000-0000-0000-0000-000000000000
+@activityId = 00000000-0000-0000-0000-000000000000
+@imageId = 023aacec-3b16-428e-8c32-7a385470c6e4
+@activeTourId = e216326a-72d7-4bef-8dd5-a6b13e7b8e5a
+@passengerId = 00000000-0000-0000-0000-000000000000
+@serviceId = 00000000-0000-0000-0000-000000000000
+@tourServiceId = 00000000-0000-0000-0000-000000000000
+@estimateId = 00000000-0000-0000-0000-000000000000
+@costItemId = 00000000-0000-0000-0000-000000000000
+@userId = bcf9c7e3-0f6d-404c-9382-c0f9ff7352ae
+
+### 1. TOUR TEMPLATE MANAGEMENT
+
+### 1.1 Create Tour Template Basic Info (Step 1)
+POST {{baseUrl}}/createTourTemplateBasicInfo
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateName": "Hanoi Cultural Explorer2",
+  "description": "Experience the rich cultural heritage of Hanoi through its temples, museums, and local cuisine.",
+  "numberDays": 3,
+  "numberNights": 2,
+  "tourType": "Cultural",
+  "images": [
+    {
+      "imageURL": "https://example.com/images/hanoi13.jpg",
+      "caption": "Hoan Kiem Lake",
+      "isMain": true
+    },
+    {
+      "imageURL": "https://example.com/images/hanoi23.jpg",
+      "caption": "Temple of Literature",
+      "isMain": false
+    }
+  ]
+}
+
+### 1.2 Update Tour Template Basic Info
+POST {{baseUrl}}/updateTourTemplateBasicInfo
+Content-Type: application/json
+Authorization:  Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}",
+  "templateName": "Hanoi Cultural Explorer Deluxe",
+  "description": "Experience the rich cultural heritage of Hanoi through its temples, museums, and local cuisine with premium services.",
+  "numberDays": 3,
+  "numberNights": 2,
+  "tourType": "Cultural"
+}
+
+### 1.3 Add Image to Template
+POST {{baseUrl}}/addImageToTemplate
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}",
+  "imageURL": "https://example.com/images/hanoi6.jpg",
+  "caption": "Hanoi Old Quarter",
+  "isMain": false
+}
+
+### 1.4 Remove Image from Template
+POST {{baseUrl}}/removeImageFromTemplate
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "imageID": "{{imageId}}"
+}
+
+### 1.5 Set Main Image
+POST {{baseUrl}}/setMainImage
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "imageID": "{{imageId}}",
+  "templateID": "{{templateId}}"
+}
+
+### 1.6 Add Tour Template Schedules (Step 2)
+POST {{baseUrl}}/addTourTemplateSchedules
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}",
+  "schedules": [
+    {
+      "dayNumber": 1,
+      "dayTitle": "Historical Hanoi",
+      "overview": "Explore the historical sites of Hanoi",
+      "breakfastIncluded": true,
+      "lunchIncluded": true,
+      "dinnerIncluded": false,
+      "activities": [
+        {
+          "startTime": "08:00",
+          "endTime": "10:00",
+          "title": "Ho Chi Minh Mausoleum Visit",
+          "description": "Visit the final resting place of Vietnam's revolutionary leader"
+        },
+        {
+          "startTime": "10:30",
+          "endTime": "12:00",
+          "title": "Temple of Literature Tour",
+          "description": "Explore Vietnam's first national university"
+        },
+        {
+          "startTime": "13:00",
+          "endTime": "15:00",
+          "title": "Vietnam Military History Museum",
+          "description": "Learn about Vietnam's military history"
+        }
+      ]
+    },
+    {
+      "dayNumber": 2,
+      "dayTitle": "Culinary and Cultural Delights",
+      "overview": "Experience the food and culture of Hanoi",
+      "breakfastIncluded": true,
+      "lunchIncluded": true,
+      "dinnerIncluded": true,
+      "activities": [
+        {
+          "startTime": "09:00",
+          "endTime": "11:00",
+          "title": "Old Quarter Walking Tour",
+          "description": "Explore the ancient streets and architecture"
+        },
+        {
+          "startTime": "11:30",
+          "endTime": "13:30",
+          "title": "Street Food Tasting",
+          "description": "Sample authentic Hanoi street food"
+        },
+        {
+          "startTime": "15:00",
+          "endTime": "17:00",
+          "title": "Water Puppet Show",
+          "description": "Watch traditional Vietnamese water puppetry"
+        }
+      ]
+    },
+    {
+      "dayNumber": 3,
+      "dayTitle": "Artistic Hanoi",
+      "overview": "Discover Hanoi's artistic side",
+      "breakfastIncluded": true,
+      "lunchIncluded": true,
+      "dinnerIncluded": false,
+      "activities": [
+        {
+          "startTime": "09:00",
+          "endTime": "11:00",
+          "title": "Vietnam Fine Arts Museum",
+          "description": "Explore traditional and modern Vietnamese art"
+        },
+        {
+          "startTime": "13:00",
+          "endTime": "15:00",
+          "title": "Craft Workshop",
+          "description": "Learn traditional Vietnamese crafts"
+        }
+      ]
+    }
+  ]
+}
+
+### 1.7 Update Tour Template Schedule
+POST {{baseUrl}}/updateTourTemplateSchedule
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "scheduleID": "2478989a-88f1-44e1-a07f-263a3803539c",
+  "dayTitle": "Historical Hanoi Highlights",
+  "overview": "Explore the most significant historical sites of Hanoi",
+  "breakfastIncluded": true,
+  "lunchIncluded": true,
+  "dinnerIncluded": true
+}
+
+### 1.8 Add Activity to Schedule
+POST {{baseUrl}}/addActivityToSchedule
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+
+{
+  "scheduleID": "614a4090-72c1-44f5-abd2-620c8270b33d",
+  "startTime": "17:30",
+  "endTime": "19:30",
+  "title": "Evening City Lights Tour",
+  "description": "Experience Hanoi as it lights up for the evening"
+}
+
+### 1.9 Update Activity
+POST {{baseUrl}}/updateActivity
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "activityID": "4efeabe5-766f-44ef-8e54-dd16c814d2ba",
+  "startTime": "18:00",
+  "endTime": "20:00",
+  "title": "Evening City Lights Tour",
+  "description": "Experience Hanoi as it lights up for the evening with a professional photographer guide"
+}
+
+### 1.10 Delete Activity
+POST {{baseUrl}}/deleteActivity
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "activityID": "4efeabe5-766f-44ef-8e54-dd16c814d2ba"
+}
+
+### 1.11 Reorder Activities
+POST {{baseUrl}}/reorderActivities
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "scheduleID": "{{scheduleId}}",
+  "activityIDs": ["id1", "id2", "id3"]
+}
+
+### 1.12 Add Tour Template Price Terms (Step 3)
+POST {{baseUrl}}/addTourTemplatePriceTerms
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}",
+  "adultPrice": 350.00,
+  "childrenPrice": 175.00,
+  "servicesIncluded": "- Professional English-speaking guide\n- Transportation\n- Entrance fees\n- Meals as specified in the itinerary\n- 2 nights accommodation in 4-star hotel",
+  "servicesNotIncluded": "- Personal expenses\n- Travel insurance\n- Additional food and drinks\n- Tips for guide and driver",
+  "cancellationTerms": "- Full refund for cancellations made 30 days before departure\n- 50% refund for cancellations made 15-29 days before departure\n- No refund for cancellations made less than 15 days before departure",
+  "generalTerms": "- Tour itinerary may be adjusted due to weather or local conditions\n- Minimum of 4 participants required for tour to proceed\n- Children under 5 years travel free when sharing bed with parents"
+}
+
+### 1.13 Update Tour Template Price Terms
+POST {{baseUrl}}/updateTourTemplatePriceTerms
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}",
+  "adultPrice": 375.00,
+  "childrenPrice": 190.00,
+  "servicesIncluded": "- Professional English-speaking guide\n- Private transportation\n- Entrance fees\n- Meals as specified in the itinerary\n- 2 nights accommodation in 4-star hotel\n- Welcome drink",
+  "servicesNotIncluded": "- Personal expenses\n- Travel insurance\n- Additional food and drinks\n- Tips for guide and driver",
+  "cancellationTerms": "- Full refund for cancellations made 30 days before departure\n- 50% refund for cancellations made 15-29 days before departure\n- No refund for cancellations made less than 15 days before departure",
+  "generalTerms": "- Tour itinerary may be adjusted due to weather or local conditions\n- Minimum of 4 participants required for tour to proceed\n- Children under 5 years travel free when sharing bed with parents\n- Free airport pickup included"
+}
+
+### 1.14 Complete Tour Template Creation
+POST {{baseUrl}}/completeTourTemplateCreation
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}"
+}
+
+### 1.15 Update Tour Template Status
+POST {{baseUrl}}/updateTourTemplateStatus
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}",
+  "status": "Published"
+}
+
+### 1.16 Log Tour Template History
+POST {{baseUrl}}/logTourTemplateHistory
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}",
+  "modifiedBy": "admin",
+  "changes": "Added special offer for early bookings"
+}
+
+### 1.17 Get Tour Template Details
+POST {{baseUrl}}/getTourTemplateDetails
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}"
+}
+
+### 1.18 List Tour Templates
+POST {{baseUrl}}/listTourTemplates
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "",
+  "tourType": "",
+  "status": "",
+  "skip": 0,
+  "limit": 10
+}
+
+### 1.19 Get Available Tour Types
+POST {{baseUrl}}/getAvailableTourTypes
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{}
+
+### 1.20 Delete Tour Template
+POST {{baseUrl}}/deleteTourTemplate
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}"
+}
+
+### 2. ACTIVE TOUR MANAGEMENT
+
+### 2.1 Create Active Tour
+POST {{baseUrl}}/createActiveTour
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "templateID": "{{templateId}}",
+  "tourName": "Hanoi Cultural Explorer - June 2025 Departure",
+  "departureDate": "2025-06-15",
+  "returnDate": "2025-06-17",
+  "saleStartDate": "2025-01-15",
+  "saleEndDate": "2025-06-01",
+  "maxCapacity": 20,
+  "responsiblePersonID": "{{userId}}"
+}
+
+### 2.2 Update Active Tour
+POST {{baseUrl}}/updateActiveTour
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "tourID": "{{activeTourId}}",
+  "tourName": "Hanoi Cultural Explorer - June 2025 Special Departure",
+  "departureDate": "2025-06-16",
+  "returnDate": "2025-06-18",
+  "saleStartDate": "2025-01-15",
+  "saleEndDate": "2025-06-05",
+  "maxCapacity": 25,
+  "responsiblePersonID": "{{userId}}"
+}
+
+### 2.3 Update Active Tour Status
+POST {{baseUrl}}/updateActiveTourStatus
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "tourID": "{{activeTourId}}",
+  "status": "Open"
+}
+
+### 2.4 Cancel Active Tour
+POST {{baseUrl}}/cancelActiveTour
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "tourID": "{{activeTourId}}",
+  "reason": "Insufficient bookings"
+}
+
+### 2.5 Log Active Tour History
+POST {{baseUrl}}/logActiveTourHistory
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "tourID": "{{activeTourId}}",
+  "modifiedBy": "admin",
+  "changes": "Changed hotel accommodation to Sheraton Hanoi"
+}
+
+### 3. PASSENGER MANAGEMENT
+
+### 3.1 Add Passenger
+POST {{baseUrl}}/addPassenger
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "tourID": "{{activeTourId}}",
+  "customerID": null,
+  "fullName": "Nguyen Van A",
+  "gender": "Male",
+  "birthDate": "1985-05-20",
+  "idNumber": "123456789",
+  "phone": "0912345678",
+  "email": "nguyenvana@example.com",
+  "specialRequirements": "Vegetarian meals"
+}
+
+### 3.2 Update Passenger
+POST {{baseUrl}}/updatePassenger
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "passengerID": "{{passengerId}}",
+  "fullName": "Nguyen Van A",
+  "gender": "Male",
+  "birthDate": "1985-05-20",
+  "idNumber": "123456789",
+  "phone": "0912345678",
+  "email": "nguyenvana@example.com",
+  "specialRequirements": "Vegetarian meals and ground floor room"
+}
+
+### 3.3 Remove Passenger
+POST {{baseUrl}}/removePassenger
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "passengerID": "{{passengerId}}"
+}
+
+### 3.4 Get Passenger List
+POST {{baseUrl}}/getPassengerList
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "tourID": "{{activeTourId}}"
+}
+
+### 4. TOUR SERVICES MANAGEMENT
+
+### 4.1 Add Service to Active Tour
+POST {{baseUrl}}/addServiceToActiveTour
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "tourID": "{{activeTourId}}",
+  "serviceID": "{{serviceId}}",
+  "quantity": 1,
+  "unitPrice": 120.00,
+  "notes": "Hotel upgrade to 5-star"
+}
+
+### 4.2 Update Active Tour Service
+POST {{baseUrl}}/updateActiveTourService
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "tourServiceID": "{{tourServiceId}}",
+  "quantity": 2,
+  "unitPrice": 110.00,
+  "notes": "Hotel upgrade to 5-star for 2 rooms"
+}
+
+### 4.3 Remove Active Tour Service
+POST {{baseUrl}}/removeActiveTourService
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "tourServiceID": "{{tourServiceId}}"
+}
+
+### 4.4 Get Active Tour Services
+POST {{baseUrl}}/getActiveTourServices
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "tourID": "{{activeTourId}}"
+}
+
+### 5. FINANCIAL ESTIMATES
+
+### 5.1 Create Tour Estimate
+POST {{baseUrl}}/createTourEstimate
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "tourID": "{{activeTourId}}",
+  "estimatedCost": 5000.00,
+  "estimatedRevenue": 7000.00,
+  "estimatedProfit": 2000.00,
+  "notes": "Initial estimate based on 20 passengers"
+}
+
+### 5.2 Update Tour Estimate
+POST {{baseUrl}}/updateTourEstimate
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "estimateID": "{{estimateId}}",
+  "estimatedCost": 5200.00,
+  "estimatedRevenue": 7500.00,
+  "estimatedProfit": 2300.00,
+  "notes": "Updated with new hotel rates and current bookings"
+}
+
+### 5.3 Add Cost Item
+POST {{baseUrl}}/addCostItem
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "estimateID": "{{estimateId}}",
+  "itemName": "Hotel Accommodation",
+  "category": "Accommodation",
+  "cost": 2000.00,
+  "notes": "20 rooms for 2 nights at $50/night"
+}
+
+### 5.4 Update Cost Item
+POST {{baseUrl}}/updateCostItem
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "costItemID": "{{costItemId}}",
+  "itemName": "Hotel Accommodation",
+  "category": "Accommodation",
+  "cost": 2200.00,
+  "notes": "20 rooms for 2 nights at $55/night"
+}
+
+### 5.5 Remove Cost Item
+POST {{baseUrl}}/removeCostItem
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "costItemID": "{{costItemId}}"
+}
+
+### 5.6 Get Tour Estimate
+POST {{baseUrl}}/getTourEstimate
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "tourID": "{{activeTourId}}"
+}
+
+### 6. ACTIVE TOUR DETAILS AND LISTING
+
+### 6.1 Get Active Tour Details
+POST {{baseUrl}}/getActiveTourDetails
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "tourID": "{{activeTourId}}"
+}
+
+### 6.2 List Active Tours
+POST {{baseUrl}}/listActiveTours
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "searchTerm": "Hanoi",
+  "status": "Open",
+  "fromDepartureDate": "2025-01-01",
+  "toDepartureDate": "2025-12-31",
+  "fromSaleDate": null,
+  "toSaleDate": null,
+  "responsiblePersonID": null,
+  "skip": 0,
+  "limit": 10
+}
+
+### 7. DASHBOARD AND REPORTING
+
+### 7.1 Get Tours Dashboard Data
+POST {{baseUrl}}/getToursDashboardData
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{}
+
+### 7.2 Generate Tour Report
+POST {{baseUrl}}/generateTourReport
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "tourID": "{{activeTourId}}",
+  "reportType": "Financial"
+}
+
+### 7.3 Generate Tours Analytics Report
+POST {{baseUrl}}/generateToursAnalyticsReport
+Content-Type: application/json
+Authorization: {{adminAuth}}
+
+{
+  "fromDate": "2025-01-01",
+  "toDate": "2025-12-31",
+  "tourTypes": ["Cultural", "Adventure"],
+  "status": ["Open", "Completed"]
+}
