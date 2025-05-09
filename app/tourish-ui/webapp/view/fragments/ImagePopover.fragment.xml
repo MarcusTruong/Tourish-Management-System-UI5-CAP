@@ -1,0 +1,29 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    
+    <Popover id="_IDGenPopover1"
+        title="Tour Image"
+        placement="Auto"
+        showHeader="true"
+        contentWidth="500px"
+        contentHeight="auto">
+        
+        <content>
+            <Image 
+                id="popoverImage" 
+                width="100%" 
+                height="auto" 
+                densityAware="false" />
+        </content>
+        
+        <footer>
+            <OverflowToolbar id="_IDGenOverflowToolbar">
+                <ToolbarSpacer id="_IDGenToolbarSpacer6"/>
+                <Button id="_IDGenButton26" text="Close" press="onPopoverClose" />
+            </OverflowToolbar>
+        </footer>
+        
+    </Popover>
+    
+</core:FragmentDefinition>

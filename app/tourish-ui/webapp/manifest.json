@@ -130,9 +130,9 @@
           "target": "createSampleTour"
         },
         {
-          "pattern": "createTour",
-          "name": "createTour",
-          "target": "createTour"
+          "pattern": "templateCreate",
+          "name": "templateCreate",
+          "target": "templateCreate"
         },
         {
           "pattern": "supplierInformation",
@@ -202,8 +202,8 @@
           "controlAggregation": "pages",
           "parent": "appContent"
         },
-        "createTour": {
-          "viewId": "createTour",
+        "templateCreate": {
+          "viewId": "templateCreate",
           "viewName": "tour.CreateTourView",
           "controlId": "mainContents",
           "controlAggregation": "pages",

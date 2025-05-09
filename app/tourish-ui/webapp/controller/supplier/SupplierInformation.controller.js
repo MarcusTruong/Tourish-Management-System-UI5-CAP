@@ -186,6 +186,7 @@ sap.ui.define([
         onAddSupplier: function () {
             // Navigate tới trang tạo mới supplier
             var oRouter = this.getOwnerComponent().getRouter();
+            console.log(oRouter);
             oRouter.navTo("supplierDetail", {
                 supplierID: "create"
             });

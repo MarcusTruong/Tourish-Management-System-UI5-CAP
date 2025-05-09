@@ -24,7 +24,7 @@ sap.ui.define([
     return Controller.extend("tourishui.controller.tour.CreateTourView", {
         onInit: function () {
             var oRouter = this.getOwnerComponent().getRouter();
-            oRouter.getRoute("createTour").attachPatternMatched(this._onRouteMatched, this);
+            oRouter.getRoute("templateCreate").attachPatternMatched(this._onRouteMatched, this);
 
             // Model cho dữ liệu tour mới với cấu trúc mở rộng
             var oTourModel = new JSONModel({

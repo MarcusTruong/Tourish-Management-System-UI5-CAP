@@ -327,8 +327,8 @@ Content-Type: application/json
 Authorization: Basic {{base64 username:password}}
 
 {
-  "searchTerm": "",
-  "tourType": "",
+  "searchTerm": "Cultural",
+  "tourType": "Cultural",
   "status": "",
   "skip": 0,
   "limit": 10
@@ -599,7 +599,7 @@ Authorization: {{adminAuth}}
 ### 6.2 List Active Tours
 POST {{baseUrl}}/listActiveTours
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Basic {{base64 username:password}}
 
 {
   "searchTerm": "Hanoi",

@@ -51,8 +51,16 @@ sap.ui.define([
           });
           this.setModel(oSupplierModel, "supplierService");
 
-          // Thêm các model cho các service khác nếu cần
-          // ...
+          // Khởi tạo model cho tour-service
+          var sTourServiceUrl = "/tour-service/";
+          var oTourModel = new sap.ui.model.odata.v4.ODataModel({
+            serviceUrl: sTourServiceUrl,
+            synchronizationMode: "None",
+            groupId: "$auto",
+            operationMode: "Server"
+        });
+        this.setModel(oTourModel, "tourService");
+
 
           // Đặt supplierService làm model mặc định cho các view
           // (bạn có thể thay đổi tùy theo use case chính của ứng dụng)
@@ -78,6 +86,10 @@ sap.ui.define([
 
       getSupplierServiceModel: function() {
           return this.getModel("supplierService");
-      }
+      },
+
+      getTourServiceModel: function() {
+        return this.getModel("tourService");
+    }
   });
 });
