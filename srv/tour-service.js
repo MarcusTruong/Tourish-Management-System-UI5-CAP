@@ -925,63 +925,76 @@ module.exports = async (srv) => {
     const { searchTerm, tourType, status, skip, limit } = req.data;
     
     try {
-      // Start with basic select
-      let templates = [];
+      // Truy vấn cơ bản để lấy dữ liệu templates
+      let query = SELECT.from(TourTemplates);
       
-      // We'll build our filters step by step
-      if (searchTerm && tourType && status) {
-        // All three filters
-        templates = await SELECT.from(TourTemplates)
-          .where(`TemplateName like '%${searchTerm}%' and TourType = '${tourType}' and Status = '${status}'`)
-          .limit(limit || 10, skip || 0);
-      } 
-      else if (searchTerm && tourType) {
-        // Search and type
-        templates = await SELECT.from(TourTemplates)
-          .where(`TemplateName like '%${searchTerm}%' and TourType = '${tourType}'`)
-          .limit(limit || 10, skip || 0);
-      }
-      else if (searchTerm && status) {
-        // Search and status
-        templates = await SELECT.from(TourTemplates)
-          .where(`TemplateName like '%${searchTerm}%' and Status = '${status}'`)
-          .limit(limit || 10, skip || 0);
-      }
-      else if (tourType && status) {
-        // Type and status
-        templates = await SELECT.from(TourTemplates)
-          .where(`TourType = '${tourType}' and Status = '${status}'`)
-          .limit(limit || 10, skip || 0);
-      }
-      else if (searchTerm) {
-        // Search only
-        templates = await SELECT.from(TourTemplates)
-          .where(`TemplateName like '%${searchTerm}%'`)
-          .limit(limit || 10, skip || 0);
-      }
-      else if (tourType) {
-        // Type only
-        templates = await SELECT.from(TourTemplates)
-          .where(`TourType = '${tourType}'`)
-          .limit(limit || 10, skip || 0);
-      }
-      else if (status) {
-        // Status only
-        templates = await SELECT.from(TourTemplates)
-          .where(`Status = '${status}'`)
-          .limit(limit || 10, skip || 0);
-      }
-      else {
-        // No filters
-        templates = await SELECT.from(TourTemplates)
-          .limit(limit || 10, skip || 0);
+      // Xây dựng điều kiện WHERE
+      let conditions = [];
+      
+      if (searchTerm) {
+        conditions.push(`TemplateName like '%${searchTerm}%'`);
       }
       
-      // Simplify: Just return the templates without extra data for now
+      if (tourType) {
+        conditions.push(`TourType = '${tourType}'`);
+      }
+      
+      if (status) {
+        conditions.push(`Status = '${status}'`);
+      }
+      
+      // Thêm điều kiện vào truy vấn nếu có
+      if (conditions.length > 0) {
+        query.where(conditions.join(' and '));
+      }
+      
+      // Thêm phân trang
+      query.limit(limit || 10, skip || 0);
+      
+      // Thực hiện truy vấn
+      let templates = await query;
+      
+      // Lấy MainImageURL từ TourTemplateImages
+      for (let template of templates) {
+        const mainImage = await SELECT.from(TourTemplateImages)
+          .where({ TourTemplateID: template.ID, IsMain: true })
+          .columns('ImageURL');
+        
+        template.MainImageURL = mainImage.length > 0 ? mainImage[0].ImageURL : null;
+      }
+      
+      // Lấy ActiveToursCount cho mỗi template
+      for (let template of templates) {
+        const activeToursCount = await SELECT.from(ActiveTours)
+          .where({ TemplateID: template.ID })
+          .columns('count(*) as count');
+        
+        template.ActiveToursCount = activeToursCount[0].count;
+      }
+      
+      // Lấy AdultPrice từ TourTemplatePriceTerms
+      for (let template of templates) {
+        const priceInfo = await SELECT.from(TourTemplatePriceTerms)
+          .where({ TourTemplateID: template.ID })
+          .columns('AdultPrice');
+        
+        template.AdultPrice = priceInfo.length > 0 ? priceInfo[0].AdultPrice : null;
+      }
+      
+      // Đếm tổng số bản ghi (không có giới hạn)
+      let countQuery = SELECT.from(TourTemplates).columns('count(*) as total');
+      
+      if (conditions.length > 0) {
+        countQuery.where(conditions.join(' and '));
+      }
+      
+      let countResult = await countQuery;
+      let total = countResult[0].total;
+      
       return {
         items: templates,
         pagination: {
-          total: templates.length, // Simplified: not accurate for total count
+          total: total,
           skip: skip || 0,
           limit: limit || 10
         }

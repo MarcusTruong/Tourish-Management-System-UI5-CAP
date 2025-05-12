@@ -2,8 +2,8 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageToast",
-    "sap/ui/core/routing/History",
     "sap/m/MessageBox",
+    "sap/ui/core/routing/History",
     "sap/m/Panel",
     "sap/m/Title",
     "sap/m/Button",
@@ -14,403 +14,1006 @@ sap.ui.define([
     "sap/m/HBox",
     "sap/m/TimePicker",
     "sap/m/CheckBox",
-    "sap/ui/layout/form/SimpleForm",
-    "sap/m/ToolbarSpacer"
-], function (Controller, JSONModel, MessageToast, History, MessageBox,
-    Panel, Title, Button, Label, TextArea, Input, VBox, HBox,
-    TimePicker, CheckBox, SimpleForm, ToolbarSpacer) {
+    "sap/ui/layout/form/SimpleForm"
+], function (Controller, JSONModel, MessageToast, MessageBox, History, Panel, Title, Button, Label, TextArea, Input, 
+             VBox, HBox, TimePicker, CheckBox, SimpleForm) {
     "use strict";
 
     return Controller.extend("tourishui.controller.tour.CreateTourView", {
         onInit: function () {
+            // Set up router
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.getRoute("templateCreate").attachPatternMatched(this._onRouteMatched, this);
-
-            // Model cho dữ liệu tour mới với cấu trúc mở rộng
+            
+            // Initialize model for template data
             var oTourModel = new JSONModel({
-                tourID: "",
-                tourName: "",
+                templateID: "",
+                templateName: "",
                 description: "",
                 days: 1,
                 nights: 0,
-                type: "cultural",
-                price: 0,
+                tourType: "",
+                adultPrice: 0,
                 childPrice: 0,
-                includes: "",
-                excludes: "",
-                cancellationPolicy: "",
-                terms: "",
+                servicesIncluded: "",
+                servicesNotIncluded: "",
+                cancellationTerms: "",
+                generalTerms: "",
                 images: [],
-                itinerary: []
+                schedule: []
             });
             this.getView().setModel(oTourModel, "tour");
-
-            // Khởi tạo một ngày mặc định trong lịch trình
-            this._initializeItinerary(1);
+            
+            // Initialize the step indicator model
+            var oStepModel = new JSONModel({
+                currentStep: 1, // 1 = General Info, 2 = Schedule, 3 = Price & Terms
+                generalInfoComplete: false,
+                scheduleComplete: false,
+                priceTermsComplete: false
+            });
+            this.getView().setModel(oStepModel, "steps");
+            
+            // Initialize the first day in the schedule
+            this._initializeSchedule(1);
         },
-
+        
         _onRouteMatched: function (oEvent) {
-            var oModel = this.getOwnerComponent().getModel(); // Model từ TourList
-            var aTours = oModel.getProperty("/createSampleTour") || [];
-            var iNewID = aTours.length + 1;
-            var sNewTourID = "TOUR" + iNewID.toString().padStart(3, "0");
-
-            // Cập nhật tourID tự động
-            this.getView().getModel("tour").setProperty("/tourID", sNewTourID);
-        },
-
-        onTourNameChange: function (oEvent) {
-            // Tên tour đã được binding tự động cập nhật tiêu đề trang
-            // Không cần thực hiện thêm - tiêu đề sẽ tự động cập nhật qua binding
-        },
-        onNavBack: function () {
-            this.getOwnerComponent().getRouter().navTo("createSampleTour");
-          },
-
-        onDaysChange: function (oEvent) {
-            var iDays = parseInt(oEvent.getParameter("value")) || 1;
-            var iNights = Math.max(0, iDays - 1);
-
-            // Cập nhật số đêm tự động theo số ngày
-            this.getView().getModel("tour").setProperty("/nights", iNights);
-
-            // Khởi tạo lịch trình cho số ngày đã chọn
-            this._initializeItinerary(iDays);
-        },
-
-        _initializeItinerary: function (iDays) {
+            // Get any parameters from the route
+            var oArgs = oEvent.getParameter("arguments");
             var oTourModel = this.getView().getModel("tour");
-            var aCurrentItinerary = oTourModel.getProperty("/itinerary") || [];
-            var aNewItinerary = [];
-
-            // Giữ lại dữ liệu hiện có cho các ngày đã có
+            
+            // Reset the model when navigating to this view
+            oTourModel.setData({
+                templateID: "",
+                templateName: "",
+                description: "",
+                days: 1,
+                nights: 0,
+                tourType: "Cultural",
+                adultPrice: 0,
+                childPrice: 0,
+                servicesIncluded: "",
+                servicesNotIncluded: "",
+                cancellationTerms: "",
+                generalTerms: "",
+                images: [],
+                schedule: []
+            });
+            
+            // Initialize the first day in the schedule
+            this._initializeSchedule(1);
+            
+            // If there's a template ID in the route parameters, load the template for editing
+            if (oArgs && oArgs.templateId) {
+                this._loadTemplateForEdit(oArgs.templateId);
+            }
+        },
+        
+        onTemplateNameChange: function (oEvent) {
+            // Template name has been bound to the page title via expression binding
+        },
+        
+        onDaysChange: function (oEvent) {
+            var iDays = parseInt(oEvent.getParameter("value") || "1");
+            var iNights = Math.max(0, iDays - 1);
+            
+            // Update nights automatically based on days
+            this.getView().getModel("tour").setProperty("/nights", iNights);
+            
+            // Update the schedule to match the number of days
+            this._initializeSchedule(iDays);
+        },
+        
+        onSetAsMainImage: function (oEvent) {
+            var oButton = oEvent.getSource();
+            var oItem = oButton.getParent();
+            var oContext = oItem.getBindingContext("tour");
+            var sPath = oContext.getPath();
+            var oTourModel = this.getView().getModel("tour");
+            var aImages = oTourModel.getProperty("/images");
+            
+            // Set all images as non-main
+            aImages.forEach(function(oImage, iIndex) {
+                oTourModel.setProperty("/images/" + iIndex + "/isMain", false);
+            });
+            
+            // Set the selected image as main
+            oTourModel.setProperty(sPath + "/isMain", true);
+            
+            MessageToast.show("Main image set successfully");
+        },
+        
+        onBeforeUploadStarts: function (oEvent) {
+            // Set custom headers or modify the upload request if needed
+            var oUploadSetItem = oEvent.getParameter("item");
+            var oCustomerHeaderToken = new sap.ui.core.Item({
+                key: "x-csrf-token",
+                text: this.getView().getModel("tourService").getSecurityToken()
+            });
+            
+            oUploadSetItem.addHeaderField(oCustomerHeaderToken);
+        },
+        
+        onImageUploadComplete: function (oEvent) {
+            var oUploadSet = this.byId("templateImageUpload");
+            var oTourModel = this.getView().getModel("tour");
+            var aImages = oTourModel.getProperty("/images") || [];
+            var oResponse = oEvent.getParameter("responseXML");
+            
+            // Handle the uploaded image response
+            if (oResponse) {
+                try {
+                    var sImageUrl = oResponse.documentElement.getElementsByTagName("ImageURL")[0].textContent;
+                    var sImageId = oResponse.documentElement.getElementsByTagName("ID")[0].textContent;
+                    
+                    // Add the uploaded image to the model
+                    aImages.push({
+                        id: sImageId,
+                        fileName: oEvent.getParameter("item").getFileName(),
+                        url: sImageUrl,
+                        thumbnailUrl: sImageUrl,
+                        isMain: aImages.length === 0, // First image is main by default
+                        attributes: [{
+                            title: "Size",
+                            text: this._formatFileSize(oEvent.getParameter("item").getFileObject().size)
+                        }]
+                    });
+                    
+                    oTourModel.setProperty("/images", aImages);
+                    MessageToast.show("Image uploaded successfully");
+                } catch (oError) {
+                    MessageToast.show("Error processing upload response");
+                    console.error("Upload response processing error:", oError);
+                }
+            }
+        },
+        
+        _formatFileSize: function (iBytes) {
+            if (iBytes < 1024) {
+                return iBytes + " B";
+            } else if (iBytes < 1048576) {
+                return (iBytes / 1024).toFixed(2) + " KB";
+            } else {
+                return (iBytes / 1048576).toFixed(2) + " MB";
+            }
+        },
+        
+        onTabSelect: function (oEvent) {
+            var sSelectedKey = oEvent.getParameter("selectedKey");
+            var oStepModel = this.getView().getModel("steps");
+            
+            // Update the current step based on the selected tab
+            switch (sSelectedKey) {
+                case "general":
+                    oStepModel.setProperty("/currentStep", 1);
+                    break;
+                case "schedule":
+                    oStepModel.setProperty("/currentStep", 2);
+                    break;
+                case "priceTerms":
+                    oStepModel.setProperty("/currentStep", 3);
+                    break;
+            }
+            
+            // Validate and update completion status
+            this._validateCurrentStep();
+        },
+        
+        _validateCurrentStep: function () {
+            var oStepModel = this.getView().getModel("steps");
+            var oTourModel = this.getView().getModel("tour");
+            var iCurrentStep = oStepModel.getProperty("/currentStep");
+            
+            switch (iCurrentStep) {
+                case 1: // General Information
+                    var bValid = !!oTourModel.getProperty("/templateName") && 
+                                 !!oTourModel.getProperty("/description") &&
+                                 oTourModel.getProperty("/days") > 0;
+                    oStepModel.setProperty("/generalInfoComplete", bValid);
+                    break;
+                    
+                case 2: // Schedule
+                    var aSchedule = oTourModel.getProperty("/schedule");
+                    var bValid = aSchedule && aSchedule.length > 0 && aSchedule.every(function(oDay) {
+                        return !!oDay.title && !!oDay.description && oDay.activities.length > 0;
+                    });
+                    oStepModel.setProperty("/scheduleComplete", bValid);
+                    break;
+                    
+                case 3: // Price & Terms
+                    var bValid = oTourModel.getProperty("/adultPrice") > 0 &&
+                                 !!oTourModel.getProperty("/servicesIncluded") &&
+                                 !!oTourModel.getProperty("/cancellationTerms");
+                    oStepModel.setProperty("/priceTermsComplete", bValid);
+                    break;
+            }
+        },
+        
+        _initializeSchedule: function (iDays) {
+            var oTourModel = this.getView().getModel("tour");
+            var aCurrentSchedule = oTourModel.getProperty("/schedule") || [];
+            var aNewSchedule = [];
+            
+            // Keep existing days if available
             for (var i = 0; i < iDays; i++) {
-                if (i < aCurrentItinerary.length) {
-                    aNewItinerary.push(aCurrentItinerary[i]);
+                if (i < aCurrentSchedule.length) {
+                    aNewSchedule.push(aCurrentSchedule[i]);
                 } else {
-                    // Tạo cấu trúc dữ liệu mới cho ngày mới
-                    aNewItinerary.push({
-                        day: i + 1,
+                    // Create a new day with default values
+                    aNewSchedule.push({
+                        dayNumber: i + 1,
                         title: "Day " + (i + 1),
                         description: "",
-                        meals: {
-                            breakfast: false,
-                            lunch: false,
-                            dinner: false
-                        },
-                        activities: []
+                        breakfast: false,
+                        lunch: false,
+                        dinner: false,
+                        activities: [{
+                            startTime: "09:00",
+                            endTime: "12:00",
+                            title: "",
+                            description: ""
+                        }]
                     });
                 }
             }
-
-            oTourModel.setProperty("/itinerary", aNewItinerary);
-
-            // Render lịch trình UI
-            this._renderItineraryUI();
+            
+            // Update the model with the new schedule
+            oTourModel.setProperty("/schedule", aNewSchedule);
+            
+            // Generate the UI for the schedule
+            this._generateScheduleUI();
         },
-
-        _renderItineraryUI: function () {
-            var oItineraryContainer = this.byId("dynamicItineraryContainer");
+        
+        _generateScheduleUI: function () {
+            var oScheduleContainer = this.byId("scheduleContainer");
             var oTourModel = this.getView().getModel("tour");
-            var aItinerary = oTourModel.getProperty("/itinerary");
-
-            // Xóa nội dung cũ
-            if (oItineraryContainer) {
-                oItineraryContainer.destroyContent();
-
-                // Thêm các panel cho từng ngày
-                aItinerary.forEach(function (oDayData, index) {
-                    var iDay = index + 1;
-                    var oDayPanel = new Panel({
-                        expandable: true,
-                        expanded: true,
-                        headerText: "Day " + iDay + " - " + (oDayData.title || ""),
-                        content: [
-                            new SimpleForm({
-                                editable: true,
-                                layout: "ResponsiveGridLayout",
-                                content: [
-                                    new Label({ text: "Title of the day" }),
-                                    new Input({
-                                        value: "{tour>/itinerary/" + index + "/title}",
-                                        placeholder: "Enter Title of the day... " + iDay
-                                    }),
-
-                                    new Label({ text: "Describe Overview" }),
-                                    new TextArea({
-                                        value: "{tour>/itinerary/" + index + "/description}",
-                                        placeholder: "Description of the main activities of the day",
-                                        rows: 2
-                                    }),
-
-                                    new Label({ text: "Meal included" }),
-                                    new HBox({
-                                        items: [
-                                            new CheckBox({
-                                                text: "Breakfast",
-                                                selected: "{tour>/itinerary/" + index + "/meals/breakfast}"
-                                            }),
-                                            new CheckBox({
-                                                text: "Lunch",
-                                                selected: "{tour>/itinerary/" + index + "/meals/lunch}"
-                                            }).addStyleClass("sapUiSmallMarginBegin"),
-                                            new CheckBox({
-                                                text: "Dinner",
-                                                selected: "{tour>/itinerary/" + index + "/meals/dinner}"
-                                            }).addStyleClass("sapUiSmallMarginBegin")
-                                        ]
-                                    }),
-
-                                    new Label({ text: "Activities" }),
-                                    new VBox({
-                                        id: this.createId("activitiesContainer" + iDay),
-                                        items: this._createActivityItems(index)
-                                    }),
-
-                                    new Button({
-                                        text: "Add activity",
-                                        icon: "sap-icon://add",
-                                        press: this.onAddActivity.bind(this, index)
-                                    }).addStyleClass("sapUiSmallMarginTop")
-                                ]
-                            })
-                        ]
-                    }).addStyleClass("sapUiSmallMarginBottom");
-
-                    oItineraryContainer.addContent(oDayPanel);
-                }.bind(this));
-            }
-        },
-
-        _createActivityItems: function (iDayIndex) {
-            var aActivityItems = [];
-            var oTourModel = this.getView().getModel("tour");
-            var aDayActivities = oTourModel.getProperty("/itinerary/" + iDayIndex + "/activities") || [];
-
-            // Tạo UI cho mỗi hoạt động hiện có
-            aDayActivities.forEach(function (oActivity, iActivityIndex) {
-                aActivityItems.push(this._createActivityControl(iDayIndex, iActivityIndex));
+            var aSchedule = oTourModel.getProperty("/schedule");
+            
+            // Clear current content
+            oScheduleContainer.destroyContent();
+            
+            // Create panels for each day
+            aSchedule.forEach(function(oDay, iDayIndex) {
+                // Create the panel with a dynamic header text binding
+                var oDayPanel = new sap.m.Panel({
+                    expandable: true,
+                    expanded: iDayIndex === 0, // Expand the first day by default
+                    headerText: {
+                        parts: [
+                            {path: "tour>/schedule/" + iDayIndex + "/dayNumber"},
+                            {path: "tour>/schedule/" + iDayIndex + "/title"}
+                        ],
+                        formatter: function(dayNumber, title) {
+                            return "Day " + dayNumber + ": " + (title || "");
+                        }
+                    }
+                }).addStyleClass("sapUiSmallMarginBottom");
+                
+                // Create a form for the day details
+                var oDayForm = new sap.ui.layout.form.SimpleForm({
+                    layout: "ResponsiveGridLayout",
+                    editable: true,
+                    content: [
+                        new sap.m.Label({text: "Day Title"}),
+                        new sap.m.Input({
+                            value: "{tour>/schedule/" + iDayIndex + "/title}",
+                            placeholder: "Enter title for Day " + oDay.dayNumber,
+                            liveChange: function(oEvent) {
+                                // Optional - force panel header refresh if binding isn't working
+                                var sTitle = oEvent.getParameter("value");
+                                oDayPanel.invalidate();
+                            }
+                        }),
+                        
+                        new sap.m.Label({text: "Day Overview"}),
+                        new sap.m.TextArea({
+                            value: "{tour>/schedule/" + iDayIndex + "/description}",
+                            rows: 2,
+                            placeholder: "Describe what happens on this day"
+                        }),
+                        
+                        new sap.m.Label({text: "Meals Included"}),
+                        new sap.m.HBox({
+                            items: [
+                                new sap.m.CheckBox({
+                                    text: "Breakfast",
+                                    selected: "{tour>/schedule/" + iDayIndex + "/breakfast}"
+                                }),
+                                new sap.m.CheckBox({
+                                    text: "Lunch",
+                                    selected: "{tour>/schedule/" + iDayIndex + "/lunch}"
+                                }).addStyleClass("sapUiSmallMarginBegin"),
+                                new sap.m.CheckBox({
+                                    text: "Dinner",
+                                    selected: "{tour>/schedule/" + iDayIndex + "/dinner}"
+                                }).addStyleClass("sapUiSmallMarginBegin")
+                            ]
+                        })
+                    ]
+                });
+                
+                // Add the form to the panel
+                oDayPanel.addContent(oDayForm);
+                
+                // Add activity section
+                var oActivitiesVBox = new sap.m.VBox();
+                oActivitiesVBox.addItem(new sap.m.Title({
+                    text: "Activities",
+                    level: "H4"
+                }).addStyleClass("sapUiSmallMarginTop"));
+                
+                // Add each activity
+                this._addActivitiesToContainer(oActivitiesVBox, iDayIndex);
+                
+                // Add button to add more activities
+                oActivitiesVBox.addItem(new sap.m.Button({
+                    text: "Add Activity",
+                    icon: "sap-icon://add",
+                    press: this.onAddActivity.bind(this, iDayIndex)
+                }).addStyleClass("sapUiSmallMarginTop"));
+                
+                // Add activities to the panel
+                oDayPanel.addContent(oActivitiesVBox);
+                
+                // Add the panel to the container
+                oScheduleContainer.addContent(oDayPanel);
             }.bind(this));
-
-            // Nếu chưa có hoạt động nào, thêm một mẫu trống
-            if (aDayActivities.length === 0) {
-                this.onAddActivity(iDayIndex);
-            }
-
-            return aActivityItems;
         },
-
-        _createActivityControl: function (iDayIndex, iActivityIndex) {
-            var sPath = "/itinerary/" + iDayIndex + "/activities/" + iActivityIndex;
-
-            return new VBox({
-                items: [
-                    new HBox({
-                        alignItems: "Center",
-                        items: [
-                            new TimePicker({
-                                value: "{tour>" + sPath + "/time}",
-                                placeholder: "Time"
-                            }).addStyleClass("sapUiSmallMarginEnd"),
-                            new Input({
-                                value: "{tour>" + sPath + "/title}",
-                                placeholder: "Activity Title",
-                            }),
-                            new Button({
-                                icon: "sap-icon://delete",
-                                type: "Transparent",
-                                press: this.onDeleteActivity.bind(this, iDayIndex, iActivityIndex)
-                            }).addStyleClass("sapUiSmallMarginBegin")
-                        ]
-                    }),
-                    new TextArea({
-                        value: "{tour>" + sPath + "/description}",
-                        placeholder: "Detailed description of the activity",
-                        width: "100%",
-                        rows: 2
-                    }).addStyleClass("sapUiTinyMarginTop")
-                ]
-            }).addStyleClass("sapUiSmallMarginBottom");
-        },
-
-        onAddActivity: function (iDayIndex, oEvent) {
+        
+        _addActivitiesToContainer: function (oContainer, iDayIndex) {
             var oTourModel = this.getView().getModel("tour");
-            var sPath = "/itinerary/" + iDayIndex + "/activities";
-            var aActivities = oTourModel.getProperty(sPath) || [];
+            var aActivities = oTourModel.getProperty("/schedule/" + iDayIndex + "/activities") || [];
+            
+            // Create UI for each activity
+            aActivities.forEach(function(oActivity, iActivityIndex) {
+                var sPathPrefix = "/schedule/" + iDayIndex + "/activities/" + iActivityIndex;
+                
+                var oActivityBox = new VBox().addStyleClass("sapUiSmallMarginTop sapUiSmallMarginBottom");
+                
+                // Time and title row
+                var oHeaderBox = new HBox({
+                    alignItems: "Center",
+                    items: [
+                        new Input({
+                            value: "{tour>" + sPathPrefix + "/title}",
+                            placeholder: "Activity Title"
+                        }).addStyleClass("sapUiSmallMarginEnd"),
 
-            // Thêm hoạt động mới vào model
+                        new TimePicker({
+                            value: "{tour>" + sPathPrefix + "/startTime}",
+                            placeholder: "Start Time",
+                            valueFormat: "HH:mm",
+                            displayFormat: "HH:mm"
+                        }).addStyleClass("sapUiSmallMarginEnd"),
+                        
+                        //  new Text({text: "to"}).addStyleClass("sapUiSmallMarginEnd"),
+                        
+                        new TimePicker({
+                            value: "{tour>" + sPathPrefix + "/endTime}",
+                            placeholder: "End Time",
+                            valueFormat: "HH:mm",
+                            displayFormat: "HH:mm"
+                        }).addStyleClass("sapUiSmallMarginEnd"),
+                        
+                        new Button({
+                            icon: "sap-icon://delete",
+                            type: "Transparent",
+                            press: this.onDeleteActivity.bind(this, iDayIndex, iActivityIndex)
+                        })
+                    ]
+                });
+                
+                // Description
+                var oDescBox = new VBox({
+                    items: [
+                        new Label({text: "Description"}).addStyleClass("sapUiTinyMarginTop"),
+                        new TextArea({
+                            value: "{tour>" + sPathPrefix + "/description}",
+                            placeholder: "Detailed description of this activity",
+                            rows: 2,
+                            width: "100%"
+                        })
+                    ]
+                });
+                
+                // Add to container
+                oActivityBox.addItem(oHeaderBox);
+                oActivityBox.addItem(oDescBox);
+                
+                // Add separator
+                if (iActivityIndex < aActivities.length - 1) {
+                    // oActivityBox.addItem(new sap.m.Separator());
+                }
+                
+                oContainer.addItem(oActivityBox);
+            }.bind(this));
+        },
+        
+        onAddActivity: function (iDayIndex) {
+            var oTourModel = this.getView().getModel("tour");
+            var aActivities = oTourModel.getProperty("/schedule/" + iDayIndex + "/activities") || [];
+            
+            // Add a new empty activity
             aActivities.push({
-                time: "",
+                startTime: "00:00",
+                endTime: "12:00",
                 title: "",
                 description: ""
             });
-
-            oTourModel.setProperty(sPath, aActivities);
-
-            // Thêm UI control cho hoạt động mới
-            var oActivitiesContainer = this.byId("activitiesContainer" + (iDayIndex + 1));
-            if (oActivitiesContainer) {
-                var iNewActivityIndex = aActivities.length - 1;
-                oActivitiesContainer.addItem(this._createActivityControl(iDayIndex, iNewActivityIndex));
-            }
+            
+            // Update the model
+            oTourModel.setProperty("/schedule/" + iDayIndex + "/activities", aActivities);
+            
+            // Regenerate the UI
+            var oScheduleContainer = this.byId("scheduleContainer");
+            var aContent = oScheduleContainer.getContent();
+            var oDayPanel = aContent[iDayIndex];
+            var oActivitiesVBox = oDayPanel.getContent()[1]; // The activities VBox is the second content item
+            
+            // Clear and recreate activities
+            oActivitiesVBox.removeAllItems();
+            oActivitiesVBox.addItem(new Title({
+                text: "Activities",
+                level: "H4"
+            }).addStyleClass("sapUiSmallMarginTop"));
+            
+            this._addActivitiesToContainer(oActivitiesVBox, iDayIndex);
+            
+            // Re-add the "Add Activity" button
+            oActivitiesVBox.addItem(new Button({
+                text: "Add Activity",
+                icon: "sap-icon://add",
+                press: this.onAddActivity.bind(this, iDayIndex)
+            }).addStyleClass("sapUiSmallMarginTop"));
+            
+            // Validate the schedule step
+            this._validateCurrentStep();
         },
-
-        onDeleteActivity: function (iDayIndex, iActivityIndex, oEvent) {
+        
+        onDeleteActivity: function (iDayIndex, iActivityIndex) {
             var oTourModel = this.getView().getModel("tour");
-            var sPath = "/itinerary/" + iDayIndex + "/activities";
-            var aActivities = oTourModel.getProperty(sPath) || [];
-
-            // Xóa hoạt động khỏi mảng
+            var aActivities = oTourModel.getProperty("/schedule/" + iDayIndex + "/activities");
+            
+            // Don't delete if it's the only activity
+            if (aActivities.length <= 1) {
+                MessageToast.show("Cannot delete the only activity. At least one activity is required.");
+                return;
+            }
+            
+            // Remove the activity
             aActivities.splice(iActivityIndex, 1);
-            oTourModel.setProperty(sPath, aActivities);
-
-            // Render lại UI cho ngày này
-            var oActivitiesContainer = this.byId("activitiesContainer" + (iDayIndex + 1));
-            if (oActivitiesContainer) {
-                oActivitiesContainer.removeAllItems();
-                aActivities.forEach(function (oActivity, iIndex) {
-                    oActivitiesContainer.addItem(this._createActivityControl(iDayIndex, iIndex));
-                }.bind(this));
-            }
+            oTourModel.setProperty("/schedule/" + iDayIndex + "/activities", aActivities);
+            
+            // Regenerate the UI for this day
+            var oScheduleContainer = this.byId("scheduleContainer");
+            var aContent = oScheduleContainer.getContent();
+            var oDayPanel = aContent[iDayIndex];
+            var oActivitiesVBox = oDayPanel.getContent()[1]; // The activities VBox is the second content item
+            
+            // Clear and recreate activities
+            oActivitiesVBox.removeAllItems();
+            oActivitiesVBox.addItem(new Title({
+                text: "Activities",
+                level: "H4"
+            }).addStyleClass("sapUiSmallMarginTop"));
+            
+            this._addActivitiesToContainer(oActivitiesVBox, iDayIndex);
+            
+            // Re-add the "Add Activity" button
+            oActivitiesVBox.addItem(new Button({
+                text: "Add Activity",
+                icon: "sap-icon://add",
+                press: this.onAddActivity.bind(this, iDayIndex)
+            }).addStyleClass("sapUiSmallMarginTop"));
+            
+            // Validate the schedule step
+            this._validateCurrentStep();
         },
-
-        onStartUpload: function () {
-            // Kích hoạt quá trình tải lên ảnh
-            var oUploadCollection = this.byId("tourImageUpload");
-            if (oUploadCollection) {
-                oUploadCollection.upload();
-            }
-        },
-
-        onImageUploadComplete: function (oEvent) {
-            var aFiles = oEvent.getParameter("files") || [];
-            if (aFiles.length > 0) {
-                var sFileName = aFiles[0].fileName;
-
-                // Trong thực tế, cần lấy URL thực từ phản hồi của server
-                var sImageUrl = "/resources/images/uploads/" + sFileName;
-
-                var oTourModel = this.getView().getModel("tour");
-                var aImages = oTourModel.getProperty("/images") || [];
-
-                // Thêm ảnh mới vào danh sách
-                aImages.push({
-                    url: sImageUrl,
-                    name: sFileName
-                });
-
-                oTourModel.setProperty("/images", aImages);
-                MessageToast.show("Ảnh " + sFileName + " đã được tải lên thành công!");
-            }
-        },
-
-        onShowItineraryHelp: function () {
+        
+        onShowScheduleHelp: function () {
             MessageBox.information(
-                "To create a tour schedule:\n\n" +
-                "1. Enter the number of days in the 'General Information' Tab\n" +
-                "2. Add a title and description for each day\n" +
-                "3. Choose meals included in the tour\n" +
-                "4. Add detailed activities for each day\n\n" +
-                "You can add multiple activities for each day and arrange them in chronological order.",
-                { title: "Instructions for creating a schedule" }
-            );
-        },
-
-        onSaveDraft: function () {
-            var oTourModel = this.getView().getModel("tour");
-            var oTourData = oTourModel.getData();
-
-            // Validation cơ bản
-            if (!oTourData.tourName) {
-                MessageToast.show("Enter tour name before saving!");
-                return;
-            }
-
-            // Lưu vào local storage hoặc backend
-            try {
-                // Trong thực tế sẽ gửi API request
-                localStorage.setItem("tourDraft_" + oTourData.tourID, JSON.stringify(oTourData));
-                MessageToast.show("Đã lưu bản nháp thành công!");
-            } catch (e) {
-                MessageToast.show("Không thể lưu bản nháp. Lỗi: " + e.message);
-            }
-        },
-
-        onPreview: function () {
-            // Hiển thị xem trước tour (có thể mở dialog hoặc chuyển trang)
-            var oTourData = this.getView().getModel("tour").getData();
-
-            if (!oTourData.tourName) {
-                MessageToast.show("Vui lòng nhập tên tour trước khi xem trước!");
-                return;
-            }
-
-            // Trong thực tế có thể chuyển đến màn hình xem trước
-            MessageBox.information(
-                "Chức năng xem trước sẽ hiển thị tour theo giao diện người dùng sẽ thấy khi tour được đăng.",
+                "Creating a Schedule:\n\n" +
+                "1. Each day must have a title and description\n" +
+                "2. Add at least one activity per day\n" +
+                "3. Specify start and end times for each activity\n" +
+                "4. Check the meals included for each day\n\n" +
+                "You can add as many activities as needed for each day.",
                 {
-                    title: "Xem trước: " + oTourData.tourName
+                    title: "Schedule Help"
                 }
             );
         },
-
-        onOpenForSale: function () {
+        
+        onSaveAsDraft: function () {
+            // Validate at least the basic required fields
             var oTourModel = this.getView().getModel("tour");
-            var oNewTour = oTourModel.getData();
-
-            // Kiểm tra dữ liệu bắt buộc
-            if (!oNewTour.tourName) {
-                MessageToast.show("Vui lòng nhập tên tour!");
+            var sTemplateName = oTourModel.getProperty("/templateName");
+            
+            if (!sTemplateName) {
+                MessageBox.error("Template name is required to save a draft.");
                 return;
             }
-
-            if (!oNewTour.price || oNewTour.price <= 0) {
-                MessageToast.show("Vui lòng nhập giá tour hợp lệ!");
+            
+            // Prepare the data for saving
+            this._saveTemplate("Draft");
+        },
+        
+        onCompleteTemplate: function () {
+            // Validate all steps
+            var oStepModel = this.getView().getModel("steps");
+            
+            // Force validation of all steps
+            oStepModel.setProperty("/currentStep", 1);
+            this._validateCurrentStep();
+            oStepModel.setProperty("/currentStep", 2);
+            this._validateCurrentStep();
+            oStepModel.setProperty("/currentStep", 3);
+            this._validateCurrentStep();
+            
+            var bGeneralInfoComplete = oStepModel.getProperty("/generalInfoComplete");
+            var bScheduleComplete = oStepModel.getProperty("/scheduleComplete");
+            var bPriceTermsComplete = oStepModel.getProperty("/priceTermsComplete");
+            
+            if (!bGeneralInfoComplete || !bScheduleComplete || !bPriceTermsComplete) {
+                // Show validation errors
+                var aMessages = [];
+                
+                if (!bGeneralInfoComplete) {
+                    aMessages.push("- General Information: Please fill all required fields");
+                }
+                
+                if (!bScheduleComplete) {
+                    aMessages.push("- Schedule: Each day should have a title, description, and at least one activity");
+                }
+                
+                if (!bPriceTermsComplete) {
+                    aMessages.push("- Price & Terms: Adult price, included services, and cancellation terms are required");
+                }
+                
+                MessageBox.error(
+                    "Please complete all required information before publishing the template:\n\n" + 
+                    aMessages.join("\n"),
+                    {
+                        title: "Validation Error"
+                    }
+                );
+                
+                // Navigate to the first incomplete tab
+                var oIconTabBar = this.byId("tourTabBar");
+                if (!bGeneralInfoComplete) {
+                    oIconTabBar.setSelectedKey("general");
+                } else if (!bScheduleComplete) {
+                    oIconTabBar.setSelectedKey("schedule");
+                } else if (!bPriceTermsComplete) {
+                    oIconTabBar.setSelectedKey("priceTerms");
+                }
+                
                 return;
             }
-
-            if (oNewTour.days <= 0) {
-                MessageToast.show("Số ngày tour phải lớn hơn 0!");
-                return;
-            }
-
-            // Hiển thị dialog xác nhận
+            
+            // Everything is valid, confirm completion
             MessageBox.confirm(
-                "Bạn có chắc chắn muốn mở bán tour \"" + oNewTour.tourName + "\"?",
+                "Are you sure you want to complete this template? Once completed, it will be available for creating active tours.",
                 {
-                    title: "Xác nhận mở bán tour",
+                    title: "Complete Template",
+                    actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+                    emphasizedAction: MessageBox.Action.YES,
                     onClose: function (sAction) {
-                        if (sAction === MessageBox.Action.OK) {
-                            this._saveTour(oNewTour);
+                        if (sAction === MessageBox.Action.YES) {
+                            // Save as published
+                            this._saveTemplate("Published");
                         }
                     }.bind(this)
                 }
             );
         },
-
-        _saveTour: function (oNewTour) {
-            var oMainModel = this.getOwnerComponent().getModel();
-            var aTours = oMainModel.getProperty("/Tours") || [];
-
-            // Bổ sung thông tin bổ sung
-            oNewTour.status = "Active";
-            oNewTour.createdBy = this._getCurrentUser();
-            oNewTour.createdDate = new Date().toISOString();
-
-            aTours.push(oNewTour);
-            oMainModel.setProperty("/Tours", aTours);
-
-            MessageToast.show("Tour " + oNewTour.tourName + " đã được tạo và mở bán thành công!");
-            this.onNavBack();
+        
+        _saveTemplate: function (sStatus) {
+            var oTourModel = this.getView().getModel("tour");
+            var oTourData = oTourModel.getData();
+            var sTemplateId = oTourData.templateID;
+            
+            // Set busy state
+            var oView = this.getView();
+            oView.setBusy(true);
+            
+            // Get the OData model
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            // Check if we're creating or updating
+            var bIsCreate = !sTemplateId;
+            var sActionName = bIsCreate ? "createTourTemplateBasicInfo" : "updateTourTemplateBasicInfo";
+            
+            // Step 1: Create/Update basic information
+            var oContext;
+            
+            try {
+                // Prepare parameters for first step
+                if (bIsCreate) {
+                    // Creating new template
+                    oContext = oModel.bindContext("/" + sActionName + "(...)");
+                    
+                    oContext.setParameter("templateName", oTourData.templateName);
+                    oContext.setParameter("description", oTourData.description);
+                    oContext.setParameter("numberDays", oTourData.days);
+                    oContext.setParameter("numberNights", oTourData.nights);
+                    oContext.setParameter("tourType", oTourData.tourType);
+                    oContext.setParameter("images", oTourData.images.map(function(oImage) {
+                        return {
+                            imageURL: oImage.url,
+                            caption: oImage.fileName,
+                            isMain: oImage.isMain
+                        };
+                    }));
+                } else {
+                    // Updating existing template
+                    oContext = oModel.bindContext("/" + sActionName + "(...)");
+                    
+                    oContext.setParameter("templateID", oTourData.templateID);
+                    oContext.setParameter("templateName", oTourData.templateName);
+                    oContext.setParameter("description", oTourData.description);
+                    oContext.setParameter("numberDays", oTourData.days);
+                    oContext.setParameter("numberNights", oTourData.nights);
+                    oContext.setParameter("tourType", oTourData.tourType);
+                }
+                
+                // Execute the first step
+                oContext.execute().then(function() {
+                    // If creating, store the new template ID
+                    var oResult = oContext.getBoundContext().getObject();
+                    if (bIsCreate && oResult) {
+                        console.log(oResult);
+                        // Update the templateId variable with the new value from the backend
+                        sTemplateId = oResult.templateID;
+                        
+                        // Also update the model
+                        oTourModel.setProperty("/templateID", sTemplateId);
+                        
+                        console.log("New template created with ID:", sTemplateId);
+                    }
+                    
+                    // Use the updated templateId for the next steps
+                    this._saveSchedules(sTemplateId || oTourData.templateID, sStatus);
+                }.bind(this)).catch(function(oError) {
+                    // Handle error
+                    oView.setBusy(false);
+                    MessageBox.error("Error saving template basic information: " + this._getErrorMessage(oError));
+                }.bind(this));
+            } catch (oError) {
+                oView.setBusy(false);
+                MessageBox.error("Error preparing request: " + oError.message);
+            }
         },
-
-        _getCurrentUser: function () {
-            // Trong thực tế lấy từ service authentication
-            return {
-                id: "USER001",
-                name: "Nhân viên kinh doanh"
-            };
+        
+        _saveSchedules: function (sTemplateId, sStatus) {
+            var oTourModel = this.getView().getModel("tour");
+            var aSchedule = oTourModel.getProperty("/schedule");
+            var oView = this.getView();
+            
+            console.log("Saving schedules for template ID:", sTemplateId);
+            
+            // Validate template ID
+            if (!sTemplateId) {
+                oView.setBusy(false);
+                MessageBox.error("Template ID is missing. Cannot save schedules.");
+                return;
+            }
+            
+            // Get the OData model
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            try {
+                // Prepare parameters for schedules
+                var oContext = oModel.bindContext("/addTourTemplateSchedules(...)");
+                
+                // Format schedules for the API
+                var aSchedulesForApi = aSchedule.map(function(oDay) {
+                    return {
+                        dayNumber: oDay.dayNumber,
+                        dayTitle: oDay.title,
+                        overview: oDay.description,
+                        breakfastIncluded: oDay.breakfast,
+                        lunchIncluded: oDay.lunch,
+                        dinnerIncluded: oDay.dinner,
+                        activities: oDay.activities.map(function(oActivity) {
+                            return {
+                                startTime: oActivity.startTime,
+                                endTime: oActivity.endTime,
+                                title: oActivity.title,
+                                description: oActivity.description
+                            };
+                        })
+                    };
+                });
+                
+                oContext.setParameter("templateID", sTemplateId);
+                oContext.setParameter("schedules", aSchedulesForApi);
+                
+                // Execute the schedules step
+                oContext.execute().then(function() {
+                    // Step 3: Add price terms - passing the same templateId
+                    this._savePriceTerms(sTemplateId, sStatus);
+                }.bind(this)).catch(function(oError) {
+                    // Handle error
+                    oView.setBusy(false);
+                    MessageBox.error("Error saving schedule information: " + this._getErrorMessage(oError));
+                }.bind(this));
+            } catch (oError) {
+                oView.setBusy(false);
+                MessageBox.error("Error preparing schedule request: " + oError.message);
+            }
         },
-
+        
+        _savePriceTerms: function (sTemplateId, sStatus) {
+            var oTourModel = this.getView().getModel("tour");
+            var oTourData = oTourModel.getData();
+            var oView = this.getView();
+            
+            // Get the OData model
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            try {
+                // Prepare parameters for price terms
+                var oContext = oModel.bindContext("/addTourTemplatePriceTerms(...)");
+                
+                oContext.setParameter("templateID", sTemplateId);
+                oContext.setParameter("adultPrice", parseFloat(oTourData.adultPrice) || 0);
+                oContext.setParameter("childrenPrice", parseFloat(oTourData.childPrice) || 0);
+                oContext.setParameter("servicesIncluded", oTourData.servicesIncluded);
+                oContext.setParameter("servicesNotIncluded", oTourData.servicesNotIncluded);
+                oContext.setParameter("cancellationTerms", oTourData.cancellationTerms);
+                oContext.setParameter("generalTerms", oTourData.generalTerms);
+                
+                // Execute the price terms step
+                oContext.execute().then(function() {
+                    // Final step: Update status if needed
+                    if (sStatus === "Published") {
+                        this._completeTemplate(sTemplateId);
+                    } else {
+                        // Template saved as draft
+                        oView.setBusy(false);
+                        MessageToast.show("Tour template saved as draft");
+                        
+                        // Navigate back
+                        this.onNavBack();
+                    }
+                }.bind(this)).catch(function(oError) {
+                    // Handle error
+                    oView.setBusy(false);
+                    MessageBox.error("Error saving price and terms: " + this._getErrorMessage(oError));
+                }.bind(this));
+            } catch (oError) {
+                oView.setBusy(false);
+                MessageBox.error("Error preparing price terms request: " + oError.message);
+            }
+        },
+        
+        _completeTemplate: function (sTemplateId) {
+            var oView = this.getView();
+            
+            // Get the OData model
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            try {
+                // Prepare parameters to complete the template
+                var oContext = oModel.bindContext("/completeTourTemplateCreation(...)");
+                
+                oContext.setParameter("templateID", sTemplateId);
+                
+                // Execute the completion
+                oContext.execute().then(function() {
+                    var oResult = oContext.getBoundContext().getObject();
+                    oView.setBusy(false);
+                    
+                    if (oResult && oResult.success) {
+                        MessageBox.success(
+                            "Tour template published successfully.",
+                            {
+                                title: "Success",
+                                onClose: function() {
+                                    // Navigate back
+                                    this.onNavBack();
+                                }.bind(this)
+                            }
+                        );
+                    } else {
+                        // Some validation failed
+                        MessageBox.warning(
+                            "Could not publish template: " + (oResult.message || "Unknown error"),
+                            {
+                                title: "Warning"
+                            }
+                        );
+                    }
+                }.bind(this)).catch(function(oError) {
+                    // Handle error
+                    oView.setBusy(false);
+                    MessageBox.error("Error completing template: " + this._getErrorMessage(oError));
+                }.bind(this));
+            } catch (oError) {
+                oView.setBusy(false);
+                MessageBox.error("Error preparing completion request: " + oError.message);
+            }
+        },
+        
+        onPreview: function () {
+            // Validate at least the basic fields
+            var oTourModel = this.getView().getModel("tour");
+            var sTemplateName = oTourModel.getProperty("/templateName");
+            
+            if (!sTemplateName) {
+                MessageBox.error("Template name is required for preview.");
+                return;
+            }
+            
+            // Show a preview dialog (simplified)
+            MessageBox.information(
+                "Preview functionality will be implemented in the future.",
+                {
+                    title: "Preview"
+                }
+            );
+        },
+        
+        onNavBack: function () {
+            var oHistory = History.getInstance();
+            var sPreviousHash = oHistory.getPreviousHash();
+            
+            if (sPreviousHash !== undefined) {
+                window.history.go(-1);
+            } else {
+                var oRouter = this.getOwnerComponent().getRouter();
+                oRouter.navTo("tour", {}, true);
+            }
+        },
+        
+        _loadTemplateForEdit: function (sTemplateId) {
+            // Set busy state
+            var oView = this.getView();
+            oView.setBusy(true);
+            
+            // Get the OData model
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            try {
+                // Create a context for the function import
+                var oContext = oModel.bindContext("/getTourTemplateDetails(...)");
+                
+                // Set template ID parameter
+                oContext.setParameter("templateID", sTemplateId);
+                
+                // Execute the function import and handle the result
+                oContext.execute().then(function() {
+                    try {
+                        // Get the result data
+                        var oResult = oContext.getBoundContext().getObject();
+                        
+                        if (oResult) {
+                            this._fillTemplateDataForEdit(oResult);
+                        } else {
+                            MessageBox.error("Template not found");
+                            this.onNavBack();
+                        }
+                    } catch (oError) {
+                        console.error("Error processing template data:", oError);
+                        MessageBox.error("Error processing template data");
+                        this.onNavBack();
+                    } finally {
+                        // Clear busy state
+                        oView.setBusy(false);
+                    }
+                }.bind(this)).catch(function(oError) {
+                    // Handle error
+                    console.error("Error loading template:", oError);
+                    MessageBox.error("Error loading template: " + this._getErrorMessage(oError));
+                    oView.setBusy(false);
+                    this.onNavBack();
+                }.bind(this));
+            } catch (oError) {
+                // Handle binding error
+                console.error("Error binding context:", oError);
+                MessageBox.error("Error preparing request");
+                oView.setBusy(false);
+                this.onNavBack();
+            }
+        },
+        
+        _fillTemplateDataForEdit: function (oTemplateData) {
+            var oTourModel = this.getView().getModel("tour");
+            
+            // Basic information
+            oTourModel.setProperty("/templateID", oTemplateData.template.ID);
+            oTourModel.setProperty("/templateName", oTemplateData.template.TemplateName);
+            oTourModel.setProperty("/description", oTemplateData.template.Description);
+            oTourModel.setProperty("/days", oTemplateData.template.NumberDays);
+            oTourModel.setProperty("/nights", oTemplateData.template.NumberNights);
+            oTourModel.setProperty("/tourType", oTemplateData.template.TourType);
+            
+            // Images
+            var aImages = [];
+            if (oTemplateData.images && oTemplateData.images.length > 0) {
+                aImages = oTemplateData.images.map(function(oImage) {
+                    return {
+                        id: oImage.ID,
+                        fileName: oImage.Caption || "Image",
+                        url: oImage.ImageURL,
+                        thumbnailUrl: oImage.ImageURL,
+                        isMain: oImage.IsMain,
+                        attributes: [{
+                            title: "Type",
+                            text: "Image"
+                        }]
+                    };
+                });
+            }
+            oTourModel.setProperty("/images", aImages);
+            
+            // Schedules
+            var aSchedule = [];
+            if (oTemplateData.schedules && oTemplateData.schedules.length > 0) {
+                aSchedule = oTemplateData.schedules.map(function(oSchedule) {
+                    var aActivities = [];
+                    
+                    if (oSchedule.Activities && oSchedule.Activities.length > 0) {
+                        aActivities = oSchedule.Activities.map(function(oActivity) {
+                            return {
+                                startTime: oActivity.StartTime,
+                                endTime: oActivity.EndTime,
+                                title: oActivity.Title,
+                                description: oActivity.Description
+                            };
+                        });
+                    } else {
+                        // Default activity if none exists
+                        aActivities = [{
+                            startTime: "09:00",
+                            endTime: "12:00",
+                            title: "",
+                            description: ""
+                        }];
+                    }
+                    
+                    return {
+                        dayNumber: oSchedule.DayNumber,
+                        title: oSchedule.DayTitle,
+                        description: oSchedule.Overview,
+                        breakfast: oSchedule.BreakfastIncluded,
+                        lunch: oSchedule.LunchIncluded,
+                        dinner: oSchedule.DinnerIncluded,
+                        activities: aActivities
+                    };
+                });
+            }
+            oTourModel.setProperty("/schedule", aSchedule);
+            
+            // Price terms
+            if (oTemplateData.priceTerms) {
+                oTourModel.setProperty("/adultPrice", oTemplateData.priceTerms.AdultPrice);
+                oTourModel.setProperty("/childPrice", oTemplateData.priceTerms.ChildrenPrice);
+                oTourModel.setProperty("/servicesIncluded", oTemplateData.priceTerms.ServicesIncluded);
+                oTourModel.setProperty("/servicesNotIncluded", oTemplateData.priceTerms.ServicesNotIncluded);
+                oTourModel.setProperty("/cancellationTerms", oTemplateData.priceTerms.CancellationTerms);
+                oTourModel.setProperty("/generalTerms", oTemplateData.priceTerms.GeneralTerms);
+            }
+            
+            // Regenerate UI for schedules
+            this._generateScheduleUI();
+        },
+        
+        _getErrorMessage: function (oError) {
+            if (oError.responseText) {
+                try {
+                    var oErrorResponse = JSON.parse(oError.responseText);
+                    if (oErrorResponse.error && oErrorResponse.error.message) {
+                        return oErrorResponse.error.message;
+                    }
+                } catch (e) {
+                    // Parsing error, fallback to default
+                }
+            } else if (oError.message) {
+                return oError.message;
+            }
+            return "An unknown error occurred";
+        }
     });
-});
+ });

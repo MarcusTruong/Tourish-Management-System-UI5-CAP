@@ -137,7 +137,7 @@
                     </columns>
                     
                     <items>
-                        <ColumnListItem id="_IDGenColumnListItem4" type="Navigation" press=".onPress">
+                        <ColumnListItem id="_IDGenColumnListItem4" type="Navigation" press=".onTourPress">
                             <cells>
                                 <HBox id="_IDGenHBox7" justifyContent="Center" alignItems="Center" height="80px">
                                     <Image id="_IDGenImage1" 
@@ -183,6 +183,11 @@
                                         icon="sap-icon://create" 
                                         press=".onCreateActiveTour" 
                                         tooltip="Create Active Tour" 
+                                        class="sapUiTinyMarginBegin"/>
+                                    <Button id="_IDGenButton35" 
+                                        icon="sap-icon://delete" 
+                                        press=".onDeleteTemplateTour" 
+                                        tooltip="Delete Template Tour" 
                                         class="sapUiTinyMarginBegin"/>
                                 </HBox>
                             </cells>

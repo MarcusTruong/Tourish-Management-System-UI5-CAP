@@ -32,8 +32,25 @@ sap.ui.define([
             // Load initial data
             this._loadTemplates();
         },
+                
+        onTourPress: function (oEvent) {
+            console.log(1);
+            // Get the selected item context
+            var oItem = oEvent.getSource();
+            var oBindingContext = oItem.getBindingContext("templates");
+            console.log(oBindingContext);
+            if (oBindingContext) {
+                var sTemplateId = oBindingContext.getProperty("ID");
+                
+                // Navigate to template details
+                MessageToast.show("Navigate to template details: " + sTemplateId);
+                // this.getOwnerComponent().getRouter().navTo("templateDetail", {
+                //     templateId: sTemplateId
+                // });
+            }
+        },
         
-        _onRouteMatched: function (oEvent) {
+        _onRouteMatched: function () {
             // Reload data when route is matched
             this._loadTemplates();
         },
@@ -49,9 +66,9 @@ sap.ui.define([
             }
             
             // Get filter values
-            var sSearchTerm = this.byId("searchField") ? this.byId("searchField").getValue() : "";
-            var sTourType = this.byId("tourTypeFilter") ? this.byId("tourTypeFilter").getSelectedKey() : "";
-            var sStatus = this.byId("statusFilter") ? this.byId("statusFilter").getSelectedKey() : "";
+            var sSearchTerm = this.byId("searchField")?.getValue() || "";
+            var sTourType = this.byId("tourTypeFilter")?.getSelectedKey() || "";
+            var sStatus = this.byId("statusFilter")?.getSelectedKey() || "";
             
             // Get pagination values
             var iSkip = oTemplatesModel.getProperty("/pagination/skip");
@@ -62,7 +79,7 @@ sap.ui.define([
             
             // Ensure we have a model
             if (!oModel) {
-                MessageToast.show("No model available");
+                MessageToast.show("Không tìm thấy model OData");
                 oTemplatesModel.setProperty("/busy", false);
                 if (oTable) {
                     oTable.setBusy(false);
@@ -71,30 +88,38 @@ sap.ui.define([
             }
             
             try {
-                // Create a context for the function import
+                // Tạo context cho function import
                 var oContext = oModel.bindContext("/listTourTemplates(...)");
                 
-                // Execute the function import and handle the result
+                // Thiết lập tham số cho context
+                oContext.setParameter("searchTerm", sSearchTerm);
+                oContext.setParameter("tourType", sTourType);
+                oContext.setParameter("status", sStatus);
+                oContext.setParameter("skip", iSkip);
+                oContext.setParameter("limit", iLimit);
+                
+                // Thực thi function import và xử lý kết quả
                 oContext.execute()
                     .then(function () {
                         try {
-                            // Get the result data
+                            // Lấy dữ liệu kết quả
                             var oResult = oContext.getBoundContext().getObject();
                             
-                            // Update the templates model
+                            console.log("Kết quả từ backend:", oResult);
+                            
+                            // Cập nhật model templates
                             if (oResult) {
                                 oTemplatesModel.setData(oResult);
                             } else {
-                                // Handle empty result
+                                // Xử lý kết quả trống
                                 oTemplatesModel.setProperty("/items", []);
                                 oTemplatesModel.setProperty("/pagination/total", 0);
                             }
                         } catch (oError) {
-                            // Handle data processing error
-                            console.error("Error processing data:", oError);
-                            MessageToast.show("Error processing data");
+                            console.error("Lỗi khi xử lý dữ liệu:", oError);
+                            MessageToast.show("Lỗi khi xử lý dữ liệu trả về");
                         } finally {
-                            // Clear busy states
+                            // Xóa trạng thái busy
                             oTemplatesModel.setProperty("/busy", false);
                             if (oTable) {
                                 oTable.setBusy(false);
@@ -102,22 +127,20 @@ sap.ui.define([
                         }
                     })
                     .catch(function (oError) {
-                        // Handle execution error
-                        console.error("Error executing request:", oError);
-                        MessageToast.show("Error loading tour templates");
+                        console.error("Lỗi khi gọi function import:", oError);
+                        MessageToast.show(`Lỗi khi tải danh sách tour: ${oError.message || "Không xác định"}`);
                         
-                        // Clear busy states
+                        // Xóa trạng thái busy
                         oTemplatesModel.setProperty("/busy", false);
                         if (oTable) {
                             oTable.setBusy(false);
                         }
                     });
             } catch (oError) {
-                // Handle binding error
-                console.error("Error binding context:", oError);
-                MessageToast.show("Error preparing request");
+                console.error("Lỗi khi tạo context:", oError);
+                MessageToast.show("Lỗi khi chuẩn bị yêu cầu");
                 
-                // Clear busy states
+                // Xóa trạng thái busy
                 oTemplatesModel.setProperty("/busy", false);
                 if (oTable) {
                     oTable.setBusy(false);
@@ -155,22 +178,7 @@ sap.ui.define([
             var oRouter = this.getOwnerComponent().getRouter();
             oRouter.navTo("templateCreate");
         },
-        
-        onPress: function (oEvent) {
-            // Get the selected item context
-            var oItem = oEvent.getSource();
-            var oBindingContext = oItem.getBindingContext("templates");
-            
-            if (oBindingContext) {
-                var sTemplateId = oBindingContext.getProperty("ID");
-                
-                // Navigate to template details
-                MessageToast.show("Navigate to template details: " + sTemplateId);
-                // this.getOwnerComponent().getRouter().navTo("templateDetail", {
-                //     templateId: sTemplateId
-                // });
-            }
-        },
+
         
         onEdit: function (oEvent) {
             // Prevent propagation to avoid triggering row selection
@@ -215,6 +223,108 @@ sap.ui.define([
                 });
             }
         },
+
+        onDeleteTemplateTour: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oBindingContext = oSource.getBindingContext("templates");
+
+            if (oBindingContext) {
+                var sTemplateId = oBindingContext.getProperty("ID");
+                var sTemplateName = oBindingContext.getProperty("TemplateName");
+
+                MessageBox.confirm("Are you sure you want to delete the template '" + sTemplateName + "'? " +
+            "This action cannot be undone and all associated data will be deleted.", {
+                title: "Confirm Deletion",
+                icon: MessageBox.Icon.WARNING,
+                actions: [MessageBox.Action.DELETE, MessageBox.Action.CANCEL],
+                emphasizedAction: MessageBox.Action.DELETE,
+                onClose: function (sAction) {
+                    if (sAction === MessageBox.Action.DELETE) {
+                        this._executeTemplateDelete(sTemplateId);
+                    }
+                }.bind(this)
+            })
+
+            }
+        },
+
+        _executeTemplateDelete: function (sTemplateId) {
+            // Set busy state
+            var oView = this.getView();
+            var oTable = this.byId("tourTemplatesTable");
+            
+            oView.setBusy(true);
+            if (oTable) {
+                oTable.setBusy(true);
+            }
+            
+            // Get the OData model
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            try {
+                // Prepare delete action
+                var oContext = oModel.bindContext("/deleteTourTemplate(...)");
+                oContext.setParameter("templateID", sTemplateId);
+                
+                // Execute deletion
+                oContext.execute()
+                    .then(function () {
+                        var oResult = oContext.getBoundContext().getObject();
+                        // Clear busy states
+                        oView.setBusy(false);
+                        if (oTable) {
+                            oTable.setBusy(false);
+                        }
+                        
+                        if (oResult && oResult.success) {
+                            // Show success message
+                            MessageToast.show("Template deleted successfully");
+                            
+                            // Refresh the templates table
+                            this._loadTemplates();
+                        } else {
+                            // Show error
+                            MessageBox.error(oResult && oResult.message ? oResult.message : "Failed to delete template");
+                        }
+                    }.bind(this))
+                    .catch(function (oError) {
+                        // Clear busy states
+                        oView.setBusy(false);
+                        if (oTable) {
+                            oTable.setBusy(false);
+                        }
+                        
+                        // Handle error
+                        var sErrorMessage = "Error deleting template";
+                        
+                        // Try to extract detailed message
+                        if (oError.responseText) {
+                            try {
+                                var oErrorResponse = JSON.parse(oError.responseText);
+                                if (oErrorResponse && oErrorResponse.error && oErrorResponse.error.message) {
+                                    sErrorMessage = oErrorResponse.error.message;
+                                }
+                            } catch (e) {
+                                // If parsing fails, use the raw response text
+                                sErrorMessage = oError.responseText;
+                            }
+                        } else if (oError.message) {
+                            sErrorMessage = oError.message;
+                        }
+                        
+                        MessageBox.error(sErrorMessage);
+                    }.bind(this));
+            } catch (oError) {
+                // Clear busy states
+                oView.setBusy(false);
+                if (oTable) {
+                    oTable.setBusy(false);
+                }
+                
+                // Handle preparation error
+                MessageBox.error("Error preparing delete request: " + oError.message);
+            }
+        },
         
         onCreateActiveTour: function (oEvent) {
             // Prevent propagation to avoid triggering row selection
@@ -234,7 +344,7 @@ sap.ui.define([
                 // });
             }
         },
-        
+
         onImagePress: function (oEvent) {
             // Get the image source
             var oImage = oEvent.getSource();

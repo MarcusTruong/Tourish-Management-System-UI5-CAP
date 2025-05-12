@@ -22,7 +22,7 @@ Content-Type: {{contentType}}
 @templateId = ab93ef0d-c4e6-4445-9763-4d34c57f4715
 @scheduleId = 00000000-0000-0000-0000-000000000000
 @activityId = 00000000-0000-0000-0000-000000000000
-@imageId = 023aacec-3b16-428e-8c32-7a385470c6e4
+@imageId = 0f539947-e268-47f4-823d-aa5cf583d0d5
 @activeTourId = e216326a-72d7-4bef-8dd5-a6b13e7b8e5a
 @passengerId = 00000000-0000-0000-0000-000000000000
 @serviceId = 00000000-0000-0000-0000-000000000000
@@ -79,8 +79,8 @@ Authorization: Basic {{base64 username:password}}
 
 {
   "templateID": "{{templateId}}",
-  "imageURL": "https://example.com/images/hanoi6.jpg",
-  "caption": "Hanoi Old Quarter",
+  "imageURL": "https://i.ytimg.com/vi/u9VswvjJtfI/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLChUGHaJj8oPH9ZXwq0pqwLjvdFQQ",
+  "caption": "Hanoi Old Quarter 4",
   "isMain": false
 }
 
@@ -327,9 +327,9 @@ Content-Type: application/json
 Authorization: Basic {{base64 username:password}}
 
 {
-  "searchTerm": "Cultural",
-  "tourType": "Cultural",
-  "status": "",
+  "searchTerm": "",
+  "tourType": "",
+  "status": "Published",
   "skip": 0,
   "limit": 10
 }
