@@ -181,9 +181,6 @@ sap.ui.define([
 
         
         onEdit: function (oEvent) {
-            // Prevent propagation to avoid triggering row selection
-            // oEvent.stopPropagation();
-            
             // Get the template ID from the binding context
             var oSource = oEvent.getSource();
             var oBindingContext = oSource.getBindingContext("templates");
@@ -191,11 +188,23 @@ sap.ui.define([
             if (oBindingContext) {
                 var sTemplateId = oBindingContext.getProperty("ID");
                 
-                // Navigate to template edit
-                MessageToast.show("Navigate to template edit: " + sTemplateId);
-                // this.getOwnerComponent().getRouter().navTo("templateEdit", {
-                //     templateId: sTemplateId
-                // });
+                // Debug log
+                console.log("Template ID for edit:", sTemplateId);
+                
+                // Store the ID in a global model instead of passing as route parameter
+                var oTemplateEditModel = new sap.ui.model.json.JSONModel({
+                    templateId: sTemplateId
+                });
+                
+                this.getOwnerComponent().setModel(oTemplateEditModel, "templateEdit");
+                
+                // Navigate without parameter
+                try {
+                    this.getOwnerComponent().getRouter().navTo("templateCreate");
+                } catch (oError) {
+                    console.error("Navigation error:", oError);
+                    MessageBox.error("Error navigating: " + oError.message);
+                }
             }
         },
         

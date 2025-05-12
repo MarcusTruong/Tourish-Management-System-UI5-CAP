@@ -194,14 +194,34 @@
                 </items>
             </IconTabBar>
         </content>
-        <footer>
-            <Toolbar id="_IDGenToolbar">
-                <ToolbarSpacer id="_IDGenToolbarSpacer15"/>
-                <Button id="saveAsDraftButton" text="Save as Draft" icon="sap-icon://save" press=".onSaveAsDraft"/>
-                <Button id="previewButton" text="Preview" icon="sap-icon://preview" press=".onPreview"/>
-                <Button id="completeButton" text="Complete Template" type="Emphasized" icon="sap-icon://accept" press=".onCompleteTemplate"/>
-                <Button id="cancelButton" text="Cancel" icon="sap-icon://decline" press=".onNavBack"/>
-            </Toolbar>
-        </footer>
+<footer>
+    <Toolbar id="_IDGenToolbar">
+        <ToolbarSpacer id="_IDGenToolbarSpacer15"/>
+        <Button id="saveAsDraftButton" 
+                text="Save as Draft" 
+                icon="sap-icon://save" 
+                press=".onSaveAsDraft" 
+                visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}"/>
+        <Button id="saveButton2" 
+                text="Save" 
+                icon="sap-icon://save" 
+                press=".onSaveTemplate" 
+                visible="{= !!${tour>/templateID} &amp;&amp; ${tour>/status} === 'Published' }"/>
+        <Button id="previewButton" 
+                text="Preview" 
+                icon="sap-icon://preview" 
+                press=".onPreview"/>
+        <Button id="completeButton" 
+                text="Complete Template" 
+                type="Emphasized" 
+                icon="sap-icon://accept" 
+                press=".onCompleteTemplate" 
+                visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}"/>
+        <Button id="cancelButton" 
+                text="Cancel" 
+                icon="sap-icon://decline" 
+                press=".onNavBack"/>
+    </Toolbar>
+</footer>
     </Page>
 </mvc:View>

@@ -130,9 +130,9 @@
           "target": "createSampleTour"
         },
         {
-          "pattern": "templateCreate",
           "name": "templateCreate",
-          "target": "templateCreate"
+          "pattern": "template/create:?templateId:",
+          "target": ["templateCreate"]
         },
         {
           "pattern": "supplierInformation",
