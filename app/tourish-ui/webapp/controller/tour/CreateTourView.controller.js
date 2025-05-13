@@ -630,7 +630,7 @@ sap.ui.define([
             var oTourModel = this.getView().getModel("tour");
             var oTourData = oTourModel.getData();
             var sTemplateId = oTourData.templateID;
-            
+            console.log("templateID: ", sTemplateId);
             // Set busy state
             var oView = this.getView();
             oView.setBusy(true);
@@ -699,7 +699,9 @@ sap.ui.define([
                 oView.setBusy(false);
                 MessageBox.error("Error preparing request: " + oError.message);
             }
-        }, _saveSchedules: function (sTemplateId, sStatus) {
+        }, 
+        
+        _saveSchedules: function (sTemplateId, sStatus) {
             var oTourModel = this.getView().getModel("tour");
             var aSchedule = oTourModel.getProperty("/schedule");
             var oView = this.getView();
@@ -715,39 +717,323 @@ sap.ui.define([
             
             // Get the OData model
             var oModel = this.getOwnerComponent().getModel("tourService");
+            var bIsPublished = sStatus === "Published" && oTourModel.getProperty("/status") === "Published";
             
             try {
-                // Prepare parameters for schedules
-                var oContext = oModel.bindContext("/addTourTemplateSchedules(...)");
+                // For published templates with existing schedules, we need to update them one by one
+                if (bIsPublished && oTourModel.getProperty("/scheduleIds")) {
+                    var aScheduleIds = oTourModel.getProperty("/scheduleIds") || [];
+                    
+                    // Check if we have schedule IDs stored from loading the template
+                    if (aScheduleIds.length > 0) {
+                        this._updateExistingSchedules(sTemplateId, aScheduleIds, aSchedule, sStatus);
+                        return;
+                    }
+                }
                 
-                // Format schedules for the API
-                var aSchedulesForApi = aSchedule.map(function(oDay) {
-                    return {
-                        dayNumber: oDay.dayNumber, dayTitle: oDay.title, overview: oDay.description, breakfastIncluded: oDay.breakfast, lunchIncluded: oDay.lunch, dinnerIncluded: oDay.dinner, activities: oDay.activities.map(function(oActivity) {
-                            return {
-                                startTime: oActivity.startTime, endTime: oActivity.endTime, title: oActivity.title, description: oActivity.description
-                            };
-                        })
-                    };
-                });
-                
-                oContext.setParameter("templateID", sTemplateId);
-                oContext.setParameter("schedules", aSchedulesForApi);
-                
-                // Execute the schedules step
-                oContext.execute().then(function() {
-                    // Step 3: Add price terms - passing the same templateId
-                    this._savePriceTerms(sTemplateId, sStatus);
-                }.bind(this)).catch(function(oError) {
-                    // Handle error
-                    oView.setBusy(false);
-                    MessageBox.error("Error saving schedule information: " + this._getErrorMessage(oError));
-                }.bind(this));
+                // If we don't have existing schedule IDs or it's a new template, add schedules
+                this._addNewSchedules(sTemplateId, aSchedule, sStatus);
             } catch (oError) {
                 oView.setBusy(false);
                 MessageBox.error("Error preparing schedule request: " + oError.message);
             }
-        }, _savePriceTerms: function (sTemplateId, sStatus) {
+        },
+        
+        _updateExistingSchedules: function(sTemplateId, aScheduleIds, aSchedule, sStatus) {
+            var oView = this.getView();
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            var iUpdatedCount = 0;
+            var iExpectedCount = Math.min(aScheduleIds.length, aSchedule.length);
+            var bSuccess = true;
+            var sErrorMessage = "";
+            
+            console.log("Updating existing schedules for template ID:", sTemplateId);
+            
+            // Process each schedule update one by one
+            for (var i = 0; i < iExpectedCount; i++) {
+                var sScheduleId = aScheduleIds[i];
+                var oSchedule = aSchedule[i];
+                
+                // Create a context for updating this schedule
+                var oContext = oModel.bindContext("/updateTourTemplateSchedule(...)");
+                
+                oContext.setParameter("scheduleID", sScheduleId);
+                oContext.setParameter("dayTitle", oSchedule.title);
+                oContext.setParameter("overview", oSchedule.description);
+                oContext.setParameter("breakfastIncluded", oSchedule.breakfast);
+                oContext.setParameter("lunchIncluded", oSchedule.lunch);
+                oContext.setParameter("dinnerIncluded", oSchedule.dinner);
+                
+                // Execute the update - use a closure to capture the current index
+                (function(iIndex) {
+                    oContext.execute().then(function() {
+                        var oResult = oContext.getBoundContext().getObject();
+                        // Increment counter on success
+                        if (oResult && oResult.success) {
+                            iUpdatedCount++;
+                        } else {
+                            bSuccess = false;
+                            sErrorMessage = oResult && oResult.message ? oResult.message : "Failed to update schedule " + (iIndex + 1);
+                        }
+                        
+                        // Check if all updates are completed
+                        if (iIndex === iExpectedCount - 1 || !bSuccess) {
+                            if (bSuccess) {
+                                console.log("Successfully updated " + iUpdatedCount + " of " + iExpectedCount + " schedules");
+                                
+                                // Handle any new schedules if days were added
+                                if (aSchedule.length > aScheduleIds.length) {
+                                    var aNewSchedules = aSchedule.slice(aScheduleIds.length);
+                                    this._addAdditionalSchedules(sTemplateId, aNewSchedules, sStatus);
+                                } else {
+                                    // All updates completed successfully, continue with activities
+                                    this._updateActivities(sTemplateId, aScheduleIds, aSchedule, sStatus);
+                                }
+                            } else {
+                                // Show error message if any update failed
+                                oView.setBusy(false);
+                                MessageBox.error("Error updating schedules: " + sErrorMessage);
+                            }
+                        }
+                    }.bind(this)).catch(function(oError) {
+                        bSuccess = false;
+                        oView.setBusy(false);
+                        MessageBox.error("Error updating schedule " + (iIndex + 1) + ": " + this._getErrorMessage(oError));
+                    }.bind(this));
+                }.bind(this))(i);
+            }
+        },
+        
+        _updateActivities: function(sTemplateId, aScheduleIds, aSchedule, sStatus) {
+            var oView = this.getView();
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            var iTotalActivities = 0;
+            var iProcessedActivities = 0;
+            var iSuccessCount = 0;
+            var bSuccess = true;
+            var sErrorMessage = "";
+            
+            console.log("Updating activities for template schedules");
+            
+            // First, calculate total number of activities across all schedules
+            for (var i = 0; i < aSchedule.length; i++) {
+                if (i < aScheduleIds.length) { // Only count activities for existing schedules
+                    iTotalActivities += aSchedule[i].activities.length;
+                }
+            }
+            
+            // If no activities to update, proceed to price terms
+            if (iTotalActivities === 0) {
+                console.log("No activities to update");
+                this._savePriceTerms(sTemplateId, sStatus);
+                return;
+            }
+            
+            // Process each schedule's activities
+            for (var j = 0; j < Math.min(aScheduleIds.length, aSchedule.length); j++) {
+                var sScheduleId = aScheduleIds[j];
+                var oSchedule = aSchedule[j];
+                var aActivities = oSchedule.activities || [];
+                
+                // Process each activity for this schedule
+                for (var k = 0; k < aActivities.length; k++) {
+                    var oActivity = aActivities[k];
+                    
+                    // Determine if this is an update or add operation
+                    if (oActivity.id) {
+                        // Update existing activity
+                        var oUpdateContext = oModel.bindContext("/updateActivity(...)");
+                        
+                        oUpdateContext.setParameter("activityID", oActivity.id);
+                        oUpdateContext.setParameter("startTime", oActivity.startTime);
+                        oUpdateContext.setParameter("endTime", oActivity.endTime);
+                        oUpdateContext.setParameter("title", oActivity.title);
+                        oUpdateContext.setParameter("description", oActivity.description);
+                        
+                        // Use closure to capture current indices
+                        (function(iScheduleIndex, iActivityIndex, iTotal) {
+                            oUpdateContext.execute().then(function() {
+                                var oResult = oUpdateContext.getBoundContext().getObject();
+                                iProcessedActivities++;
+                                
+                                if (oResult && oResult.success) {
+                                    iSuccessCount++;
+                                } else {
+                                    bSuccess = false;
+                                    sErrorMessage = oResult && oResult.message ? 
+                                        oResult.message : 
+                                        "Failed to update activity " + (iActivityIndex + 1) + " in schedule " + (iScheduleIndex + 1);
+                                    console.error(sErrorMessage);
+                                }
+                                
+                                // Check if all activities have been processed
+                                if (iProcessedActivities === iTotal || !bSuccess) {
+                                    _checkActivitiesCompletion(iSuccessCount, iTotal, bSuccess, sErrorMessage);
+                                }
+                            }).catch(function(oError) {
+                                iProcessedActivities++;
+                                bSuccess = false;
+                                var sError = "Error updating activity " + (iActivityIndex + 1) + 
+                                            " in schedule " + (iScheduleIndex + 1) + ": " + 
+                                            this._getErrorMessage(oError);
+                                console.error(sError);
+                                
+                                // Check if all activities have been processed
+                                if (iProcessedActivities === iTotal || !bSuccess) {
+                                    _checkActivitiesCompletion(iSuccessCount, iTotal, bSuccess, sError);
+                                }
+                            }.bind(this));
+                        }.bind(this))(j, k, iTotalActivities);
+                        
+                    } else {
+                        // Add new activity
+                        var oAddContext = oModel.bindContext("/addActivityToSchedule(...)");
+                        
+                        oAddContext.setParameter("scheduleID", sScheduleId);
+                        oAddContext.setParameter("startTime", oActivity.startTime);
+                        oAddContext.setParameter("endTime", oActivity.endTime);
+                        oAddContext.setParameter("title", oActivity.title);
+                        oAddContext.setParameter("description", oActivity.description);
+                        
+                        // Use closure to capture current indices
+                        (function(iScheduleIndex, iActivityIndex, iTotal) {
+                            oAddContext.execute().then(function() {
+                                var oResult = oAddContext.getBoundContext().getObject();
+                                iProcessedActivities++;
+                                
+                                if (oResult && oResult.activityID) {
+                                    iSuccessCount++;
+                                    
+                                    // Store the new ID in the model for future reference
+                                    var sPath = "/schedule/" + iScheduleIndex + "/activities/" + iActivityIndex + "/id";
+                                    this.getView().getModel("tour").setProperty(sPath, oResult.activityID);
+                                } else {
+                                    bSuccess = false;
+                                    sErrorMessage = oResult && oResult.message ? 
+                                        oResult.message : 
+                                        "Failed to add activity " + (iActivityIndex + 1) + " to schedule " + (iScheduleIndex + 1);
+                                    console.error(sErrorMessage);
+                                }
+                                
+                                // Check if all activities have been processed
+                                if (iProcessedActivities === iTotal || !bSuccess) {
+                                    _checkActivitiesCompletion(iSuccessCount, iTotal, bSuccess, sErrorMessage);
+                                }
+                            }.bind(this)).catch(function(oError) {
+                                iProcessedActivities++;
+                                bSuccess = false;
+                                var sError = "Error adding activity " + (iActivityIndex + 1) + 
+                                            " to schedule " + (iScheduleIndex + 1) + ": " + 
+                                            this._getErrorMessage(oError);
+                                console.error(sError);
+                                
+                                // Check if all activities have been processed
+                                if (iProcessedActivities === iTotal || !bSuccess) {
+                                    _checkActivitiesCompletion(iSuccessCount, iTotal, bSuccess, sError);
+                                }
+                            }.bind(this));
+                        }.bind(this))(j, k, iTotalActivities);
+                    }
+                }
+            }
+            
+            // Helper function to check if all activities have been processed
+            var _checkActivitiesCompletion = function(iSuccess, iTotal, bSuccessful, sError) {
+                if (bSuccessful) {
+                    console.log("Successfully processed " + iSuccess + " of " + iTotal + " activities");
+                    // Continue with price terms
+                    this._savePriceTerms(sTemplateId, sStatus);
+                } else {
+                    // Show error message
+                    oView.setBusy(false);
+                    MessageBox.error("Error updating activities: " + sError);
+                }
+            }.bind(this);
+        },
+        
+        _addAdditionalSchedules: function(sTemplateId, aNewSchedules, sStatus) {
+            var oView = this.getView();
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            console.log("Adding " + aNewSchedules.length + " new schedules");
+            
+            // Format schedules for the API
+            var aSchedulesForApi = aNewSchedules.map(function(oDay) {
+                return {
+                    dayNumber: oDay.dayNumber,
+                    dayTitle: oDay.title,
+                    overview: oDay.description,
+                    breakfastIncluded: oDay.breakfast,
+                    lunchIncluded: oDay.lunch,
+                    dinnerIncluded: oDay.dinner,
+                    activities: oDay.activities.map(function(oActivity) {
+                        return {
+                            startTime: oActivity.startTime,
+                            endTime: oActivity.endTime,
+                            title: oActivity.title,
+                            description: oActivity.description
+                        };
+                    })
+                };
+            });
+            
+            // Prepare parameters for adding schedules
+            var oContext = oModel.bindContext("/addTourTemplateSchedules(...)");
+            oContext.setParameter("templateID", sTemplateId);
+            oContext.setParameter("schedules", aSchedulesForApi);
+            
+            // Execute the schedules step
+            oContext.execute().then(function() {
+                // Continue with price terms
+                this._savePriceTerms(sTemplateId, sStatus);
+            }.bind(this)).catch(function(oError) {
+                // Handle error
+                oView.setBusy(false);
+                MessageBox.error("Error adding new schedules: " + this._getErrorMessage(oError));
+            }.bind(this));
+        },
+        
+        _addNewSchedules: function(sTemplateId, aSchedule, sStatus) {
+            var oView = this.getView();
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            // Format schedules for the API
+            var aSchedulesForApi = aSchedule.map(function(oDay) {
+                return {
+                    dayNumber: oDay.dayNumber,
+                    dayTitle: oDay.title,
+                    overview: oDay.description,
+                    breakfastIncluded: oDay.breakfast,
+                    lunchIncluded: oDay.lunch,
+                    dinnerIncluded: oDay.dinner,
+                    activities: oDay.activities.map(function(oActivity) {
+                        return {
+                            startTime: oActivity.startTime,
+                            endTime: oActivity.endTime,
+                            title: oActivity.title,
+                            description: oActivity.description
+                        };
+                    })
+                };
+            });
+            
+            // Prepare parameters for adding schedules
+            var oContext = oModel.bindContext("/addTourTemplateSchedules(...)");
+            oContext.setParameter("templateID", sTemplateId);
+            oContext.setParameter("schedules", aSchedulesForApi);
+            
+            // Execute the schedules step
+            oContext.execute().then(function() {
+                // Continue with price terms
+                this._savePriceTerms(sTemplateId, sStatus);
+            }.bind(this)).catch(function(oError) {
+                // Handle error
+                oView.setBusy(false);
+                MessageBox.error("Error adding schedules: " + this._getErrorMessage(oError));
+            }.bind(this));
+        }, 
+        
+        _savePriceTerms: function (sTemplateId, sStatus) {
             var oTourModel = this.getView().getModel("tour");
             var oTourData = oTourModel.getData();
             var oView = this.getView();
@@ -907,7 +1193,9 @@ sap.ui.define([
                 oView.setBusy(false);
                 this.onNavBack();
             }
-        }, _fillTemplateDataForEdit: function (oTemplateData) {
+        }, 
+
+        _fillTemplateDataForEdit: function (oTemplateData) {
             var oTourModel = this.getView().getModel("tour");
             
             // Basic information
@@ -917,53 +1205,62 @@ sap.ui.define([
             oTourModel.setProperty("/days", oTemplateData.template.NumberDays);
             oTourModel.setProperty("/nights", oTemplateData.template.NumberNights);
             oTourModel.setProperty("/tourType", oTemplateData.template.TourType);
-
             oTourModel.setProperty("/status", oTemplateData.template.Status);
             
             // Images
             var aImages = [];
-            if (oTemplateData.images && oTemplateData.images.length> 0) {
-                aImages = oTemplateData.images.map(function (oImage) {
+            if (oTemplateData.images && oTemplateData.images.length > 0) {
+                aImages = oTemplateData.images.map(function(oImage) {
                     return {
                         id: oImage.ID,
                         fileName: oImage.Caption || "Image",
                         url: oImage.ImageURL,
                         thumbnailUrl: oImage.ImageURL,
                         isMain: oImage.IsMain,
-                        attributes: [
-                            {
-                                title: "Type",
-                                text: "Image"
-                            }
-                        ]
+                        attributes: [{
+                            title: "Type",
+                            text: "Image"
+                        }]
                     };
                 });
             }
             oTourModel.setProperty("/images", aImages);
-
-            // Schedules - Create default schedules based on days if none exist
+            
+            // Schedules
             var aSchedule = [];
-            var iDays = oTemplateData.template.NumberDays || 1;
-
-            // Check if we have schedules from the backend
-            if (oTemplateData.schedules && oTemplateData.schedules.length > 0) { // Use existing schedules
-                aSchedule = oTemplateData.schedules.map(function (oSchedule) {
+            var aScheduleIds = [];
+            
+            if (oTemplateData.schedules && oTemplateData.schedules.length > 0) {
+                // Extract schedule IDs and store them for later use
+                aScheduleIds = oTemplateData.schedules.map(function(oSchedule) {
+                    return oSchedule.ID;
+                });
+                
+                aSchedule = oTemplateData.schedules.map(function(oSchedule) {
                     var aActivities = [];
-
+                    
                     if (oSchedule.Activities && oSchedule.Activities.length > 0) {
-                        aActivities = oSchedule.Activities.map(function (oActivity) {
-                            return {startTime: oActivity.StartTime, endTime: oActivity.EndTime, title: oActivity.Title, description: oActivity.Description};
+                        aActivities = oSchedule.Activities.map(function(oActivity) {
+                            return {
+                                id: oActivity.ID, // Store activity ID for updates
+                                startTime: oActivity.StartTime,
+                                endTime: oActivity.EndTime,
+                                title: oActivity.Title,
+                                description: oActivity.Description
+                            };
                         });
-                    } else { // Default activity if none exists
+                    } else {
+                        // Default activity if none exists
                         aActivities = [{
-                                startTime: "09:00",
-                                endTime: "12:00",
-                                title: "",
-                                description: ""
-                            }];
+                            startTime: "09:00",
+                            endTime: "12:00",
+                            title: "",
+                            description: ""
+                        }];
                     }
-
+                    
                     return {
+                        id: oSchedule.ID, // Store schedule ID for updates
                         dayNumber: oSchedule.DayNumber,
                         title: oSchedule.DayTitle,
                         description: oSchedule.Overview,
@@ -973,60 +1270,30 @@ sap.ui.define([
                         activities: aActivities
                     };
                 });
-            } else { // Create default schedules based on number of days
-                for (var i = 0; i < iDays; i++) {
+            } else {
+                // Create default schedules if none exists
+                for (var i = 0; i < oTemplateData.template.NumberDays; i++) {
                     aSchedule.push({
                         dayNumber: i + 1,
-                        title: "Day " + (
-                            i + 1
-                        ),
+                        title: "Day " + (i + 1),
                         description: "",
                         breakfast: false,
                         lunch: false,
                         dinner: false,
-                        activities: [
-                            {
-                                startTime: "09:00",
-                                endTime: "12:00",
-                                title: "",
-                                description: ""
-                            }
-                        ]
+                        activities: [{
+                            startTime: "09:00",
+                            endTime: "12:00",
+                            title: "",
+                            description: ""
+                        }]
                     });
                 }
             }
-
-            // Ensure we have the correct number of schedule days
-            if (aSchedule.length !== iDays) { // Add missing days or remove excess days
-                if (aSchedule.length < iDays) { // Add missing days
-                    for (var j = aSchedule.length; j < iDays; j++) {
-                        aSchedule.push({
-                            dayNumber: j + 1,
-                            title: "Day " + (
-                                j + 1
-                            ),
-                            description: "",
-                            breakfast: false,
-                            lunch: false,
-                            dinner: false,
-                            activities: [
-                                {
-                                    startTime: "09:00",
-                                    endTime: "12:00",
-                                    title: "",
-                                    description: ""
-                                }
-                            ]
-                        });
-                    }
-                } else { // Remove excess days
-                    aSchedule = aSchedule.slice(0, iDays);
-                }
-            }
-
-            // Set the schedule data
+            
+            // Store schedule IDs for use in updates
+            oTourModel.setProperty("/scheduleIds", aScheduleIds);
             oTourModel.setProperty("/schedule", aSchedule);
-
+            
             // Price terms
             if (oTemplateData.priceTerms) {
                 oTourModel.setProperty("/adultPrice", oTemplateData.priceTerms.AdultPrice);
@@ -1036,20 +1303,18 @@ sap.ui.define([
                 oTourModel.setProperty("/cancellationTerms", oTemplateData.priceTerms.CancellationTerms);
                 oTourModel.setProperty("/generalTerms", oTemplateData.priceTerms.GeneralTerms);
             }
-
-            // Always generate the schedule UI after setting the data
+            
+            // Regenerate UI for schedules
             this._generateScheduleUI();
-
+            
             // Update page title to show we're editing an existing template
             var oPage = this.byId("createTourPage");
             if (oPage) {
                 oPage.setTitle("Edit Template: " + oTemplateData.template.TemplateName);
             }
-
+            
             // Update status indicators
             this._validateCurrentStep();
-
-            console.log("Template data loaded successfully, schedule days:", aSchedule.length);
         },
 
         _getErrorMessage: function (oError) {

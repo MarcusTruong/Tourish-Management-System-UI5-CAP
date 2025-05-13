@@ -17,6 +17,7 @@
                 text="Complete Template" 
                 type="Emphasized" 
                 press=".onCompleteTemplate"
+                visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}"
                 tooltip="Complete and publish this template"/>
         </headerContent>
         <content>
@@ -203,7 +204,7 @@
                 press=".onSaveAsDraft" 
                 visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}"/>
         <Button id="saveButton2" 
-                text="Save" 
+                text="Save Changes" 
                 icon="sap-icon://save" 
                 press=".onSaveTemplate" 
                 visible="{= !!${tour>/templateID} &amp;&amp; ${tour>/status} === 'Published' }"/>
