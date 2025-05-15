@@ -1,0 +1,264 @@
+
+<mvc:View
+    controllerName="tourishui.controller.tour.SaleTour"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:l="sap.ui.layout"
+    displayBlock="true"
+    height="100%">
+
+    <f:DynamicPage id="activeToursPage" toggleHeaderOnTitleClick="false">
+        <f:title>
+            <f:DynamicPageTitle id="_IDGenDynamicPageTitle2" >
+                <f:heading>
+                    <Title id="_IDGenTitle10"  text="Active Tours" level="H2"/>
+                </f:heading>
+            </f:DynamicPageTitle>
+        </f:title>
+
+        <f:header>
+            <f:DynamicPageHeader id="_IDGenDynamicPageHeader4" >
+                <FlexBox id="_IDGenFlexBox3"  alignItems="Start" justifyContent="SpaceBetween">
+                    <VBox id="_IDGenVBox21" >
+                        <HBox id="_IDGenHBox13"  alignItems="Center" class="sapUiSmallMarginBottom" wrap="Wrap">
+                            <VBox id="_IDGenVBox22" >
+                            <Label id="_IDGenLabel48" text="Tour Name:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"></Label>
+                                <SearchField 
+                                id="tourSearchField" 
+                                width="300px" 
+                                placeholder="Search tours by name..." 
+                                search=".onSearch" 
+                                class="sapUiSmallMarginEnd"/>
+                            </VBox>
+                                
+                            <VBox id="_IDGenVBox23" >
+                            <Label id="_IDGenLabel54" text="Status:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                            <Select 
+                                id="statusFilter2" 
+                                width="300px" 
+                                change=".onFilterChange"
+                                forceSelection="false"
+                                selectedKey=""
+                                class="sapUiSmallMarginEnd">
+                                <core:Item id="_IDGenItem28"  key="" text="All Statuses"/>
+                                <core:Item id="_IDGenItem29"  key="Open" text="Open"/>
+                                <core:Item id="_IDGenItem30"  key="Ongoing" text="Ongoing"/>
+                                <core:Item id="_IDGenItem31"  key="Completed" text="Completed"/>
+                                <core:Item id="_IDGenItem33"  key="Canceled" text="Canceled"/>
+                            </Select>
+                            </VBox>
+                            
+                            <VBox id="_IDGenVBox24" >
+                            <Label id="_IDGenLabel49" text="Responsible Person:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                            <ComboBox 
+                                id="responsiblePersonFilter" 
+                                width="300px" 
+                                change=".onFilterChange"
+                                placeholder="Select Responsible Person..."
+                                items="{/Members}"
+                                class="sapUiSmallMarginEnd">
+                                <core:Item id="_IDGenItem34"  key="{ID}" text="{FullName}" />
+                            </ComboBox>
+                            </VBox>
+                        </HBox>
+                        
+                        <HBox id="_IDGenHBox14"  alignItems="Center" class="sapUiSmallMarginBottom" wrap="Wrap">
+                            <VBox id="_IDGenVBox25" >
+                                <Label id="_IDGenLabel50"  text="Departure Date From:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                            <DatePicker 
+                                id="departureDateFromFilter" 
+                                width="300px" 
+                                change=".onFilterChange"
+                                valueFormat="yyyy-MM-dd"
+                                displayFormat="long"
+                                class="sapUiSmallMarginEnd"/>
+                            </VBox>
+                                
+                            <VBox id="_IDGenVBox26" >
+                                <Label id="_IDGenLabel51"  text="To:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                            <DatePicker 
+                                id="departureDateToFilter" 
+                                width="300px" 
+                                change=".onFilterChange"
+                                valueFormat="yyyy-MM-dd"
+                                displayFormat="long"
+                                class="sapUiSmallMarginEnd"/>
+                            </VBox>
+                                
+                            <VBox id="_IDGenVBox27" >
+                                <Label id="_IDGenLabel52"  text="Sale Date From:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                            <DatePicker 
+                                id="saleDateFromFilter" 
+                                width="300px" 
+                                change=".onFilterChange"
+                                valueFormat="yyyy-MM-dd"
+                                displayFormat="long"
+                                class="sapUiSmallMarginEnd"/>
+                            </VBox>
+                                
+                            <VBox id="_IDGenVBox28" >
+                                <Label id="_IDGenLabel53"  text="To:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                            <DatePicker 
+                                id="saleDateToFilter" 
+                                width="300px" 
+                                change=".onFilterChange"
+                                valueFormat="yyyy-MM-dd"
+                                displayFormat="long"
+                                class="sapUiSmallMarginEnd"/>
+                            </VBox>
+                        </HBox>
+                        <Button 
+                                id="clearFiltersBtn2" 
+                                width="300px"
+                                text="Clear Filters" 
+                                press=".onClearFilters" 
+                                class="sapUiSmallMarginEnd"/>
+                    </VBox>
+                </FlexBox>
+            </f:DynamicPageHeader>
+        </f:header>
+
+        <f:content>
+            <VBox id="_IDGenVBox29"  class="sapUiSmallMargin">
+                <Table 
+                    id="activeToursTable"
+                    inset="false"
+                    items="{
+                        path: 'activeTours>/items',
+                        sorter: {
+                            path: 'DepartureDate',
+                            descending: false
+                        }
+                    }"
+                    growing="true"
+                    growingThreshold="20"
+                    growingScrollToLoad="true"
+                    sticky="HeaderToolbar,ColumnHeaders"
+                    alternateRowColors="true"
+                    mode="SingleSelectMaster"
+                    selectionChange=".onTourSelect"
+                    busyIndicatorDelay="0">
+                    
+                    <headerToolbar>
+                        <OverflowToolbar id="_IDGenOverflowToolbar9" >
+                            <Title id="_IDGenTitle11"  text="Active Tours"/>
+                            <ToolbarSpacer id="_IDGenToolbarSpacer20" />
+                            <Button id="_IDGenButton37" 
+                                icon="sap-icon://download" 
+                                tooltip="Export to Excel" 
+                                press=".onExport"/>
+                            <Button id="_IDGenButton38" 
+                                icon="sap-icon://action-settings" 
+                                tooltip="Table Settings" 
+                                press=".onTableSettings"/>
+                        </OverflowToolbar>
+                    </headerToolbar>
+                    
+                    <columns>
+                        <Column id="_IDGenColumn31" minScreenWidth="Tablet" demandPopin="true" width="120px">
+                            <Text id="_IDGenText53" text="Image"/>
+                        </Column>
+                        <Column id="_IDGenColumn32"  minScreenWidth="Tablet" demandPopin="true">
+                            <Text id="_IDGenText54"  text="Tour Name"/>
+                        </Column>
+                        <Column id="_IDGenColumn33"  minScreenWidth="Desktop" demandPopin="true">
+                            <Text id="_IDGenText55"  text="Template"/>
+                        </Column>
+                        <Column id="_IDGenColumn34"  minScreenWidth="Desktop" demandPopin="true">
+                            <Text id="_IDGenText56"  text="Departure Date"/>
+                        </Column>
+                        <Column id="_IDGenColumn35"  minScreenWidth="Desktop" demandPopin="true">
+                            <Text id="_IDGenText57"  text="Return Date"/>
+                        </Column>
+                        <Column id="_IDGenColumn36"  minScreenWidth="Desktop" demandPopin="true">
+                            <Text id="_IDGenText58"  text="Capacity"/>
+                        </Column>
+                        <Column id="_IDGenColumn37" minScreenWidth="Desktop" demandPopin="true">
+                            <Text id="_IDGenText59"  text="Status"/>
+                        </Column>
+                        <Column id="_IDGenColumn38"  hAlign="End">
+                            <Text id="_IDGenText60"  text="Actions"/>
+                        </Column>
+                    </columns>
+                    
+                    <items>
+                        <ColumnListItem id="_IDGenColumnListItem6"  type="Navigation" press=".onTourPress">
+                            <cells>
+                                <HBox id="_IDGenHBox15"  justifyContent="Center" alignItems="Center" height="80px">
+                                    <Image id="_IDGenImage3"  
+                                        src="{= ${activeTours>MainImageURL} || 'sap-icon://picture'}" 
+                                        width="100px"
+                                        height="60px"
+                                        densityAware="false"
+                                        mode="Image"
+                                        press=".onImagePress"
+                                        visible="{= !!${activeTours>MainImageURL}}"
+                                        class="sapUiTinyMargin"/>
+                                    <core:Icon id="_IDGenIcon1" 
+                                        src="sap-icon://picture" 
+                                        size="2rem" 
+                                        visible="{= !${activeTours>MainImageURL}}"
+                                        color="Neutral"/>
+                                </HBox>
+                                <Text id="_IDGenText61"  text="{activeTours>TourName}"/>
+                                <Text id="_IDGenText62"  text="{activeTours>TemplateName}"/>
+                                <Text id="_IDGenText63"  text="{
+                                    path: 'activeTours>DepartureDate',
+                                    formatter: '.formatDate'
+                                }"/>
+                                <Text id="_IDGenText64"  text="{
+                                    path: 'activeTours>ReturnDate',
+                                    formatter: '.formatDate'
+                                }"/>
+                                <Text id="_IDGenText65"  text="{= ${activeTours>CurrentBookings} + '/' + ${activeTours>MaxCapacity}}"/>
+                                <ObjectStatus id="_IDGenObjectStatus7"  
+                                    text="{activeTours>Status}" 
+                                    state="{= ${activeTours>Status} === 'Open' ? 'Success' : 
+                                            ${activeTours>Status} === 'Ongoing' ? 'Warning' : 
+                                            ${activeTours>Status} === 'Completed' ? 'Information' : 'Error'}"/>
+                                <HBox id="_IDGenHBox16"  justifyContent="End">
+                                    <Button id="_IDGenButton39"  
+                                        icon="sap-icon://edit" 
+                                        press=".onEdit" 
+                                        tooltip="Edit Tour"
+                                        visible="{= ${activeTours>Status} !== 'Completed' &amp;&amp; ${activeTours>Status} !== 'Canceled'}"/>
+                                    <Button id="_IDGenButton40"  
+                                        icon="sap-icon://group" 
+                                        press=".onManagePassengers" 
+                                        tooltip="Manage Passengers" 
+                                        class="sapUiTinyMarginBegin"/>
+                                    <Button id="_IDGenButton41" 
+                                        icon="sap-icon://cancel" 
+                                        press=".onCancelTour" 
+                                        tooltip="Cancel Tour" 
+                                        visible="{= ${activeTours>Status} === 'Open' || ${activeTours>Status} === 'Ongoing'}"
+                                        class="sapUiTinyMarginBegin"/>
+                                    <Button id="_IDGenButton42"  
+                                        icon="sap-icon://detail-view" 
+                                        press=".onViewDetails" 
+                                        tooltip="View Details" 
+                                        class="sapUiTinyMarginBegin"/>
+                                </HBox>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+        </f:content>
+        
+        <f:footer>
+            <OverflowToolbar id="_IDGenOverflowToolbar10" >
+                <ToolbarSpacer id="_IDGenToolbarSpacer21" />
+                <Text id="_IDGenText66"  text="Active Tours: {activeTours>/pagination/total}"/>
+                <ToolbarSpacer id="_IDGenToolbarSpacer19"/>
+                <Button id="_IDGenButton33"
+                    text="Create Active Tour" 
+                    type="Emphasized" 
+                    press=".onCreateActiveTour"
+                    icon="sap-icon://add"/>
+            </OverflowToolbar>
+        </f:footer>
+    </f:DynamicPage>
+</mvc:View>

@@ -602,8 +602,8 @@ Content-Type: application/json
 Authorization: Basic {{base64 username:password}}
 
 {
-  "searchTerm": "Hanoi",
-  "status": "Open",
+  "searchTerm": "",
+  "status": "",
   "fromDepartureDate": "2025-01-01",
   "toDepartureDate": "2025-12-31",
   "fromSaleDate": null,

@@ -130,6 +130,11 @@
           "target": "createSampleTour"
         },
         {
+          "pattern": "saleTour",
+          "name": "saleTour",
+          "target": "saleTour"
+        },
+        {
           "name": "templateCreate",
           "pattern": "template/create:?templateId:",
           "target": ["templateCreate"]
@@ -198,6 +203,13 @@
         "createSampleTour": {
           "viewId": "createSampleTour",
           "viewName": "tour.Tour",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "saleTour": {
+          "viewId": "saleTour",
+          "viewName": "tour.SaleTour",
           "controlId": "mainContents",
           "controlAggregation": "pages",
           "parent": "appContent"

@@ -8,7 +8,7 @@
     displayBlock="true"
     height="100%">
 
-    <f:DynamicPage id="tourTemplatesPage" toggleHeaderOnTitleClick="true">
+    <f:DynamicPage id="tourTemplatesPage" toggleHeaderOnTitleClick="false">
         <f:title>
             <f:DynamicPageTitle id="_IDGenDynamicPageTitle1">
                 <f:heading>

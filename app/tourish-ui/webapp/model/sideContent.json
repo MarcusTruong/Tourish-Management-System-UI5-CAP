@@ -33,8 +33,8 @@
                     "key": "createSampleTour"
                 },
                 {
-                    "titleI18nKey": "Điều hành Tour",
-                    "key": "tourOperation",
+                    "titleI18nKey": "Tour is on Sale",
+                    "key": "saleTour",
                     "icon": "sap-icon://manager-insight"
                 }
             ]

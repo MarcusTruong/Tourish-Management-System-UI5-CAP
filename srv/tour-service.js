@@ -2110,87 +2110,95 @@ module.exports = async (srv) => {
       } = req.data;
       
       try {
-        // Build query
+        // Basic query to get active tours
         let query = SELECT.from(ActiveTours);
-        let countQuery = SELECT.from(ActiveTours);
         
-        // Apply filters
-        let where = [];
+        // Build WHERE conditions
+        let conditions = [];
         
         if (searchTerm) {
-          where.push(`CONTAINS(TourName, '${searchTerm}')`);
+          conditions.push(`TourName like '%${searchTerm}%'`);
         }
         
         if (status) {
-          where.push(`Status = '${status}'`);
+          conditions.push(`Status = '${status}'`);
         }
         
         if (fromDepartureDate) {
-          where.push(`DepartureDate >= '${fromDepartureDate}'`);
+          conditions.push(`DepartureDate >= '${fromDepartureDate}'`);
         }
         
         if (toDepartureDate) {
-          where.push(`DepartureDate <= '${toDepartureDate}'`);
+          conditions.push(`DepartureDate <= '${toDepartureDate}'`);
         }
         
         if (fromSaleDate) {
-          where.push(`SaleStartDate >= '${fromSaleDate}'`);
+          conditions.push(`SaleStartDate >= '${fromSaleDate}'`);
         }
         
         if (toSaleDate) {
-          where.push(`SaleEndDate <= '${toSaleDate}'`);
+          conditions.push(`SaleEndDate <= '${toSaleDate}'`);
         }
         
         if (responsiblePersonID) {
-          where.push(`ResponsiblePersonID = '${responsiblePersonID}'`);
+          conditions.push(`ResponsiblePersonID = '${responsiblePersonID}'`);
         }
         
-        if (where.length > 0) {
-          const whereClause = where.join(' AND ');
-          query = query.where(whereClause);
-          countQuery = countQuery.where(whereClause);
+        // Add conditions to the query if any exist
+        if (conditions.length > 0) {
+          query.where(conditions.join(' and '));
         }
         
-        // Apply pagination
-        query = query.limit(limit || 10, skip || 0);
+        // Add pagination
+        query.limit(limit || 10, skip || 0);
         
         // Execute query
-        const tours = await query;
-        const total = await countQuery.count();
+        let tours = await query;
         
-        // Get additional info for each tour
-        const items = await Promise.all(tours.map(async tour => {
+        // Get additional information for each tour
+        for (let tour of tours) {
           // Get template name
           const template = await SELECT.one.from(TourTemplates)
             .columns('TemplateName')
             .where({ ID: tour.TemplateID });
+          
+          tour.TemplateName = template ? template.TemplateName : 'Unknown';
           
           // Get responsible person name
           const responsiblePerson = await SELECT.one.from('tourish.management.User')
             .columns('FullName')
             .where({ ID: tour.ResponsiblePersonID });
           
-          // Get estimate
+          tour.ResponsiblePersonName = responsiblePerson ? responsiblePerson.FullName : 'Unknown';
+          
+          // Get estimate data
           const estimate = await SELECT.one.from(TourEstimates)
             .columns('EstimatedProfit')
             .where({ ActiveTourID: tour.ID });
+          
+          tour.EstimatedProfit = estimate ? estimate.EstimatedProfit : 0;
           
           // Get main image
           const mainImage = await SELECT.one.from(TourTemplateImages)
             .where({ TourTemplateID: tour.TemplateID, IsMain: true })
             .columns('ImageURL');
           
-          return {
-            ...tour,
-            TemplateName: template ? template.TemplateName : 'Unknown',
-            ResponsiblePersonName: responsiblePerson ? responsiblePerson.FullName : 'Unknown',
-            EstimatedProfit: estimate ? estimate.EstimatedProfit : 0,
-            MainImageURL: mainImage ? mainImage.ImageURL : null
-          };
-        }));
+          tour.MainImageURL = mainImage && mainImage.length > 0 ? mainImage[0].ImageURL : null;
+        }
         
+        // Count total records (without pagination)
+        let countQuery = SELECT.from(ActiveTours).columns('count(*) as total');
+        
+        if (conditions.length > 0) {
+          countQuery.where(conditions.join(' and '));
+        }
+        
+        let countResult = await countQuery;
+        let total = countResult[0].total;
+        
+        // Return the formatted result
         return {
-          items: items,
+          items: tours,
           pagination: {
             total: total,
             skip: skip || 0,
@@ -2198,7 +2206,7 @@ module.exports = async (srv) => {
           }
         };
       } catch (error) {
-        console.error(error);
+        console.error('Error listing active tours:', error);
         return req.error(500, `Error listing active tours: ${error.message}`);
       }
     });
