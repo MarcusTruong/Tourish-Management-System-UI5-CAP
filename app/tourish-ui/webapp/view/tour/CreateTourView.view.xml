@@ -1,72 +1,30 @@
-<mvc:View
-    controllerName="tourishui.controller.tour.CreateTourView"
-    xmlns="sap.m"
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns:core="sap.ui.core"
-    xmlns:l="sap.ui.layout"
-    xmlns:upload="sap.m.upload"
-    xmlns:f="sap.ui.layout.form">
-    <Page
-        id="createTourPage"
-        title="{= ${tour>/templateName} ? ${tour>/templateName} : 'New Tour Template' }"
-        showNavButton="true"
-        navButtonPress=".onNavBack">
+<mvc:View controllerName="tourishui.controller.tour.CreateTourView" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:upload="sap.m.upload" xmlns:f="sap.ui.layout.form">
+    <Page id="createTourPage" title="{= ${tour>/templateName} ? ${tour>/templateName} : 'New Tour Template' }" showNavButton="true" navButtonPress=".onNavBack">
         <headerContent>
-            <Button 
-                id="headerCompleteButton"
-                text="Complete Template" 
-                type="Emphasized" 
-                press=".onCompleteTemplate"
-                visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}"
-                tooltip="Complete and publish this template"/>
+            <Button id="headerCompleteButton" text="Complete Template" type="Emphasized" press=".onCompleteTemplate" visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}" tooltip="Complete and publish this template"/>
+            <Button id="headerOpenSellButton" text="Create Active Tour" type="Emphasized" press=".onCreateActiveTour" visible="{= !${tour>/templateID} || ${tour>/status} === 'Published'}" tooltip="Open selling this template"/>
         </headerContent>
         <content>
-            <IconTabBar
-                id="tourTabBar"
-                expanded="true"
-                select=".onTabSelect"
-                class="sapUiResponsiveContentPadding">
+            <IconTabBar id="tourTabBar" expanded="true" select=".onTabSelect" class="sapUiResponsiveContentPadding">
                 <items>
                     <!-- Tab 1: General Information -->
-                    <IconTabFilter
-                        id="generalInfoTab"
-                        text="General Information"
-                        key="general"
-                        icon="sap-icon://hint">
+                    <IconTabFilter id="generalInfoTab" text="General Information" key="general" icon="sap-icon://hint">
                         <HBox id="_IDGenHBox9">
                             <VBox id="_IDGenVBox9" class="sapUiMediumMargin" width="60%">
-                                <f:SimpleForm id="_IDGenSimpleForm"
-                                    editable="true"
-                                    layout="ResponsiveGridLayout"
-                                    labelSpanXL="3"
-                                    labelSpanL="3"
-                                    labelSpanM="3"
-                                    emptySpanXL="0"
-                                    emptySpanL="0"
-                                    emptySpanM="0"
-                                    columnsXL="1"
-                                    columnsL="1"
-                                    columnsM="1">
+                                <f:SimpleForm id="_IDGenSimpleForm" editable="true" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3" emptySpanXL="0" emptySpanL="0" emptySpanM="0" columnsXL="1" columnsL="1" columnsM="1">
                                     <f:content>
                                         <Label id="_IDGenLabel21" text="Template Name" required="true"/>
                                         <Input id="templateNameInput" value="{tour>/templateName}" change=".onTemplateNameChange" placeholder="Enter template name"/>
-                                        
+
                                         <Label id="_IDGenLabel22" text="Description" required="true"/>
                                         <TextArea id="templateDescription" value="{tour>/description}" rows="3" placeholder="Describe the tour template..."/>
-                                        
+
                                         <Label id="_IDGenLabel23" text="Number of Days" required="true"/>
-                                        <StepInput id="daysInput" 
-                                            value="{tour>/days}" 
-                                            min="1" 
-                                            max="30" 
-                                            change=".onDaysChange"/>
-                                        
+                                        <StepInput id="daysInput" value="{tour>/days}" min="1" max="30" change=".onDaysChange"/>
+
                                         <Label id="_IDGenLabel24" text="Number of Nights" required="true"/>
-                                        <StepInput id="nightsInput" 
-                                            value="{tour>/nights}" 
-                                            min="0" 
-                                            max="29"/>
-                                        
+                                        <StepInput id="nightsInput" value="{tour>/nights}" min="0" max="29"/>
+
                                         <Label id="_IDGenLabel25" text="Tour Type"/>
                                         <ComboBox id="tourTypeCombo" selectedKey="{tour>/tourType}">
                                             <core:Item id="_IDGenItem" key="Cultural" text="Cultural"/>
@@ -80,113 +38,93 @@
                             </VBox>
                             <VBox id="_IDGenVBox11" class="sapUiMediumMargin" width="40%">
                                 <upload:UploadSet
-                                    id="templateImageUpload"
-                                    instantUpload="false"
-                                    multiple="true"
-                                    maxFileSize="5"
-                                    mediaTypes="image/jpeg,image/png,image/gif"
-                                    items="{tour>/images}"
-                                    uploadCompleted=".onImageUploadComplete"
-                                    beforeUploadStarts=".onBeforeUploadStarts"
-                                    uploadEnabled="true">
-                                    <upload:toolbar>
-                                        <OverflowToolbar id="_IDGenOverflowToolbar4">
-                                            <Title id="_IDGenTitle4" text="Tour Images" level="H4"/>
-                                            <ToolbarSpacer id="_IDGenToolbarSpacer10"/>
-                                        </OverflowToolbar>
-                                    </upload:toolbar>
-                                    <upload:items>
-                                        <upload:UploadSetItem id="_IDGenUploadSetItem"
-                                            fileName="{tour>fileName}"
-                                            url="{tour>url}"
-                                            thumbnailUrl="{tour>thumbnailUrl}"
-                                            visibleEdit="false"
-                                            attributes="{
-                                                path: 'tour>attributes',
-                                                templateShareable: false
-                                            }">
-                                            <upload:attributes>
-                                                <ObjectAttribute id="_IDGenObjectAttribute3"
-                                                    title="{tour>title}"
-                                                    text="{tour>text}"/>
-                                            </upload:attributes>
-                                            <upload:statuses>
-                                                <ObjectStatus id="_IDGenObjectStatus6"
-                                                    text="{= ${tour>isMain} ? 'Main Image' : ''}"
-                                                    state="Success"
-                                                    visible="{tour>isMain}"/>
-                                            </upload:statuses>
-                                            <!-- <MenuButton id="imageOptionsBtn" text="Options" visible="{= !${tour>isMain}}">
-                                                <menu>
-                                                    <Menu id="imageOptionsMenu">
-                                                        <items>
-                                                            <MenuItem id="setAsMainMenuItem" text="Set as Main" press=".onSetAsMainImage"/>
-                                                        </items>
-                                                    </Menu>
-                                                </menu>
-                                            </MenuButton> -->
-                                        </upload:UploadSetItem>
-                                    </upload:items>
-                                </upload:UploadSet>
+    id="templateImageUpload"
+    instantUpload="true"
+    multiple="true"
+    maxFileSize="5"
+    mediaTypes="image/jpeg,image/png,image/gif"
+    items="{tour>/images}"
+    uploadUrl="/api/cloudinary/upload"
+    uploadEnabled="true"
+    uploadCompleted=".onImageUploadComplete"
+    beforeUploadStarts=".onBeforeUploadStarts"
+    afterItemRemoved=".onFileDeleted">
+    <upload:toolbar>
+        <OverflowToolbar id="_IDGenOverflowToolbar4">
+            <Title id="_IDGenTitle4" text="Tour Images" level="H4"/>
+            <ToolbarSpacer id="_IDGenToolbarSpacer10"/>
+        </OverflowToolbar>
+    </upload:toolbar>
+    <upload:items>
+        <upload:UploadSetItem id="_IDGenUploadSetItem"
+            fileName="{tour>fileName}"
+            url="{tour>url}"
+            thumbnailUrl="{tour>thumbnailUrl}"
+            visibleEdit="false"
+            visibleRemove="true">
+            <upload:attributes>
+                <ObjectAttribute id="_IDGenObjectAttribute3"
+                    title="{tour>title}"
+                    text="{tour>text}"/>
+                <!-- Thêm một ObjectAttribute khác hiển thị như nút -->
+                <ObjectAttribute id="mainImageAttribute"
+                    title="{= !${tour>isMain} ? 'Actions' : ''}"
+                    text="{= !${tour>isMain} ? 'Set as Main' : ''}"
+                    active="true"
+                    press=".onSetAsMainImage"
+                    visible="{= !${tour>isMain}}"/>
+            </upload:attributes>
+            <upload:statuses>
+                <ObjectStatus id="_IDGenObjectStatus6"
+                    text="{= ${tour>isMain} ? 'Main Image' : ''}"
+                    state="Success"
+                    visible="{tour>isMain}"/>
+            </upload:statuses>
+        </upload:UploadSetItem>
+    </upload:items>
+</upload:UploadSet>
                             </VBox>
                         </HBox>
                     </IconTabFilter>
-                    
+
                     <!-- Rest of the view remains the same -->
                     <!-- Tab 2: Schedule -->
-                    <IconTabFilter
-                        id="scheduleTab"
-                        text="Schedule"
-                        key="schedule"
-                        icon="sap-icon://calendar">
+                    <IconTabFilter id="scheduleTab" text="Schedule" key="schedule" icon="sap-icon://calendar">
                         <VBox id="_IDGenVBox12" class="sapUiMediumMargin">
                             <HBox id="_IDGenHBox11" alignItems="Center" class="sapUiSmallMarginBottom">
                                 <Title id="_IDGenTitle5" text="Schedule Details" level="H2"/>
                                 <ToolbarSpacer id="_IDGenToolbarSpacer11"/>
-                                <Button 
-                                    id="scheduleHelpButton"
-                                    icon="sap-icon://sys-help"
-                                    tooltip="Instructions for creating a schedule"
-                                    press=".onShowScheduleHelp"/>
+                                <Button id="scheduleHelpButton" icon="sap-icon://sys-help" tooltip="Instructions for creating a schedule" press=".onShowScheduleHelp"/>
                             </HBox>
-                            
+
                             <!-- Schedule container - will be filled dynamically -->
-                            <Panel id="scheduleContainer">
-                                <!-- Content will be generated dynamically in the controller -->
+                            <Panel
+                                id="scheduleContainer"><!-- Content will be generated dynamically in the controller -->
                             </Panel>
                         </VBox>
                     </IconTabFilter>
-                    
+
                     <!-- Tab 3: Price & Terms -->
-                    <IconTabFilter
-                        id="priceTermsTab"
-                        text="Price - Terms"
-                        key="priceTerms"
-                        icon="sap-icon://money-bills">
+                    <IconTabFilter id="priceTermsTab" text="Price - Terms" key="priceTerms" icon="sap-icon://money-bills">
                         <VBox id="_IDGenVBox13" class="sapUiMediumMargin">
-                            <f:SimpleForm id="_IDGenSimpleForm1"
-                                editable="true"
-                                layout="ResponsiveGridLayout"
-                                labelSpanXL="2"
-                                labelSpanL="2"
-                                labelSpanM="2">
+                            <f:SimpleForm id="_IDGenSimpleForm1" editable="true" layout="ResponsiveGridLayout" labelSpanXL="2" labelSpanL="2" labelSpanM="2">
                                 <f:content>
                                     <Label id="_IDGenLabel26" text="Adult Price" required="true"/>
                                     <Input id="adultPriceInput" type="Number" value="{tour>/adultPrice}" description="USD"/>
-                                    
-                                    <Label id="_IDGenLabel27" text="Children Price" />
+
+                                    <Label id="_IDGenLabel27" text="Children Price"/>
                                     <Input id="childPriceInput" type="Number" value="{tour>/childPrice}" description="USD"/>
-                                    
+
                                     <Label id="_IDGenLabel28" text="Services Included" required="true"/>
                                     <TextArea id="includedServicesTextArea" value="{tour>/servicesIncluded}" rows="3" placeholder="Services included in tour price"/>
-                                    
-                                    <Label id="_IDGenLabel29" text="Services Not Included" />
+
+                                    <Label id="_IDGenLabel29" text="Services Not Included"/>
                                     <TextArea id="excludedServicesTextArea" value="{tour>/servicesNotIncluded}" rows="3" placeholder="Any additional costs incurred must be paid by the customer"/>
-                                    
+
                                     <Label id="_IDGenLabel31" text="Cancellation Terms" required="true"/>
                                     <TextArea id="cancellationTextArea" value="{tour>/cancellationTerms}" rows="3" placeholder="Cancellation and Refund Policy"/>
-                                    
-                                    <Label id="_IDGenLabel32" text="General Terms and Conditions" />
+
+                                    <Label id="_IDGenLabel32" text="General Terms and Conditions"/>
                                     <TextArea id="generalTermsTextArea" value="{tour>/generalTerms}" rows="5" placeholder="Other terms and conditions"/>
                                 </f:content>
                             </f:SimpleForm>
@@ -195,34 +133,15 @@
                 </items>
             </IconTabBar>
         </content>
-<footer>
-    <Toolbar id="_IDGenToolbar">
-        <ToolbarSpacer id="_IDGenToolbarSpacer15"/>
-        <Button id="saveAsDraftButton" 
-                text="Save as Draft" 
-                icon="sap-icon://save" 
-                press=".onSaveAsDraft" 
-                visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}"/>
-        <Button id="saveButton2" 
-                text="Save Changes" 
-                icon="sap-icon://save" 
-                press=".onSaveTemplate" 
-                visible="{= !!${tour>/templateID} &amp;&amp; ${tour>/status} === 'Published' }"/>
-        <Button id="previewButton" 
-                text="Preview" 
-                icon="sap-icon://preview" 
-                press=".onPreview"/>
-        <Button id="completeButton" 
-                text="Complete Template" 
-                type="Emphasized" 
-                icon="sap-icon://accept" 
-                press=".onCompleteTemplate" 
-                visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}"/>
-        <Button id="cancelButton" 
-                text="Cancel" 
-                icon="sap-icon://decline" 
-                press=".onNavBack"/>
-    </Toolbar>
-</footer>
+        <footer>
+            <Toolbar id="_IDGenToolbar">
+                <ToolbarSpacer id="_IDGenToolbarSpacer15"/>
+                <Button id="saveAsDraftButton" text="Save as Draft" icon="sap-icon://save" press=".onSaveAsDraft" visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}"/>
+                <Button id="saveButton2" text="Save Changes" icon="sap-icon://save" press=".onSaveTemplate" visible="{= !!${tour>/templateID} &amp;&amp; ${tour>/status} === 'Published' }"/>
+                <Button id="previewButton" text="Preview" icon="sap-icon://preview" press=".onPreview"/>
+                <Button id="completeButton" text="Complete Template" type="Emphasized" icon="sap-icon://accept" press=".onCompleteTemplate" visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}"/>
+                <Button id="cancelButton" text="Cancel" icon="sap-icon://decline" press=".onNavBack"/>
+            </Toolbar>
+        </footer>
     </Page>
 </mvc:View>

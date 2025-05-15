@@ -2,8 +2,11 @@
  * Implementation for Tour Service
  */
 const cds = require('@sap/cds');
+const cloudinaryService = require('./cloudinary-service');
 
 module.exports = async (srv) => {
+  cloudinaryService(srv);
+
   const { 
     TourTemplates, TourTemplateImages, TourTemplateSchedules, 
     TourTemplateActivities, TourTemplatePriceTerms, TourTemplateHistories,

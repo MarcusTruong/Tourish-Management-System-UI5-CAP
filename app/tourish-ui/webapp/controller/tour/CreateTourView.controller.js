@@ -4,6 +4,7 @@ sap.ui.define([
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "sap/ui/core/routing/History",
+    "sap/ui/core/Fragment",
     "sap/m/Panel",
     "sap/m/Title",
     "sap/m/Button",
@@ -14,8 +15,9 @@ sap.ui.define([
     "sap/m/HBox",
     "sap/m/TimePicker",
     "sap/m/CheckBox",
-    "sap/ui/layout/form/SimpleForm"
-], function (Controller, JSONModel, MessageToast, MessageBox, History, Panel, Title, Button, Label, TextArea, Input, VBox, HBox, TimePicker, CheckBox, SimpleForm) {
+    "sap/ui/layout/form/SimpleForm",
+    "tourishui/model/CloudinaryAdapter"
+], function (Controller, JSONModel, MessageToast, MessageBox, History, Fragment, Panel, Title, Button, Label, TextArea, Input, VBox, HBox, TimePicker, CheckBox, SimpleForm, CloudinaryAdapter) {
     "use strict";
 
     return Controller.extend("tourishui.controller.tour.CreateTourView", {
@@ -119,66 +121,17 @@ sap.ui.define([
             this._initializeSchedule(iDays);
         },
 
-        onSetAsMainImage: function (oEvent) {
-            var oButton = oEvent.getSource();
-            var oItem = oButton.getParent();
-            var oContext = oItem.getBindingContext("tour");
-            var sPath = oContext.getPath();
-            var oTourModel = this.getView().getModel("tour");
-            var aImages = oTourModel.getProperty("/images");
-
-            // Set all images as non-main
-            aImages.forEach(function (oImage, iIndex) {
-                oTourModel.setProperty("/images/" + iIndex + "/isMain", false);
-            });
-
-            // Set the selected image as main
-            oTourModel.setProperty(sPath + "/isMain", true);
-
-            MessageToast.show("Main image set successfully");
-        },
-
-        onBeforeUploadStarts: function (oEvent) { // Set custom headers or modify the upload request if needed
+        onBeforeUploadStarts: function(oEvent) {
+            // Không cần thêm CSRF token nếu endpoint không yêu cầu
+            // Có thể thêm các header khác nếu cần
+            
+            // Thêm header Cache-Control để tránh cache
             var oUploadSetItem = oEvent.getParameter("item");
-            var oCustomerHeaderToken = new sap.ui.core.Item({key: "x-csrf-token", text: this.getView().getModel("tourService").getSecurityToken()});
-
-            oUploadSetItem.addHeaderField(oCustomerHeaderToken);
-        },
-
-        onImageUploadComplete: function (oEvent) {
-            var oUploadSet = this.byId("templateImageUpload");
-            var oTourModel = this.getView().getModel("tour");
-            var aImages = oTourModel.getProperty("/images") || [];
-            var oResponse = oEvent.getParameter("responseXML");
-
-            // Handle the uploaded image response
-            if (oResponse) {
-                try {
-                    var sImageUrl = oResponse.documentElement.getElementsByTagName("ImageURL")[0].textContent;
-                    var sImageId = oResponse.documentElement.getElementsByTagName("ID")[0].textContent;
-
-                    // Add the uploaded image to the model
-                    aImages.push({
-                        id: sImageId,
-                        fileName: oEvent.getParameter("item").getFileName(),
-                        url: sImageUrl,
-                        thumbnailUrl: sImageUrl,
-                        isMain: aImages.length === 0, // First image is main by default
-                        attributes: [
-                            {
-                                title: "Size",
-                                text: this._formatFileSize(oEvent.getParameter("item").getFileObject().size)
-                            }
-                        ]
-                    });
-
-                    oTourModel.setProperty("/images", aImages);
-                    MessageToast.show("Image uploaded successfully");
-                } catch (oError) {
-                    MessageToast.show("Error processing upload response");
-                    console.error("Upload response processing error:", oError);
-                }
-            }
+            var oCacheHeader = new sap.ui.core.Item({
+                key: "Cache-Control",
+                text: "no-cache"
+            });
+            oUploadSetItem.addHeaderField(oCacheHeader);
         },
 
         _formatFileSize: function (iBytes) {
@@ -563,7 +516,210 @@ sap.ui.define([
             
             // Prepare the data for saving
             this._saveTemplate("Draft");
-        }, onCompleteTemplate: function () {
+        }, 
+        onCreateActiveTour: function() {
+            // Lấy thông tin từ model tour
+            var oTourModel = this.getView().getModel("tour");
+            var sTemplateId = oTourModel.getProperty("/templateID");
+            var sTemplateName = oTourModel.getProperty("/templateName");
+            var sTemplateStatus = oTourModel.getProperty("/status");
+            
+            // Kiểm tra xem template đã được publish chưa
+            if (sTemplateStatus === "Published") {
+                // Mở dialog để tạo Active Tour
+                this._openCreateActiveTourDialog(sTemplateId, sTemplateName);
+            } else {
+                // Thông báo lỗi nếu template chưa được publish
+                MessageBox.error("Tour Template must be published before creating an Active Tour. Please complete and publish the template first.");
+            }
+        },
+        
+        _openCreateActiveTourDialog: function(sTemplateId, sTemplateName) {
+            var oView = this.getView();
+            
+            // Tạo dialog lần đầu nếu chưa tồn tại
+            if (!this._oActiveTourDialog) {
+                // Load fragment
+                Fragment.load({
+                    id: oView.getId(),
+                    name: "tourishui.view.fragments.CreateActiveTourDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    // Kết nối dialog với view gốc
+                    oView.addDependent(oDialog);
+                    this._oActiveTourDialog = oDialog;
+                    this._prepareActiveTourDialog(sTemplateId, sTemplateName);
+                    oDialog.open();
+                }.bind(this));
+            } else {
+                this._prepareActiveTourDialog(sTemplateId, sTemplateName);
+                this._oActiveTourDialog.open();
+            }
+        },
+        
+        _prepareActiveTourDialog: function(sTemplateId, sTemplateName) {
+            // Load danh sách người chịu trách nhiệm
+            this._loadResponsiblePersons();
+            
+            // Khởi tạo dữ liệu form với giá trị mặc định
+            var oDate = new Date();
+            var oNextWeek = new Date(oDate);
+            oNextWeek.setDate(oDate.getDate() + 7);
+            
+            var oNextMonth = new Date(oDate);
+            oNextMonth.setDate(oDate.getDate() + 30);
+            
+            var oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern: "yyyy-MM-dd"});
+            
+            // Tạo model cho dialog
+            var oDialogModel = new JSONModel({
+                templateID: sTemplateId,
+                tourName: sTemplateName + " - " + oDateFormat.format(oDate), // Đề xuất tên mặc định
+                departureDate: oDateFormat.format(oNextWeek), // Ngày khởi hành mặc định: tuần sau
+                returnDate: oDateFormat.format(oNextMonth), // Ngày trở về mặc định: tháng sau
+                saleStartDate: oDateFormat.format(oDate), // Ngày bắt đầu bán mặc định: hôm nay
+                saleEndDate: oDateFormat.format(oNextWeek), // Ngày kết thúc bán mặc định: tuần sau
+                maxCapacity: 20, // Sức chứa mặc định
+                responsiblePersonID: "", // Sẽ được người dùng chọn
+                formValid: false, // Trạng thái xác thực ban đầu
+                Members: this._aResponsiblePersons || []
+            });
+            
+            // Đặt model cho dialog
+            this._oActiveTourDialog.setModel(oDialogModel, "activeTour");
+        },
+        
+        _loadResponsiblePersons: function() {
+            var oView = this.getView();
+            var oUserService = this.getOwnerComponent().getModel("userService");
+            
+            // Lưu trữ dữ liệu thành viên để sử dụng sau
+            var that = this;
+        
+            var oMembersContext = oUserService.bindContext("/getWorkspaceMembers(...)");
+        
+            oMembersContext.execute().then(function() {
+                var oResult = oMembersContext.getBoundContext().getObject();
+                
+                // Debug để kiểm tra dữ liệu
+                console.log("Members data:", oResult);
+        
+                var aMembers = Array.isArray(oResult) ? oResult : (oResult.value || []);
+                
+                // Lưu trữ danh sách thành viên vào một thuộc tính của controller
+                that._aResponsiblePersons = aMembers;
+                
+                // Nếu dialog đã tồn tại, cập nhật model của nó
+                if (that._oActiveTourDialog) {
+                    var oActiveTourModel = that._oActiveTourDialog.getModel("activeTour");
+                    if (oActiveTourModel) {
+                        oActiveTourModel.setProperty("/Members", aMembers);
+                        console.log("Model updated with members:", aMembers);
+                    }
+                }
+                
+                // Debug để xác nhận
+                console.log("Responsible persons loaded:", aMembers.length);
+            });
+        },
+        
+        // Thêm các sự kiện xử lý dialog
+        onCancelActiveTour: function() {
+            this._oActiveTourDialog.close();
+        },
+        
+        onSaveActiveTour: function() {
+            var oActiveTourModel = this._oActiveTourDialog.getModel("activeTour");
+            var oActiveTourData = oActiveTourModel.getData();
+            
+            // Kiểm tra dữ liệu trước khi lưu
+            if (!oActiveTourData.tourName) {
+                MessageBox.error("Please enter a tour name.");
+                return;
+            }
+            
+            if (!oActiveTourData.responsiblePersonID) {
+                MessageBox.error("Please select a responsible person.");
+                return;
+            }
+            
+            // Chuyển đổi ngày từ string sang Date object để so sánh
+            var oDepartureDate = new Date(oActiveTourData.departureDate);
+            var oReturnDate = new Date(oActiveTourData.returnDate);
+            var oSaleStartDate = new Date(oActiveTourData.saleStartDate);
+            var oSaleEndDate = new Date(oActiveTourData.saleEndDate);
+            
+            if (oReturnDate <= oDepartureDate) {
+                MessageBox.error("Return date must be after departure date.");
+                return;
+            }
+            
+            if (oSaleEndDate <= oSaleStartDate) {
+                MessageBox.error("Sale end date must be after sale start date.");
+                return;
+            }
+            
+            // Set busy state
+            this._oActiveTourDialog.setBusy(true);
+            
+            // Lấy OData model
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            // Tạo context cho action createActiveTour
+            var oContext = oModel.bindContext("/createActiveTour(...)");
+            
+            // Set các tham số
+            oContext.setParameter("templateID", oActiveTourData.templateID);
+            oContext.setParameter("tourName", oActiveTourData.tourName);
+            oContext.setParameter("departureDate", oActiveTourData.departureDate);
+            oContext.setParameter("returnDate", oActiveTourData.returnDate);
+            oContext.setParameter("saleStartDate", oActiveTourData.saleStartDate);
+            oContext.setParameter("saleEndDate", oActiveTourData.saleEndDate);
+            oContext.setParameter("maxCapacity", parseInt(oActiveTourData.maxCapacity) || 20);
+            oContext.setParameter("responsiblePersonID", oActiveTourData.responsiblePersonID);
+            
+            // Execute action
+            oContext.execute().then(function() {
+                // Clear busy state
+                this._oActiveTourDialog.setBusy(false);
+                
+                // Get result
+                var oResult = oContext.getBoundContext().getObject();
+                
+                if (oResult && oResult.tourID) {
+                    // Show success message
+                    MessageBox.success(
+                        "Active tour '" + oResult.tourName + "' created successfully.", {
+                            title: "Success",
+                            onClose: function() {
+                                // Close dialog
+                                this._oActiveTourDialog.close();
+                                
+                                // Navigate to active tour detail if needed
+                                // this.getOwnerComponent().getRouter().navTo("activeTourDetail", {
+                                //     tourId: oResult.tourID
+                                // });
+                            }.bind(this)
+                        }
+                    );
+                } else {
+                    // Show error
+                    MessageBox.error(
+                        oResult.message || "Failed to create active tour."
+                    );
+                }
+            }.bind(this)).catch(function(oError) {
+                // Clear busy state
+                this._oActiveTourDialog.setBusy(false);
+                
+                // Show error
+                MessageBox.error(
+                    "Error creating active tour: " + (oError.message || "Unknown error")
+                );
+            }.bind(this));
+        },
+        
+        onCompleteTemplate: function () {
             // Validate all steps
             var oStepModel = this.getView().getModel("steps");
             
@@ -626,7 +782,9 @@ sap.ui.define([
                     }.bind(this)
                 }
             );
-        }, _saveTemplate: function (sStatus) {
+        }, 
+        
+        _saveTemplate: function (sStatus) {
             var oTourModel = this.getView().getModel("tour");
             var oTourData = oTourModel.getData();
             var sTemplateId = oTourData.templateID;
@@ -641,7 +799,7 @@ sap.ui.define([
             // Check if we're creating or updating
             var bIsCreate = !sTemplateId;
             var sActionName = bIsCreate ? "createTourTemplateBasicInfo" : "updateTourTemplateBasicInfo";
-            
+            console.log(sActionName);
             // Step 1: Create/Update basic information
             var oContext;
             
@@ -721,7 +879,7 @@ sap.ui.define([
             
             try {
                 // For published templates with existing schedules, we need to update them one by one
-                if (bIsPublished && oTourModel.getProperty("/scheduleIds")) {
+                if (bIsPublished || oTourModel.getProperty("/scheduleIds")) {
                     var aScheduleIds = oTourModel.getProperty("/scheduleIds") || [];
                     
                     // Check if we have schedule IDs stored from loading the template
@@ -1330,6 +1488,488 @@ sap.ui.define([
                 return oError.message;
             }
             return "An unknown error occurred";
+        },
+
+// Phương thức xử lý sau khi upload hoàn tất
+onImageUploadComplete: function(oEvent) {
+    // Lấy các model và item cần thiết
+    var oUploadSet = this.byId("templateImageUpload");
+    var oTourModel = this.getView().getModel("tour");
+    var aImages = oTourModel.getProperty("/images") || [];
+    var oUploadSetItem = oEvent.getParameter("item");
+    var sResponseText = oEvent.getParameter("response");
+    
+    try {
+        // Parse response từ server
+        var oResponse = JSON.parse(sResponseText);
+        
+        // Kiểm tra phản hồi từ server
+        if (oResponse && oResponse.success) {
+            // Xác định xem đây có phải là ảnh đầu tiên không (để set làm ảnh chính)
+            var bIsMain = aImages.length === 0;
+            
+            // Tạo đối tượng ảnh mới
+            var oNewImage = {
+                id: null, // Sẽ được cập nhật sau khi lưu template
+                fileName: oResponse.fileName,
+                url: oResponse.url,
+                thumbnailUrl: oResponse.url,
+                cloudinaryPublicId: oResponse.public_id,
+                isMain: bIsMain,
+                pendingSave: true,
+                attributes: [{
+                    title: "Size",
+                    text: this._formatFileSize(oResponse.fileSize || oUploadSetItem.getFileObject().size)
+                }]
+            };
+            
+            // Thêm ảnh đã upload vào model
+            aImages.push(oNewImage);
+            oTourModel.setProperty("/images", aImages);
+            
+            // Cập nhật trạng thái upload thành công
+            oUploadSetItem.setUploadState("Complete");
+            MessageToast.show("Ảnh đã được tải lên thành công");
+            
+            // Lưu ảnh vào database nếu đã có template ID
+            var sTemplateId = oTourModel.getProperty("/templateID");
+            if (sTemplateId) {
+                this._saveImageToDatabase(oNewImage, sTemplateId);
+            }
+        } else {
+            // Xử lý lỗi
+            oUploadSetItem.setUploadState("Error");
+            MessageBox.error("Upload không thành công: " + (oResponse.message || "Lỗi không xác định"));
         }
+    } catch (oError) {
+        // Xử lý lỗi khi parse JSON hoặc xử lý phản hồi
+        console.error("Lỗi khi xử lý phản hồi từ server:", oError, sResponseText);
+        oUploadSetItem.setUploadState("Error");
+        MessageBox.error("Lỗi khi xử lý phản hồi từ server: " + oError.message);
+    }
+},
+
+// Phương thức lưu ảnh vào database
+_saveImageToDatabase: function(oImage, sTemplateId) {
+    // Lấy model
+    var oModel = this.getOwnerComponent().getModel("tourService");
+    var oTourModel = this.getView().getModel("tour");
+    var aImages = oTourModel.getProperty("/images");
+    var iLastIndex = aImages.indexOf(oImage);
+    
+    if (iLastIndex === -1) {
+        console.error("Không tìm thấy ảnh trong model");
+        return;
+    }
+    
+    try {
+        // Tạo context cho function import
+        var oContext = oModel.bindContext("/addImageToTemplate(...)");
+        
+        // Thiết lập tham số
+        oContext.setParameter("templateID", sTemplateId);
+        oContext.setParameter("imageURL", oImage.url);
+        oContext.setParameter("caption", oImage.fileName);
+        oContext.setParameter("isMain", oImage.isMain);
+        oContext.setParameter("cloudinaryPublicId", oImage.cloudinaryPublicId); // Thêm public_id
+        
+        // Thực thi function
+        oContext.execute()
+            .then(function() {
+                var oResult = oContext.getBoundContext().getObject();
+                
+                if (oResult && oResult.imageID) {
+                    // Cập nhật ID cho ảnh trong model
+                    oTourModel.setProperty("/images/" + iLastIndex + "/id", oResult.imageID);
+                    oTourModel.setProperty("/images/" + iLastIndex + "/pendingSave", false);
+                    MessageToast.show("Ảnh đã được lưu vào cơ sở dữ liệu");
+                } else {
+                    // Xử lý lỗi
+                    MessageBox.error("Không thể lưu ảnh: " + (oResult.message || "Lỗi không xác định"));
+                }
+            })
+            .catch(function(oError) {
+                // Xử lý lỗi thực thi
+                MessageBox.error("Lỗi khi lưu ảnh: " + this._getErrorMessage(oError));
+            }.bind(this));
+    } catch (oError) {
+        // Xử lý lỗi binding
+        MessageBox.error("Lỗi chuẩn bị yêu cầu lưu: " + oError.message);
+    }
+},
+
+// Phương thức xử lý khi ảnh bị xóa
+onFileDeleted: function(oEvent) {
+    var oItem = oEvent.getParameter("item");
+    var oTourModel = this.getView().getModel("tour");
+    var aImages = oTourModel.getProperty("/images");
+    var oBindingContext = oItem.getBindingContext("tour");
+    
+    if (!oBindingContext) {
+        console.error("Missing binding context for deleted item");
+        return;
+    }
+    
+    var sPath = oBindingContext.getPath();
+    var iIndex = parseInt(sPath.substring(sPath.lastIndexOf("/") + 1));
+    var oImage = aImages[iIndex];
+    
+    if (!oImage) {
+        console.error("Image not found at index", iIndex);
+        return;
+    }
+    
+    // Nếu ảnh có Cloudinary public ID, xóa từ Cloudinary thông qua server
+    if (oImage.cloudinaryPublicId) {
+        jQuery.ajax({
+            url: "/api/cloudinary/delete/" + encodeURIComponent(oImage.cloudinaryPublicId),
+            method: "DELETE",
+            success: function() {
+                console.log("Ảnh đã được xóa từ Cloudinary");
+            },
+            error: function(oError) {
+                console.warn("Không thể xóa ảnh từ Cloudinary:", oError);
+                // Vẫn tiếp tục quy trình xóa ngay cả khi không thể xóa từ Cloudinary
+            }
+        });
+    }
+    
+    // Nếu ảnh chưa được lưu vào database, chỉ cần xóa khỏi model
+    if (!oImage.id) {
+        aImages.splice(iIndex, 1);
+        oTourModel.setProperty("/images", aImages);
+        return;
+    }
+    
+    // Ảnh đã tồn tại trong database, gọi removeImageFromTemplate
+    var oModel = this.getOwnerComponent().getModel("tourService");
+    
+    try {
+        // Tạo context cho function import
+        var oContext = oModel.bindContext("/removeImageFromTemplate(...)");
+        
+        // Thiết lập tham số
+        oContext.setParameter("imageID", oImage.id);
+        
+        // Thực thi function
+        oContext.execute()
+            .then(function() {
+                var oResult = oContext.getBoundContext().getObject();
+                
+                if (oResult && oResult.success) {
+                    // Xóa ảnh khỏi model
+                    aImages.splice(iIndex, 1);
+                    oTourModel.setProperty("/images", aImages);
+                    MessageToast.show("Đã xóa ảnh thành công");
+                    
+                    // Nếu đây là ảnh chính và còn ảnh khác, đặt ảnh đầu tiên làm ảnh chính
+                    if (oImage.isMain && aImages.length > 0) {
+                        oTourModel.setProperty("/images/0/isMain", true);
+                        
+                        // Nếu đã có template ID, cập nhật ảnh chính trong database
+                        var sTemplateId = oTourModel.getProperty("/templateID");
+                        if (sTemplateId && aImages[0].id) {
+                            this._setMainImageInDatabase(aImages[0].id, sTemplateId);
+                        }
+                    }
+                } else {
+                    // Xử lý lỗi
+                    MessageBox.error("Không thể xóa ảnh: " + (oResult.message || "Lỗi không xác định"));
+                }
+            }.bind(this))
+            .catch(function(oError) {
+                // Xử lý lỗi thực thi
+                MessageBox.error("Lỗi khi xóa ảnh: " + this._getErrorMessage(oError));
+            }.bind(this));
+    } catch (oError) {
+        // Xử lý lỗi binding
+        MessageBox.error("Lỗi chuẩn bị yêu cầu xóa: " + oError.message);
+    }
+},
+
+// Phương thức thiết lập ảnh chính
+onSetAsMainImage: function(oEvent) {
+    var oButton = oEvent.getSource();
+    var oItem = oButton.getParent();
+    var oContext = oItem.getBindingContext("tour");
+    
+    if (!oContext) {
+        console.error("Missing binding context");
+        return;
+    }
+    
+    var sPath = oContext.getPath();
+    var oTourModel = this.getView().getModel("tour");
+    var aImages = oTourModel.getProperty("/images");
+    var iIndex = parseInt(sPath.substring(sPath.lastIndexOf("/") + 1));
+    var oImage = aImages[iIndex];
+    
+    if (!oImage) {
+        console.error("Image not found at index", iIndex);
+        return;
+    }
+    
+    var sTemplateId = oTourModel.getProperty("/templateID");
+    
+    // Nếu chưa có template ID hoặc ảnh chưa được lưu, chỉ cập nhật model
+    if (!sTemplateId || !oImage.id) {
+        // Thiết lập tất cả ảnh thành non-main
+        aImages.forEach(function(oImg, i) {
+            oTourModel.setProperty("/images/" + i + "/isMain", false);
+        });
+        
+        // Thiết lập ảnh được chọn thành main
+        oTourModel.setProperty(sPath + "/isMain", true);
+        MessageToast.show("Đã thiết lập ảnh chính thành công");
+        return;
+    }
+    
+    // Đã có template ID và image ID, gọi setMainImage
+    this._setMainImageInDatabase(oImage.id, sTemplateId);
+},
+
+// Phương thức hỗ trợ để thiết lập ảnh chính trong database
+_setMainImageInDatabase: function(sImageId, sTemplateId) {
+    var oModel = this.getOwnerComponent().getModel("tourService");
+    var oTourModel = this.getView().getModel("tour");
+    var aImages = oTourModel.getProperty("/images");
+    
+    try {
+        // Tạo context cho function import
+        var oContext = oModel.bindContext("/setMainImage(...)");
+        
+        // Thiết lập tham số
+        oContext.setParameter("imageID", sImageId);
+        oContext.setParameter("templateID", sTemplateId);
+        
+        // Thực thi function
+        oContext.execute()
+            .then(function() {
+                var oResult = oContext.getBoundContext().getObject();
+                
+                if (oResult && oResult.success) {
+                    // Cập nhật model
+                    aImages.forEach(function(oImg, i) {
+                        oTourModel.setProperty("/images/" + i + "/isMain", oImg.id === sImageId);
+                    });
+                    MessageToast.show("Đã thiết lập ảnh chính thành công");
+                } else {
+                    // Xử lý lỗi
+                    MessageBox.error("Không thể thiết lập ảnh chính: " + (oResult.message || "Lỗi không xác định"));
+                }
+            })
+            .catch(function(oError) {
+                // Xử lý lỗi thực thi
+                MessageBox.error("Lỗi khi thiết lập ảnh chính: " + this._getErrorMessage(oError));
+            }.bind(this));
+    } catch (oError) {
+        // Xử lý lỗi binding
+        MessageBox.error("Lỗi chuẩn bị yêu cầu thiết lập ảnh chính: " + oError.message);
+    }
+},
+
+// Phương thức xử lý các ảnh đang chờ khi lưu template mới
+_processPendingImages: function(sTemplateId) {
+    var oTourModel = this.getView().getModel("tour");
+    var aImages = oTourModel.getProperty("/images") || [];
+    var aPendingImages = aImages.filter(function(oImage) {
+        return oImage.pendingSave;
+    });
+    
+    if (aPendingImages.length === 0) {
+        return Promise.resolve();
+    }
+    
+    // Đã có ảnh đang chờ để lưu
+    var oModel = this.getOwnerComponent().getModel("tourService");
+    var aPromises = [];
+    
+    // Xử lý từng ảnh đang chờ
+    aPendingImages.forEach(function(oImage, iIndex) {
+        var pSaveImage = new Promise(function(resolve, reject) {
+            try {
+                // Tạo context cho function import
+                var oContext = oModel.bindContext("/addImageToTemplate(...)");
+                
+                // Thiết lập tham số
+                oContext.setParameter("templateID", sTemplateId);
+                oContext.setParameter("imageURL", oImage.url);
+                oContext.setParameter("caption", oImage.fileName);
+                oContext.setParameter("isMain", oImage.isMain);
+                oContext.setParameter("cloudinaryPublicId", oImage.cloudinaryPublicId);
+                
+                // Thực thi function
+                oContext.execute()
+                    .then(function() {
+                        var oResult = oContext.getBoundContext().getObject();
+                        
+                        if (oResult && oResult.imageID) {
+                            // Tìm chỉ mục thực tế của ảnh trong mảng
+                            var iActualIndex = aImages.indexOf(oImage);
+                            if (iActualIndex !== -1) {
+                                // Cập nhật ảnh với ID mới
+                                aImages[iActualIndex].id = oResult.imageID;
+                                aImages[iActualIndex].pendingSave = false;
+                            }
+                            resolve();
+                        } else {
+                            // Xử lý lỗi
+                            reject(oResult.message || "Lỗi không xác định");
+                        }
+                    })
+                    .catch(function(oError) {
+                        // Xử lý lỗi thực thi
+                        reject(this._getErrorMessage(oError));
+                    }.bind(this));
+            } catch (oError) {
+                // Xử lý lỗi binding
+                reject(oError.message);
+            }
+        }.bind(this));
+        
+        aPromises.push(pSaveImage);
+    }.bind(this));
+    
+    // Đợi tất cả ảnh được lưu
+    return Promise.all(aPromises)
+        .then(function() {
+            // Cập nhật model
+            oTourModel.setProperty("/images", aImages);
+            return Promise.resolve();
+        })
+        .catch(function(sError) {
+            // Xử lý lỗi
+            return Promise.reject("Lỗi khi lưu ảnh: " + sError);
+        });
+},
+
+
+// Cập nhật phương thức _saveTemplate để xử lý ảnh đang chờ
+_saveTemplate: function(sStatus) {
+    var oTourModel = this.getView().getModel("tour");
+    var oTourData = oTourModel.getData();
+    var sTemplateId = oTourData.templateID;
+    console.log("templateID: ", sTemplateId);
+    
+    // Set busy state
+    var oView = this.getView();
+    oView.setBusy(true);
+    
+    // Get the OData model
+    var oModel = this.getOwnerComponent().getModel("tourService");
+    
+    // Check if we're creating or updating
+    var bIsCreate = !sTemplateId;
+    var sActionName = bIsCreate ? "createTourTemplateBasicInfo" : "updateTourTemplateBasicInfo";
+    
+    // Step 1: Create/Update basic information
+    var oContext;
+    
+    try {
+        // Prepare parameters for first step
+        if (bIsCreate) {
+            // Creating new template
+            oContext = oModel.bindContext("/" + sActionName + "(...)");
+            
+            oContext.setParameter("templateName", oTourData.templateName);
+            oContext.setParameter("description", oTourData.description);
+            oContext.setParameter("numberDays", oTourData.days);
+            oContext.setParameter("numberNights", oTourData.nights);
+            oContext.setParameter("tourType", oTourData.tourType);
+            // Không cần gửi images ở đây vì chúng ta sẽ xử lý riêng từng ảnh
+        } else {
+            // Updating existing template
+            oContext = oModel.bindContext("/" + sActionName + "(...)");
+            
+            oContext.setParameter("templateID", oTourData.templateID);
+            oContext.setParameter("templateName", oTourData.templateName);
+            oContext.setParameter("description", oTourData.description);
+            oContext.setParameter("numberDays", oTourData.days);
+            oContext.setParameter("numberNights", oTourData.nights);
+            oContext.setParameter("tourType", oTourData.tourType);
+        }
+        
+        // Execute the first step
+        oContext.execute().then(function(oContextData) {
+            var oResult;
+            
+            try {
+                // Get result object 
+                oResult = oContext.getBoundContext().getObject();
+            } catch (oBindingError) {
+                console.error("Error getting result from context:", oBindingError);
+                oResult = null;
+            }
+            
+            // If creating, store the new template ID
+            if (bIsCreate && oResult) {
+                console.log("Template creation result:", oResult);
+                
+                // Update the templateId variable with the new value from the backend
+                sTemplateId = oResult.templateID;
+                
+                // Also update the model
+                oTourModel.setProperty("/templateID", sTemplateId);
+                
+                console.log("New template created with ID:", sTemplateId);
+                
+                // Process any pending images
+                this._processPendingImages(sTemplateId)
+                    .then(function() {
+                        console.log("Pending images processed successfully");
+                        // Continue with next steps
+                        this._saveSchedules(sTemplateId, sStatus);
+                    }.bind(this))
+                    .catch(function(sError) {
+                        // Log error but continue with saving
+                        console.warn("Warning when processing images:", sError);
+                        MessageToast.show("Cảnh báo: " + sError + ". Tiếp tục lưu template.");
+                        this._saveSchedules(sTemplateId, sStatus);
+                    }.bind(this));
+            } else {
+                // For updates, continue with schedule step
+                this._saveSchedules(sTemplateId || oTourData.templateID, sStatus);
+            }
+        }.bind(this)).catch(function(oError) {
+            // Handle error
+            oView.setBusy(false);
+            MessageBox.error("Error saving template basic information: " + this._getErrorMessage(oError));
+        }.bind(this));
+    } catch (oError) {
+        oView.setBusy(false);
+        MessageBox.error("Error preparing request: " + oError.message);
+    }
+},
+
+// Hàm hỗ trợ để định dạng kích thước file
+_formatFileSize: function(iBytes) {
+    if (!iBytes) return "Unknown";
+    
+    if (iBytes < 1024) {
+        return iBytes + " B";
+    } else if (iBytes < 1048576) {
+        return (iBytes / 1024).toFixed(2) + " KB";
+    } else {
+        return (iBytes / 1048576).toFixed(2) + " MB";
+    }
+},
+
+// Hàm hỗ trợ để lấy thông báo lỗi
+_getErrorMessage: function(oError) {
+    if (oError.responseText) {
+        try {
+            var oErrorResponse = JSON.parse(oError.responseText);
+            if (oErrorResponse.error && oErrorResponse.error.message) {
+                return oErrorResponse.error.message;
+            }
+        } catch (e) {
+            // Lỗi khi parse JSON, trả về text gốc
+            return oError.responseText;
+        }
+    } else if (oError.message) {
+        return oError.message;
+    }
+    return "An unknown error occurred";
+}
     });
 });

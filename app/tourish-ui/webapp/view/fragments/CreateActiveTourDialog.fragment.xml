@@ -1,0 +1,92 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="createActiveTourDialog"
+        title="Create Active Tour"
+        contentWidth="550px">
+        
+        <content>
+            <f:SimpleForm
+                id="activeTourForm"
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4"
+                labelSpanL="4"
+                labelSpanM="4"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="0"
+                emptySpanL="0"
+                emptySpanM="0"
+                emptySpanS="0"
+                columnsXL="1"
+                columnsL="1"
+                columnsM="1">
+                <f:content>
+                    <Label id="_IDGenLabel41" text="Tour Name *" required="true" />
+                    <Input id="activeTourNameInput" value="{activeTour>/tourName}" maxLength="100" required="true" />
+                    
+                    <Label id="_IDGenLabel42" text="Departure Date *" required="true" />
+                    <DatePicker 
+                        id="departureDatePicker" 
+                        value="{activeTour>/departureDate}" 
+                        valueFormat="yyyy-MM-dd"
+                        displayFormat="long"
+                        required="true" />
+                    
+                    <Label id="_IDGenLabel43" text="Return Date *" required="true" />
+                    <DatePicker 
+                        id="returnDatePicker" 
+                        value="{activeTour>/returnDate}" 
+                        valueFormat="yyyy-MM-dd"
+                        displayFormat="long"
+                        required="true" />
+                    
+                    <Label id="_IDGenLabel44" text="Sale Start Date *" required="true" />
+                    <DatePicker 
+                        id="saleStartDatePicker" 
+                        value="{activeTour>/saleStartDate}" 
+                        valueFormat="yyyy-MM-dd"
+                        displayFormat="long"
+                        required="true" />
+                    
+                    <Label id="_IDGenLabel45" text="Sale End Date *" required="true" />
+                    <DatePicker 
+                        id="saleEndDatePicker" 
+                        value="{activeTour>/saleEndDate}" 
+                        valueFormat="yyyy-MM-dd"
+                        displayFormat="long"
+                        required="true" />
+                    
+                    <Label id="_IDGenLabel46" text="Max Capacity *" required="true" />
+                    <StepInput 
+                        id="maxCapacityInput" 
+                        value="{activeTour>/maxCapacity}" 
+                        min="1" 
+                        max="1000" 
+                        required="true" />
+                    
+                    <Label id="_IDGenLabel47" text="Responsible Person *" required="true" />
+                    <ComboBox
+    id="responsiblePersonComboBox"
+    items="{activeTour>/Members}"
+    selectedKey="{activeTour>/responsiblePersonID}"
+    required="true">
+    <core:Item id="_IDGenItem27" key="{activeTour>ID}" text="{activeTour>FullName}" />
+</ComboBox>
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        
+        <beginButton>
+            <Button id="_IDGenButton34" text="Cancel" press=".onCancelActiveTour" />
+        </beginButton>
+        
+        <endButton>
+            <Button id="_IDGenButton36" text="Create" type="Emphasized" press=".onSaveActiveTour" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

@@ -209,9 +209,6 @@ sap.ui.define([
         },
         
         onCopy: function (oEvent) {
-            // Prevent propagation to avoid triggering row selection
-            // oEvent.stopPropagation();
-            
             // Get the template ID from the binding context
             var oSource = oEvent.getSource();
             var oBindingContext = oSource.getBindingContext("templates");
@@ -225,12 +222,206 @@ sap.ui.define([
                     title: "Copy Template",
                     onClose: function (oAction) {
                         if (oAction === MessageBox.Action.OK) {
-                            // Copy template functionality
-                            MessageToast.show("Template copy functionality not implemented");
+                            this._copyTemplate(sTemplateId, sTemplateName);
                         }
-                    }
+                    }.bind(this)
                 });
             }
+        },
+        
+        _copyTemplate: function (sTemplateId, sTemplateName) {
+            // Set busy state
+            var oView = this.getView();
+            oView.setBusy(true);
+            
+            // Get the OData model
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            try {
+                // Step 1: Get template details
+                var oContext = oModel.bindContext("/getTourTemplateDetails(...)");
+                oContext.setParameter("templateID", sTemplateId);
+                
+                oContext.execute()
+                    .then(function () {
+                        var oTemplateData = oContext.getBoundContext().getObject();
+                        
+                        if (!oTemplateData || !oTemplateData.template) {
+                            throw new Error("Template data not found");
+                        }
+                        
+                        // Step 2: Create a new template with the copied data
+                        return this._createCopiedTemplate(oTemplateData);
+                    }.bind(this))
+                    .then(function (oResult) {
+                        // Success - show message and refresh list
+                        oView.setBusy(false);
+                        MessageBox.success("Template copied successfully. New template name: " + oResult.templateName, {
+                            onClose: function() {
+                                // Refresh the templates list
+                                this._loadTemplates();
+                            }.bind(this)
+                        });
+                    }.bind(this))
+                    .catch(function (oError) {
+                        // Error handling
+                        oView.setBusy(false);
+                        var sErrorMessage = "Error copying template: " + (oError.message || "Unknown error");
+                        
+                        if (oError.responseText) {
+                            try {
+                                var oErrorResponse = JSON.parse(oError.responseText);
+                                if (oErrorResponse && oErrorResponse.error && oErrorResponse.error.message) {
+                                    sErrorMessage = "Error copying template: " + oErrorResponse.error.message;
+                                }
+                            } catch (e) {
+                                // If parsing fails, use the error message we already have
+                            }
+                        }
+                        
+                        MessageBox.error(sErrorMessage);
+                    });
+            } catch (oError) {
+                oView.setBusy(false);
+                MessageBox.error("Error preparing copy request: " + oError.message);
+            }
+        },
+        
+        _createCopiedTemplate: function (oTemplateData) {
+            return new Promise(function (resolve, reject) {
+                var oModel = this.getOwnerComponent().getModel("tourService");
+                
+                // Generate a new name for the copied template
+                var sNewName = oTemplateData.template.TemplateName + " (Copy)";
+                
+                // Step 1: Create basic info
+                var oBasicInfoContext = oModel.bindContext("/createTourTemplateBasicInfo(...)");
+                
+                oBasicInfoContext.setParameter("templateName", sNewName);
+                oBasicInfoContext.setParameter("description", oTemplateData.template.Description);
+                oBasicInfoContext.setParameter("numberDays", oTemplateData.template.NumberDays);
+                oBasicInfoContext.setParameter("numberNights", oTemplateData.template.NumberNights);
+                oBasicInfoContext.setParameter("tourType", oTemplateData.template.TourType);
+                
+                // Prepare images if available
+                var aImages = [];
+                if (oTemplateData.images && oTemplateData.images.length > 0) {
+                    aImages = oTemplateData.images.map(function (oImage) {
+                        return {
+                            imageURL: oImage.ImageURL,
+                            caption: oImage.Caption,
+                            isMain: oImage.IsMain
+                        };
+                    });
+                }
+                
+                oBasicInfoContext.setParameter("images", aImages);
+                
+                // Execute basic info creation
+                oBasicInfoContext.execute()
+                    .then(function () {
+                        var oResult = oBasicInfoContext.getBoundContext().getObject();
+                        
+                        if (!oResult || !oResult.templateID) {
+                            throw new Error("Failed to create basic template information");
+                        }
+                        
+                        var sNewTemplateId = oResult.templateID;
+                        
+                        // Step 2: Copy schedules if available
+                        if (oTemplateData.schedules && oTemplateData.schedules.length > 0) {
+                            return this._copySchedules(sNewTemplateId, oTemplateData.schedules)
+                                .then(function () {
+                                    // Return the new template ID for next step
+                                    return sNewTemplateId;
+                                });
+                        }
+                        
+                        // If no schedules, just return the new template ID
+                        return sNewTemplateId;
+                    }.bind(this))
+                    .then(function (sNewTemplateId) {
+                        // Step 3: Copy price terms if available
+                        if (oTemplateData.priceTerms) {
+                            return this._copyPriceTerms(sNewTemplateId, oTemplateData.priceTerms)
+                                .then(function () {
+                                    // Return the new template ID for next step
+                                    return sNewTemplateId;
+                                });
+                        }
+                        
+                        // If no price terms, just return the new template ID
+                        return sNewTemplateId;
+                    }.bind(this))
+                    .then(function (sNewTemplateId) {
+                        // Step 4: Set final status as Draft
+                        var oStatusContext = oModel.bindContext("/updateTourTemplateStatus(...)");
+                        
+                        oStatusContext.setParameter("templateID", sNewTemplateId);
+                        oStatusContext.setParameter("status", "Draft");
+                        
+                        return oStatusContext.execute()
+                            .then(function () {
+                                // Return success information
+                                resolve({
+                                    templateID: sNewTemplateId,
+                                    templateName: sNewName
+                                });
+                            });
+                    })
+                    .catch(function (oError) {
+                        reject(oError);
+                    });
+            }.bind(this));
+        },
+        
+        _copySchedules: function (sTemplateId, aSchedules) {
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            // Format schedules for the API
+            var aSchedulesForApi = aSchedules.map(function (oSchedule) {
+                return {
+                    dayNumber: oSchedule.DayNumber,
+                    dayTitle: oSchedule.DayTitle,
+                    overview: oSchedule.Overview,
+                    breakfastIncluded: oSchedule.BreakfastIncluded,
+                    lunchIncluded: oSchedule.LunchIncluded,
+                    dinnerIncluded: oSchedule.DinnerIncluded,
+                    activities: oSchedule.Activities ? oSchedule.Activities.map(function (oActivity) {
+                        return {
+                            startTime: oActivity.StartTime,
+                            endTime: oActivity.EndTime,
+                            title: oActivity.Title,
+                            description: oActivity.Description
+                        };
+                    }) : []
+                };
+            });
+            
+            // Add schedules
+            var oSchedulesContext = oModel.bindContext("/addTourTemplateSchedules(...)");
+            
+            oSchedulesContext.setParameter("templateID", sTemplateId);
+            oSchedulesContext.setParameter("schedules", aSchedulesForApi);
+            
+            return oSchedulesContext.execute();
+        },
+        
+        _copyPriceTerms: function (sTemplateId, oPriceTerms) {
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            // Add price terms
+            var oPriceTermsContext = oModel.bindContext("/addTourTemplatePriceTerms(...)");
+            
+            oPriceTermsContext.setParameter("templateID", sTemplateId);
+            oPriceTermsContext.setParameter("adultPrice", oPriceTerms.AdultPrice);
+            oPriceTermsContext.setParameter("childrenPrice", oPriceTerms.ChildrenPrice);
+            oPriceTermsContext.setParameter("servicesIncluded", oPriceTerms.ServicesIncluded);
+            oPriceTermsContext.setParameter("servicesNotIncluded", oPriceTerms.ServicesNotIncluded);
+            oPriceTermsContext.setParameter("cancellationTerms", oPriceTerms.CancellationTerms);
+            oPriceTermsContext.setParameter("generalTerms", oPriceTerms.GeneralTerms);
+            
+            return oPriceTermsContext.execute();
         },
 
         onDeleteTemplateTour: function (oEvent) {
@@ -335,23 +526,290 @@ sap.ui.define([
             }
         },
         
-        onCreateActiveTour: function (oEvent) {
-            // Prevent propagation to avoid triggering row selection
-            // oEvent.stopPropagation();
-            
-            // Get the template ID from the binding context
+        onCreateActiveTour: function(oEvent) {
+            // Get the template ID from the button's binding context
             var oSource = oEvent.getSource();
             var oBindingContext = oSource.getBindingContext("templates");
             
             if (oBindingContext) {
                 var sTemplateId = oBindingContext.getProperty("ID");
+                var sTemplateName = oBindingContext.getProperty("TemplateName");
+                var sTemplateStatus = oBindingContext.getProperty("Status");
+                if (sTemplateStatus == "Published") {
+                                    // Store template ID for later use
+                    this._sSelectedTemplateId = sTemplateId;
                 
-                // Navigate to active tour creation with template id
-                MessageToast.show("Navigate to active tour creation with template: " + sTemplateId);
-                // this.getOwnerComponent().getRouter().navTo("activeTourCreate", {
-                //     templateId: sTemplateId
-                // });
+                // Open the Create Active Tour dialog
+                    this._openCreateActiveTourDialog(sTemplateId, sTemplateName);
+                } else {
+                    MessageBox.error("Tour Template is not published yet");
+                               }
+
             }
+        },
+        
+        _openCreateActiveTourDialog: function(sTemplateId, sTemplateName) {
+            var oView = this.getView();
+            
+            // Create dialog lazily
+            if (!this._oActiveTourDialog) {
+                // Load fragment
+                Fragment.load({
+                    id: oView.getId(),
+                    name: "tourishui.view.fragments.CreateActiveTourDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    // Connect dialog to the root view of this component
+                    oView.addDependent(oDialog);
+                    this._oActiveTourDialog = oDialog;
+                    this._prepareActiveTourDialog(sTemplateId, sTemplateName);
+                    oDialog.open();
+                }.bind(this));
+            } else {
+                this._prepareActiveTourDialog(sTemplateId, sTemplateName);
+                this._oActiveTourDialog.open();
+            }
+        },
+        
+        _prepareActiveTourDialog: function(sTemplateId, sTemplateName) {
+            // Load and set responsible persons (e.g., users who can manage the tour)
+            this._loadResponsiblePersons();
+            
+            // Initialize form data with default values
+            var oDate = new Date();
+            var oNextWeek = new Date(oDate);
+            oNextWeek.setDate(oDate.getDate() + 7);
+            
+            var oNextMonth = new Date(oDate);
+            oNextMonth.setDate(oDate.getDate() + 30);
+            
+            var oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern: "yyyy-MM-dd"});
+            
+            // Create a model for the dialog
+            var oDialogModel = new JSONModel({
+                templateID: sTemplateId,
+                tourName: sTemplateName + " - " + oDateFormat.format(oDate), // Default name suggestion
+                departureDate: oDateFormat.format(oNextWeek), // Default departure: next week
+                returnDate: oDateFormat.format(oNextMonth), // Default return: next month
+                saleStartDate: oDateFormat.format(oDate), // Default sale start: today
+                saleEndDate: oDateFormat.format(oNextWeek), // Default sale end: next week
+                maxCapacity: 20, // Default capacity
+                responsiblePersonID: "", // Will be selected by user
+                formValid: false, // Initial validation state
+                Members: this._aResponsiblePersons || []
+            });
+            
+            // Set the model to the dialog
+            this._oActiveTourDialog.setModel(oDialogModel, "activeTour");
+        },
+        
+        _loadResponsiblePersons: function() {
+            var oView = this.getView();
+            var oUserService = this.getOwnerComponent().getModel("userService");
+            
+            // Lưu trữ dữ liệu thành viên để sử dụng sau
+            var that = this;
+        
+            var oMembersContext = oUserService.bindContext("/getWorkspaceMembers(...)");
+        
+            oMembersContext.execute().then(function() {
+                var oResult = oMembersContext.getBoundContext().getObject();
+                
+                // Debug để kiểm tra dữ liệu
+                console.log("Members data:", oResult);
+        
+                var aMembers = Array.isArray(oResult) ? oResult : (oResult.value || []);
+                
+                // Lưu trữ danh sách thành viên vào một thuộc tính của controller
+                that._aResponsiblePersons = aMembers;
+                
+                // Nếu dialog đã tồn tại, cập nhật model của nó
+                if (that._oActiveTourDialog) {
+                    var oActiveTourModel = that._oActiveTourDialog.getModel("activeTour");
+                    if (oActiveTourModel) {
+                        oActiveTourModel.setProperty("/Members", aMembers);
+                        console.log("Model updated with members:", aMembers);
+                    }
+                }
+                
+                // Debug để xác nhận
+                console.log("Responsible persons loaded:", aMembers.length);
+            });
+        },
+        
+        onCancelActiveTour: function() {
+            // Close the dialog
+            if (this._oActiveTourDialog) {
+                this._oActiveTourDialog.close();
+            }
+        },
+        
+        onSaveActiveTour: function() {
+            // Get the dialog model
+            var oDialogModel = this._oActiveTourDialog.getModel("activeTour");
+            var oData = oDialogModel.getData();
+            
+            // Validate input
+            if (!this._validateActiveTourForm(oData)) {
+                return;
+            }
+            
+            // Set busy state
+            this._oActiveTourDialog.setBusy(true);
+            
+            // Get the OData model
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            try {
+                // Prepare action call
+                var oContext = oModel.bindContext("/createActiveTour(...)");
+                
+                // Set parameters
+                oContext.setParameter("templateID", oData.templateID);
+                oContext.setParameter("tourName", oData.tourName);
+                oContext.setParameter("departureDate", oData.departureDate);
+                oContext.setParameter("returnDate", oData.returnDate);
+                oContext.setParameter("saleStartDate", oData.saleStartDate);
+                oContext.setParameter("saleEndDate", oData.saleEndDate);
+                oContext.setParameter("maxCapacity", parseInt(oData.maxCapacity, 10));
+                oContext.setParameter("responsiblePersonID", oData.responsiblePersonID);
+                
+                // Execute the action
+                oContext.execute().then(function() {
+                    // Get the result
+                    var oResult = oContext.getBoundContext().getObject();
+                    
+                    // Clear busy state
+                    this._oActiveTourDialog.setBusy(false);
+                    
+                    if (oResult && oResult.tourID) {
+                        // Show success message
+                        MessageBox.success("Active tour created successfully.", {
+                            title: "Success",
+                            onClose: function() {
+                                // Close the dialog
+                                this._oActiveTourDialog.close();
+                                
+                                // Navigate to the active tour details (if needed)
+                                /*
+                                this.getOwnerComponent().getRouter().navTo("activeTourDetail", {
+                                    tourId: oResult.tourID
+                                });
+                                */
+                                
+                                // For now, just show a toast
+                                MessageToast.show("Active tour created with ID: " + oResult.tourID);
+                            }.bind(this)
+                        });
+                    } else {
+                        // Show error message
+                        MessageBox.error(oResult && oResult.message ? oResult.message : "Failed to create active tour");
+                    }
+                }.bind(this)).catch(function(oError) {
+                    // Clear busy state
+                    this._oActiveTourDialog.setBusy(false);
+                    
+                    // Show error message
+                    var sErrorMessage = this._getErrorMessage(oError);
+                    MessageBox.error("Error creating active tour: " + sErrorMessage);
+                }.bind(this));
+            } catch (oError) {
+                // Clear busy state
+                this._oActiveTourDialog.setBusy(false);
+                
+                // Show error message
+                MessageBox.error("Error preparing request: " + oError.message);
+            }
+        },
+        
+        _validateActiveTourForm: function(oData) {
+            // List of required fields
+            var aRequiredFields = [
+                { name: "tourName", label: "Tour Name" },
+                { name: "departureDate", label: "Departure Date" },
+                { name: "returnDate", label: "Return Date" },
+                { name: "saleStartDate", label: "Sale Start Date" },
+                { name: "saleEndDate", label: "Sale End Date" },
+                { name: "maxCapacity", label: "Max Capacity" },
+                { name: "responsiblePersonID", label: "Responsible Person" }
+            ];
+            
+            // Check if any required field is empty
+            var aMissingFields = [];
+            aRequiredFields.forEach(function(oField) {
+                if (!oData[oField.name]) {
+                    aMissingFields.push(oField.label);
+                }
+            });
+            
+            if (aMissingFields.length > 0) {
+                MessageBox.error("Please fill in all required fields: " + aMissingFields.join(", "));
+                return false;
+            }
+            
+            // Validate dates
+            try {
+                var dDeparture = new Date(oData.departureDate);
+                var dReturn = new Date(oData.returnDate);
+                var dSaleStart = new Date(oData.saleStartDate);
+                var dSaleEnd = new Date(oData.saleEndDate);
+                var dToday = new Date();
+                
+                // Reset time portions for fair comparison
+                dDeparture.setHours(0, 0, 0, 0);
+                dReturn.setHours(0, 0, 0, 0);
+                dSaleStart.setHours(0, 0, 0, 0);
+                dSaleEnd.setHours(0, 0, 0, 0);
+                dToday.setHours(0, 0, 0, 0);
+                
+                // Departure should be after today
+                if (dDeparture < dToday) {
+                    MessageBox.error("Departure date must be in the future");
+                    return false;
+                }
+                
+                // Return should be after or equal to departure
+                if (dReturn < dDeparture) {
+                    MessageBox.error("Return date must be after or equal to departure date");
+                    return false;
+                }
+                
+                // Sale end should be after or equal to sale start
+                if (dSaleEnd < dSaleStart) {
+                    MessageBox.error("Sale end date must be after or equal to sale start date");
+                    return false;
+                }
+            } catch (oError) {
+                MessageBox.error("Invalid date format");
+                return false;
+            }
+            
+            // Validate max capacity
+            var iMaxCapacity = parseInt(oData.maxCapacity, 10);
+            if (isNaN(iMaxCapacity) || iMaxCapacity < 1) {
+                MessageBox.error("Max capacity must be at least 1");
+                return false;
+            }
+            
+            return true;
+        },
+        
+        // Helper method to extract error message from different error objects
+        _getErrorMessage: function(oError) {
+            if (oError.responseText) {
+                try {
+                    var oErrorResponse = JSON.parse(oError.responseText);
+                    if (oErrorResponse.error && oErrorResponse.error.message) {
+                        return oErrorResponse.error.message;
+                    }
+                } catch (e) {
+                    // If JSON parsing fails, return the raw response
+                    return oError.responseText;
+                }
+            } else if (oError.message) {
+                return oError.message;
+            }
+            return "Unknown error";
         },
 
         onImagePress: function (oEvent) {
