@@ -1,0 +1,232 @@
+@host = http://localhost:4004
+@path = /customer-service
+@baseUrl = {{host}}{{path}}
+@contentType = application/json
+
+### Bước 1: Xác thực 
+# @name authenticate
+POST {{host}}/user-service/authenticate
+Content-Type: {{contentType}}
+
+{
+    "username": "truong",
+    "password": "Truong@2208"
+}
+
+### Lưu token sau khi xác thực
+@authToken = {{authenticate.response.body.token}}
+
+### Variables to store IDs from responses
+@individualCustomerId = 00000000-0000-0000-0000-000000000000
+@businessCustomerId = 00000000-0000-0000-0000-000000000000
+@individualTransactionId = 00000000-0000-0000-0000-000000000000
+@businessTransactionId = 00000000-0000-0000-0000-000000000000
+
+### 1. INDIVIDUAL CUSTOMER MANAGEMENT
+
+### 1.1 Create Individual Customer
+# @name createIndividualCustomer
+POST {{baseUrl}}/createCustomer
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "fullName": "Nguyen Van C",
+  "phone": "0901234567",
+  "email": "nguyenvana@example.com",
+  "address": "123 ABC Street, District 1, Ho Chi Minh City",
+  "birthday": "1990-01-15",
+  "notes": "Regular customer, prefers cultural tours"
+}
+
+### Update Individual Customer ID
+@individualCustomerId = "58872483-beb6-45ed-af65-2a0c2c4a635a"
+
+### 1.2 Update Individual Customer
+POST {{baseUrl}}/updateCustomer
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "customerID": "274d07bd-2237-4c6c-be9a-635fa51670f3",
+  "fullName": "Nguyen Van C Updated",
+  "phone": "0901234567",
+  "email": "nguyenvanc.updated@example.com",
+  "address": "456 XYZ Street, District 2, Ho Chi Minh City",
+  "birthday": "1990-01-15",
+  "notes": "Regular customer, prefers cultural and adventure tours"
+}
+
+### 1.3 Record Individual Customer Transaction
+# @name recordIndividualTransaction
+POST {{baseUrl}}/recordCustomerTransaction
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "customerID": "274d07bd-2237-4c6c-be9a-635fa51670f3",
+  "amount": 5500000,
+  "description": "Deposit for Hanoi Cultural Explorer Tour2"
+}
+
+### Update Individual Transaction ID
+@individualTransactionId = "7945ebd0-9e1e-4b06-8ab0-a103255604bd"
+
+### 1.4 Get Individual Customer Details
+POST {{baseUrl}}/getCustomerDetails
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "customerID": "274d07bd-2237-4c6c-be9a-635fa51670f3"
+}
+
+### 1.5 List Individual Customers
+POST {{baseUrl}}/listCustomers
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "",
+  "skip": 0,
+  "limit": 10
+}
+
+### 2. BUSINESS CUSTOMER MANAGEMENT
+
+### 2.1 Create Business Customer
+# @name createBusinessCustomer
+POST {{baseUrl}}/createBusinessCustomer
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "companyName": "ABC Corporation",
+  "taxCode": "0123456789",
+  "contactPerson": "Tran Thi B",
+  "position": "Travel Manager",
+  "phone": "0909876543",
+  "email": "contact@abccorp.com",
+  "address": "789 DEF Street, District 3, Ho Chi Minh City",
+  "notes": "Corporate client, interested in team-building tours"
+}
+
+### Update Business Customer ID
+@businessCustomerId = "7898c3d4-589a-4c0a-9b93-bee52e5e99b5"
+
+### 2.2 Update Business Customer
+POST {{baseUrl}}/updateBusinessCustomer
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "customerID": "7898c3d4-589a-4c0a-9b93-bee52e5e99b5",
+  "companyName": "ABC Corporation Updated",
+  "taxCode": "0123456789",
+  "contactPerson": "Tran Thi B",
+  "position": "Senior Travel Manager",
+  "phone": "0909876543",
+  "email": "contact.updated@abccorp.com",
+  "address": "789 DEF Street, District 3, Ho Chi Minh City",
+  "notes": "Corporate client, interested in team-building and luxury tours"
+}
+
+### 2.3 Record Business Customer Transaction
+# @name recordBusinessTransaction
+POST {{baseUrl}}/recordBusinessCustomerTransaction
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "customerID": "7898c3d4-589a-4c0a-9b93-bee52e5e99b5",
+  "amount": 15000000,
+  "description": "Team building tour for 10 employees"
+}
+
+### Update Business Transaction ID
+@businessTransactionId = "e0d2e752-d96d-47f2-9e8c-a92ba137b243"
+
+### 2.4 Get Business Customer Details
+POST {{baseUrl}}/getBusinessCustomerDetails
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "customerID": "7898c3d4-589a-4c0a-9b93-bee52e5e99b5"
+}
+
+### 2.5 List Business Customers
+POST {{baseUrl}}/listBusinessCustomers
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "ABC",
+  "skip": 0,
+  "limit": 10
+}
+
+### 3. GENERAL CUSTOMER OPERATIONS
+
+### 3.1 Search All Customers - Individual Only
+POST {{baseUrl}}/searchAllCustomers
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "Nguyen",
+  "customerType": "Individual",
+  "skip": 0,
+  "limit": 10
+}
+
+### 3.2 Search All Customers - Business Only
+POST {{baseUrl}}/searchAllCustomers
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "",
+  "customerType": "Business",
+  "skip": 0,
+  "limit": 10
+}
+
+### 3.3 Search All Customers - All Types
+POST {{baseUrl}}/searchAllCustomers
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "",
+  "customerType": "All",
+  "skip": 0,
+  "limit": 10
+}
+
+### 3.4 Get Customer Statistics
+POST {{baseUrl}}/getCustomerStatistics
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{}
+
+### 4. CLEANUP
+
+### 4.1 Delete Individual Customer
+POST {{baseUrl}}/deleteCustomer
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "customerID": "uuid-customer-1"
+}
+
+### 4.2 Delete Business Customer
+POST {{baseUrl}}/deleteBusinessCustomer
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "customerID": "{{businessCustomerId}}"
+}

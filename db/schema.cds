@@ -163,6 +163,30 @@ entity ActiveTourHistory {
   Changes : String(500);
 }
 
+entity BusinessCustomer {
+  key ID : UUID;
+  CompanyName : String(100) not null;
+  TaxCode : String(20);
+  ContactPerson : String(100);
+  Position : String(50);
+  Phone : String(20);
+  Email : String(100);
+  Address : String(200);
+  Notes : String(500);
+  TotalTransactions : Decimal(15,2) default 0.00;
+  Contracts : Association to many Contract on Contracts.BusinessCustomerID = $self.ID;
+  Orders : Association to many Order on Orders.BusinessCustomerID = $self.ID;
+  TransactionHistories : Association to many BusinessCustomerTransactionHistory on TransactionHistories.BusinessCustomerID = $self.ID;
+}
+
+entity BusinessCustomerTransactionHistory {
+  key ID : UUID;
+  BusinessCustomerID : UUID; // Reference to BusinessCustomer.ID
+  TransactionDate : Date;
+  Amount : Decimal(15,2);
+  Description : String(500);
+}
+
 // Original entities with updated references
 entity Customer {
   key ID : UUID;
@@ -190,7 +214,9 @@ entity CustomerTransactionHistory {
 entity Contract {
   key ID : UUID;
   CustomerID : UUID; // Khóa ngoại tham chiếu đến Customer.ID
+  BusinessCustomerID : UUID;
   ActiveTourID : UUID; // Reference to ActiveTour.ID (updated)
+  CustomerType : String(10); // "Individual" or "Business"
   ContractDate : Date;
   TotalAmount : Decimal(15,2);
   Status : String(20) default 'Pending'; // Pending/Completed/Canceled
@@ -229,6 +255,8 @@ entity Service {
 entity Order {
   key ID : UUID;
   CustomerID : UUID; // Khóa ngoại tham chiếu đến Customer.ID
+  BusinessCustomerID : UUID; // Reference to BusinessCustomer.ID
+  CustomerType : String(10); // "Individual" or "Business"
   ActiveTourID : UUID; // Updated reference to ActiveTour.ID
   OrderDate : Date;
   TotalAmount : Decimal(15,2);
