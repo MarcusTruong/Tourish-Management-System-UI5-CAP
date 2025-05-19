@@ -198,7 +198,7 @@ Content-Type: {{contentType}}
 Authorization: Basic {{base64 username:password}}
 
 {
-  "searchTerm": "",
+  "searchTerm": "Nguyen",
   "customerType": "All",
   "skip": 0,
   "limit": 10

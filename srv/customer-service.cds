@@ -236,6 +236,7 @@ service CustomerService @(path: '/customer-service') {
       Type: String;
       Name: String;
       Phone: String;
+      Address: String;
       Email: String;
       TotalTransactions: Decimal;
     };
@@ -244,6 +245,7 @@ service CustomerService @(path: '/customer-service') {
       Type: String;
       Name: String;
       Phone: String;
+      Address: String;
       Email: String;
       ContactPerson: String;
       TotalTransactions: Decimal;

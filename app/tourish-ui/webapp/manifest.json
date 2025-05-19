@@ -158,6 +158,11 @@
           "pattern": "services",
           "name": "serviceList",
           "target": "serviceList"
+        },
+        {
+          "pattern": "customer",
+          "name": "customer",
+          "target": "customer"
         }
       ],
       "targets": {
@@ -238,6 +243,13 @@
         "supplierDetail": {
           "viewId": "supplierDetail",
           "viewName": "supplier.SupplierDetail",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "customer": {
+          "viewId": "customer",
+          "viewName": "customer.CustomerManagement",
           "controlId": "mainContents",
           "controlAggregation": "pages",
           "parent": "appContent"

@@ -1,0 +1,136 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout">
+    
+    <Dialog
+        id="customerDialog"
+        title="{dialog>/title}"
+        contentWidth="500px"
+        contentHeight="600px"
+        resizable="true">
+        
+        <content>
+            <VBox id="_IDGenVBox31">
+                <HBox id="_IDGenHBox21" alignItems="Center" class="sapUiSmallMarginBegin sapUiSmallMarginTop">
+                    <Label id="_IDGenLabel55" text="Customer Type:" class="sapUiSmallMarginEnd" />
+                    <SegmentedButton
+                        id="customerTypeSegmentedButton"
+                        selectedKey="{dialog>/customerType}"
+                        width="200px"
+                        enabled="{= !${dialog>/isEdit}}"
+                        selectionChange=".onCustomerTypeChange">
+                        <items>
+                            <SegmentedButtonItem id="individualSegment" key="Individual" text="Individual"/>
+                            <SegmentedButtonItem id="businessSegment" key="Business" text="Business" />
+                        </items>
+                    </SegmentedButton>
+
+                    <core:Icon id="_IDGenIcon2"
+                        src="sap-icon://message-information"
+                        class="sapUiTinyMarginBegin"
+                        visible="{dialog>/isEdit}"
+                        tooltip="Customer type cannot be changed in edit mode"
+                        press=".onCustomerTypeInfoPress" />
+                </HBox>
+                
+                <f:SimpleForm
+                    id="individualCustomerForm"
+                    editable="true"
+                    layout="ResponsiveGridLayout"
+                    labelSpanXL="4"
+                    labelSpanL="4"
+                    labelSpanM="4"
+                    labelSpanS="12"
+                    adjustLabelSpan="false"
+                    emptySpanXL="0"
+                    emptySpanL="0"
+                    emptySpanM="0"
+                    emptySpanS="0"
+                    columnsXL="1"
+                    columnsL="1"
+                    columnsM="1"
+                    visible="{= ${dialog>/customerType} === 'Individual' }">
+                    <f:content>
+                        <Label id="_IDGenLabel56" text="Full Name *" required="true" />
+                        <Input id="fullNameInput2" value="{dialog>/customer/fullName}" maxLength="100" />
+                        
+                        <Label id="_IDGenLabel57" text="Phone" />
+                        <Input id="phoneInputIndividual" value="{dialog>/customer/phone}" maxLength="20" />
+                        
+                        <Label id="_IDGenLabel58" text="Email" />
+                        <Input id="emailInputIndividual" value="{dialog>/customer/email}" maxLength="100" />
+                        
+                        <Label id="_IDGenLabel59" text="Address" />
+                        <Input id="addressInputIndividual" value="{dialog>/customer/address}" maxLength="200" />
+                        
+                        <Label id="_IDGenLabel60" text="Birth Date" />
+                        <DatePicker
+                            id="birthDatePicker"
+                            value="{dialog>/customer/birthday}"
+                            valueFormat="yyyy-MM-dd"
+                            displayFormat="long" />
+                        
+                        <Label id="_IDGenLabel61" text="Notes" />
+                        <TextArea id="notesTextAreaIndividual" value="{dialog>/customer/notes}" rows="3" />
+                    </f:content>
+                </f:SimpleForm>
+                
+                <f:SimpleForm
+                    id="businessCustomerForm"
+                    editable="true"
+                    layout="ResponsiveGridLayout"
+                    labelSpanXL="4"
+                    labelSpanL="4"
+                    labelSpanM="4"
+                    labelSpanS="12"
+                    adjustLabelSpan="false"
+                    emptySpanXL="0"
+                    emptySpanL="0"
+                    emptySpanM="0"
+                    emptySpanS="0"
+                    columnsXL="1"
+                    columnsL="1"
+                    columnsM="1"
+                    visible="{= ${dialog>/customerType} === 'Business' }">
+                    <f:content>
+                        <Label id="_IDGenLabel62" text="Company Name *" required="true" />
+                        <Input id="companyNameInput" value="{dialog>/customer/companyName}" maxLength="100" />
+                        
+                        <Label id="_IDGenLabel63" text="Tax Code" />
+                        <Input id="taxCodeInput" value="{dialog>/customer/taxCode}" maxLength="20" />
+                        
+                        <Label id="_IDGenLabel64" text="Contact Person" />
+                        <Input id="contactPersonInput" value="{dialog>/customer/contactPerson}" maxLength="100" />
+                        
+                        <Label id="_IDGenLabel65" text="Position" />
+                        <Input id="positionInput" value="{dialog>/customer/position}" maxLength="50" />
+                        
+                        <Label id="_IDGenLabel66" text="Phone" />
+                        <Input id="phoneInputBusiness" value="{dialog>/customer/phone}" maxLength="20" />
+                        
+                        <Label id="_IDGenLabel67" text="Email" />
+                        <Input id="emailInputBusiness" value="{dialog>/customer/email}" maxLength="100" />
+                        
+                        <Label id="_IDGenLabel68" text="Address" />
+                        <Input id="addressInputBusiness" value="{dialog>/customer/address}" maxLength="200" />
+                        
+                        <Label id="_IDGenLabel69" text="Notes" />
+                        <TextArea id="notesTextAreaBusiness" value="{dialog>/customer/notes}" rows="3" />
+                    </f:content>
+                </f:SimpleForm>
+            </VBox>
+        </content>
+        
+        <beginButton>
+            <Button id="cancelCustomerButton" text="Cancel" press=".onCancelCustomer" />
+        </beginButton>
+        
+        <endButton>
+            <Button id="saveCustomerButton" text="Save" type="Emphasized" press=".determineButtonAction" />
+        </endButton>
+        
+    </Dialog>
+
+</core:FragmentDefinition>

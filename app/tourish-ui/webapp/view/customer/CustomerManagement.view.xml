@@ -1,0 +1,250 @@
+<mvc:View
+    controllerName="tourishui.controller.customer.CustomerManagement"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout">
+    
+    <Page id="customerListReportPage" title="Customer Management" titleLevel="H1" showNavButton="false">
+        <f:DynamicPage id="customerDynamicPage" headerExpanded="{= !${device>/system/phone} }" fitContent="true" toggleHeaderOnTitleClick="false">
+            <f:title>
+                <f:DynamicPageTitle id="_IDGenDynamicPageTitle4">
+                    <f:heading>
+                        <Title id="_IDGenTitle12" text="Customer Management" level="H1"/>
+                    </f:heading>
+                    <f:actions>
+                        <Button
+                            id="tableSettingsButton"
+                            icon="sap-icon://action-settings"
+                            tooltip="Table Settings"
+                            press=".onTableSettings" />
+                        <Button
+                            id="exportButton"
+                            icon="sap-icon://download"
+                            tooltip="Export to Excel"
+                            press=".onExport" />
+                    </f:actions>
+                </f:DynamicPageTitle>
+            </f:title>
+            
+            <f:header>
+                <f:DynamicPageHeader id="_IDGenDynamicPageHeader5" pinnable="true" >
+                    <layout:HorizontalLayout id="_IDGenHorizontalLayout2" allowWrapping="true">
+                        <layout:VerticalLayout id="_IDGenVerticalLayout1" width="100%">
+                            <HBox id="_IDGenHBox17" width="100%" justifyContent="SpaceBetween">
+                                <HBox id="_IDGenHBox18" alignItems="Center">
+                                    <SearchField 
+                                        id="customerSearchField" 
+                                        width="600px" 
+                                        placeholder="Find customer by name, email, phone..." 
+                                        search=".onSearch" 
+                                        class="sapUiSmallMarginEnd"/>  
+                                    <Select 
+                                        id="customerTypeSelect" 
+                                        width="200px" 
+                                        class="sapUiSmallMarginEnd" 
+                                        change=".onTypeFilterChange">
+                                        <items>
+                                            <core:Item id="_IDGenItem35" key="All" text="All Customers" />
+                                            <core:Item id="_IDGenItem36" key="Individual" text="Individual Customers" />
+                                            <core:Item id="_IDGenItem37" key="Business" text="Business Customer" />
+                                        </items>
+                                    </Select>  
+                                </HBox>
+
+                                <HBox id="_IDGenHBox19">
+                                    <Button 
+                                        id="clearFiltersButton"
+                                        text="Clear" 
+                                        press=".onClearFilters" 
+                                        class="sapUiSmallMarginBegin" />
+                                    <Button 
+                                        id="searchButton"
+                                        text="Search" 
+                                        type="Emphasized" 
+                                        press=".onSearch" 
+                                        class="sapUiSmallMarginBegin"/>
+                                </HBox>
+                            </HBox>
+                        </layout:VerticalLayout>
+                    </layout:HorizontalLayout>
+                </f:DynamicPageHeader>
+            </f:header>
+            
+            <f:content>
+                <VBox id="customerTabsVBox">
+                    <!-- Customer statistics cards -->
+                    <Panel id="customerStatsPanel" expandable="true" expanded="true" headerText="Customer Statistics">
+                        <layout:Grid id="_IDGenGrid3" defaultSpan="XL3 L3 M6 S12" hSpacing="1">
+                            <GenericTile 
+                                id="totalCustomersTile"
+                                header="Total Customers" 
+                                frameType="OneByOne" 
+                                class="sapUiTinyMargin">
+                                <TileContent id="_IDGenTileContent">
+                                    <NumericContent 
+                                        id="totalCustomersValue"
+                                        value="{= ${customerStats>/totalIndividualCustomers} + ${customerStats>/totalBusinessCustomers}}" 
+                                        valueColor="Good" 
+                                        icon="sap-icon://customer"/>
+                                </TileContent>
+                            </GenericTile>
+                            
+                            <GenericTile 
+                                id="individualCustomersTile"
+                                header="Individual Customers" 
+                                frameType="OneByOne" 
+                                class="sapUiTinyMargin">
+                                <TileContent id="_IDGenTileContent1">
+                                    <NumericContent 
+                                        id="individualCustomersValue"
+                                        value="{customerStats>/totalIndividualCustomers}" 
+                                        valueColor="Neutral" 
+                                        icon="sap-icon://person-placeholder"/>
+                                </TileContent>
+                            </GenericTile>
+                            
+                            <GenericTile 
+                                id="businessCustomersTile"
+                                header="Business Customers" 
+                                frameType="OneByOne" 
+                                class="sapUiTinyMargin">
+                                <TileContent id="_IDGenTileContent2">
+                                    <NumericContent 
+                                        id="businessCustomersValue"
+                                        value="{customerStats>/totalBusinessCustomers}" 
+                                        valueColor="Neutral" 
+                                        icon="sap-icon://building"/>
+                                </TileContent>
+                            </GenericTile>
+                            
+                            <GenericTile 
+                                id="recentTransactionsTile"
+                                header="Recent Transactions" 
+                                frameType="OneByOne" 
+                                class="sapUiTinyMargin"
+                                press=".onViewRecentTransactions">
+                                <TileContent id="_IDGenTileContent3">
+                                    <NumericContent 
+                                        id="recentTransactionsCount"
+                                        value="{= ${customerStats>/recentTransactions}.length}" 
+                                        valueColor="Good" 
+                                        icon="sap-icon://money-bills"/>
+                                </TileContent>
+                            </GenericTile>
+                        </layout:Grid>
+                    </Panel>
+                    
+                    <OverflowToolbar id="customerListToolbar">
+                        <Title id="customerListTitle" text="Customer List" level="H2" />
+                        <ToolbarSpacer id="_IDGenToolbarSpacer9" />
+                        <Button
+                            id="addCustomerButton"
+                            icon="sap-icon://add"
+                            text="Add New Customer"
+                            tooltip="Add New Customer"
+                            type="Emphasized"
+                            press=".onAddCustomer" />
+                    </OverflowToolbar>
+
+                    <Table 
+                        id="customersTable"
+                        inset="false"
+                        items="{
+                            path: '/customers'
+                        }"
+                        growing="true"
+                        growingThreshold="20"
+                        growingScrollToLoad="true"
+                        sticky="HeaderToolbar,ColumnHeaders"
+                        mode="MultiSelect"
+                        alternateRowColors="true"
+                        noDataText="No customers found. Add new customers to get started."
+                        busyIndicatorDelay="0"
+                    >
+                        <columns>
+                            <Column id="idColumn" minScreenWidth="Tablet" demandPopin="true" hAlign="Begin">
+                                <Text id="_IDGenText67" text="Customer ID" />
+                            </Column>
+                            <Column id="nameColumn" minScreenWidth="Tablet" demandPopin="true" hAlign="Begin" width="15%">
+                                <Text id="_IDGenText68" text="Customer Name" />
+                            </Column>
+                            <Column id="addressColumn" minScreenWidth="Desktop" demandPopin="true" hAlign="Begin" width="20%">
+                                <Text id="_IDGenText69" text="Address" />
+                            </Column>
+                            <Column id="phoneColumn" minScreenWidth="Desktop" demandPopin="true" hAlign="Begin">
+                                <Text id="_IDGenText70" text="Phone" />
+                            </Column>
+                            <Column id="emailColumn" minScreenWidth="Desktop" demandPopin="true" hAlign="Begin">
+                                <Text id="_IDGenText71" text="Email" />
+                            </Column>
+                            <Column id="typeColumn" minScreenWidth="Desktop" demandPopin="true" hAlign="Begin">
+                                <Text id="_IDGenText72" text="Type" />
+                            </Column>
+                            <Column id="transactionsColumn" minScreenWidth="Desktop" demandPopin="true" hAlign="End">
+                                <Text id="_IDGenText73" text="Total Transactions" />
+                            </Column>
+                            <Column id="actionsColumn" hAlign="End">
+                                <Text id="_IDGenText74" text="Actions" />
+                            </Column>
+                        </columns>
+                        
+                        <items>
+                            <ColumnListItem id="customerListItem" type="Navigation" press=".onCustomerPress">
+                                <cells>
+                                    <ObjectIdentifier id="_IDGenObjectIdentifier" title="{ID}" />
+                                    <Text id="_IDGenText75" text="{= ${Type} === 'Individual' ? ${Name} : ${Name} }" />
+                                    <Text id="_IDGenText76" text="{Address}" />
+                                    <Link id="_IDGenLink" text="{Phone}" href="tel:{Phone}" />
+                                    <Link id="_IDGenLink2" text="{Email}" href="mailto:{Email}" />
+                                    <ObjectStatus id="_IDGenObjectStatus8"
+                                        text="{Type}"
+                                        state="{= ${Type} === 'Individual' ? 'Information' : 'Success' }" />
+                                    <ObjectNumber id="_IDGenObjectNumber4"
+                                        number="{
+                                            parts: [{path: 'TotalTransactions'}, {path: '/currencyCode'}],
+                                            type: 'sap.ui.model.type.Currency',
+                                            formatOptions: {showMeasure: true}
+                                        }"
+                                         />
+                                    <HBox id="_IDGenHBox20" justifyContent="End">
+                                        <Button 
+                                            id="editCustomerButton" 
+                                            icon="sap-icon://edit" 
+                                            press=".onEditCustomer" 
+                                            tooltip="Edit" />
+                                        <Button 
+                                            id="deleteCustomerButton" 
+                                            icon="sap-icon://delete" 
+                                            press=".onDeleteCustomer" 
+                                            tooltip="Delete" 
+                                            class="sapUiTinyMarginBegin" />
+                                    </HBox>
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </VBox>
+            </f:content>
+        </f:DynamicPage>
+        
+        <footer>
+            <OverflowToolbar id="customerListFooter">
+                <ToolbarSpacer id="_IDGenToolbarSpacer22" />
+                <Text id="tableCountCustomerText" text="Customers: {= ${/customers}.length || 0}" />
+                <ToolbarSpacer id="_IDGenToolbarSpacer23" />
+                <Button 
+                    id="deleteSelectedButton" 
+                    text="Delete Selected" 
+                    type="Reject" 
+                    press=".onDeleteSelected" />
+                <Button 
+                    id="createCustomerButton" 
+                    text="Create Customer" 
+                    type="Emphasized" 
+                    press=".onAddCustomer" />
+            </OverflowToolbar>
+        </footer>
+    </Page>
+</mvc:View>

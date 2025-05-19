@@ -601,7 +601,7 @@ srv.on('listCustomers', async (req) => {
         
         // Apply search if provided
         if (searchTerm && searchTerm.trim() !== '') {
-          const searchCondition = `FullName LIKE '%${searchTerm}%' OR Email LIKE '%${searchTerm}%' OR Phone LIKE '%${searchTerm}%'`;
+          const searchCondition = `FullName LIKE '%${searchTerm}%' OR Email LIKE '%${searchTerm}%' OR Phone LIKE '%${searchTerm}%' OR Address LIKE '%${searchTerm}' `;
           individualQuery.where(searchCondition);
           countIndividualQuery.where(searchCondition);
         }
@@ -622,6 +622,7 @@ srv.on('listCustomers', async (req) => {
           Type: 'Individual',
           Name: customer.FullName,
           Phone: customer.Phone,
+          Address: customer.Address,
           Email: customer.Email,
           TotalTransactions: customer.TotalTransactions
         }));
@@ -655,6 +656,7 @@ srv.on('listCustomers', async (req) => {
           Type: 'Business',
           Name: customer.CompanyName,
           Phone: customer.Phone,
+          Address: customer.Address,
           Email: customer.Email,
           ContactPerson: customer.ContactPerson,
           TotalTransactions: customer.TotalTransactions
