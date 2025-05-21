@@ -1,0 +1,302 @@
+<mvc:View
+    controllerName="tourishui.controller.customer.CustomerDetail"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:uxap="sap.uxap"
+    xmlns:core="sap.ui.core"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:layout="sap.ui.layout">
+    
+    <Page id="customerDetailPage" showNavButton="true" navButtonPress=".onNavBack">
+        <customHeader>
+            <Toolbar id="_IDGenToolbar6">
+                <Button id="navBackButton" icon="sap-icon://nav-back" press=".onNavBack" />
+                <Title id="customerDetailTitle" text="{
+                    parts: [{path: 'customerDetail>/type'}, {path: 'customerDetail>/name'}],
+                    formatter: '.formatter.formatCustomerTitle'
+                }" />
+                <ToolbarSpacer id="_IDGenToolbarSpacer24" />
+                <Button id="editCustomerButton2" text="Edit" icon="sap-icon://edit" press=".onEditCustomer" type="Transparent" />
+                <Button id="deleteCustomerButton2" text="Delete" icon="sap-icon://delete" press=".onDeleteCustomer" type="Transparent" />
+            </Toolbar>
+        </customHeader>
+        
+        <uxap:ObjectPageLayout
+            id="objectPageLayout"
+            enableLazyLoading="false"
+            showTitleInHeaderContent="false"
+            showHeaderContent="true"
+            upperCaseAnchorBar="false">
+            
+            <uxap:headerTitle>
+                <uxap:ObjectPageHeader
+                    id="objectPageHeader"
+                    objectTitle="{customerDetail>/name}"
+                    objectSubtitle="{
+                        path: 'customerDetail>/type',
+                        formatter: '.formatter.formatCustomerType'
+                    }">
+                </uxap:ObjectPageHeader>
+            </uxap:headerTitle>
+            
+            <uxap:headerContent>
+                <layout:VerticalLayout id="_IDGenVerticalLayout2">
+                    <layout:HorizontalLayout id="_IDGenHorizontalLayout3">
+                        <VBox id="_IDGenVBox30" class="sapUiSmallMarginEnd">
+                            <Label id="_IDGenLabel70" text="Phone" class="sapUiTinyMarginBottom" />
+                            <Link id="_IDGenLink3" text="{customerDetail>/phone}" href="tel:{customerDetail>/phone}" />
+                        </VBox>
+                        <VBox id="_IDGenVBox32" class="sapUiSmallMarginEnd">
+                            <Label id="_IDGenLabel71" text="Email" class="sapUiTinyMarginBottom" />
+                            <Link id="_IDGenLink4" text="{customerDetail>/email}" href="mailto:{customerDetail>/email}" />
+                        </VBox>
+                        <VBox id="_IDGenVBox33">
+                            <Label id="_IDGenLabel72" text="Total Transactions" class="sapUiTinyMarginBottom" />
+                            <ObjectNumber id="_IDGenObjectNumber5"
+                                number="{
+                                    parts: [{path: 'customerDetail>/totalTransactions'}, {path: '/currencyCode'}],
+                                    type: 'sap.ui.model.type.Currency',
+                                    formatOptions: {showMeasure: true}
+                                }"
+                                state="{= ${customerDetail>/totalTransactions} > 0 ? 'Success' : 'None'}" />
+                        </VBox>
+                    </layout:HorizontalLayout>
+                    <layout:HorizontalLayout id="_IDGenHorizontalLayout4" class="sapUiTinyMarginTop">
+                        <VBox id="_IDGenVBox34">
+                            <Label id="_IDGenLabel73" text="Address" class="sapUiTinyMarginBottom" />
+                            <Text id="_IDGenText77" text="{customerDetail>/address}" />
+                        </VBox>
+                    </layout:HorizontalLayout>
+                </layout:VerticalLayout>
+            </uxap:headerContent>
+            
+            <uxap:sections>
+                <uxap:ObjectPageSection id="customerDetailsSection" title="Customer Details">
+                    <uxap:subSections>
+                        <uxap:ObjectPageSubSection id="customerDetailsSubSection">
+                            <uxap:blocks>
+                                <IconTabBar id="customerDetailsTabs" expandable="false" applyContentPadding="false" class="sapUiResponsiveContentPadding">
+                                    <items>
+                                        <!-- Basic Information Tab -->
+                                        <IconTabFilter id="basicInfoTab2" icon="sap-icon://person-placeholder" key="basicInfo" text="Basic Information">
+                                            <VBox id="_IDGenVBox35">
+                                                <form:SimpleForm id="_IDGenSimpleForm3"
+                                                    editable="false"
+                                                    layout="ResponsiveGridLayout"
+                                                    labelSpanXL="4"
+                                                    labelSpanL="4"
+                                                    labelSpanM="4"
+                                                    labelSpanS="12"
+                                                    columnsXL="2"
+                                                    columnsL="2"
+                                                    columnsM="1">
+                                                    <form:content>
+                                                        <!-- Common fields for both customer types -->
+                                                        <core:Fragment fragmentName="tourishui.view.fragments.CustomerDetailBasicInfo" type="XML" />
+                                                        
+                                                        <!-- Individual customer specific fields -->
+                                                        <core:Fragment fragmentName="tourishui.view.fragments.CustomerDetailIndividualInfo" type="XML" />
+                                                        
+                                                        <!-- Business customer specific fields -->
+                                                        <core:Fragment fragmentName="tourishui.view.fragments.CustomerDetailBusinessInfo" type="XML" />
+                                                    </form:content>
+                                                </form:SimpleForm>
+                                            </VBox>
+                                        </IconTabFilter>
+                                        
+                                        <!-- Transactions Tab -->
+                                        <IconTabFilter id="transactionsTab" icon="sap-icon://money-bills" key="transactions" text="Transactions">
+                                            <VBox id="_IDGenVBox36">
+                                                <Toolbar id="_IDGenToolbar7">
+                                                    <Title id="_IDGenTitle13" text="Customer Transactions" level="H2" />
+                                                    <ToolbarSpacer id="_IDGenToolbarSpacer25" />
+                                                    <Button id="_IDGenButton43" icon="sap-icon://add" text="Add Transaction" press=".onAddTransaction" type="Emphasized" />
+                                                </Toolbar>
+                                                
+                                                <Table
+                                                    id="transactionsTable"
+                                                    items="{customerDetail>/transactions}"
+                                                    noDataText="No transactions found"
+                                                    growing="true"
+                                                    growingThreshold="10"
+                                                    growingScrollToLoad="true">
+                                                    <columns>
+                                                        <Column id="_IDGenColumn39" width="20%">
+                                                            <Text id="_IDGenText78" text="Date" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn40" width="15%" hAlign="End">
+                                                            <Text id="_IDGenText79" text="Amount" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn41" width="50%">
+                                                            <Text id="_IDGenText80" text="Description" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn42" width="15%" hAlign="End">
+                                                            <Text id="_IDGenText81" text="Actions" />
+                                                        </Column>
+                                                    </columns>
+                                                    
+                                                    <items>
+                                                        <ColumnListItem id="_IDGenColumnListItem7">
+                                                            <cells>
+                                                                <Text id="_IDGenText82" text="{
+                                                                    path: 'customerDetail>TransactionDate',
+                                                                    formatter: '.formatter.formatDate'
+                                                                }" />
+                                                                <ObjectNumber id="_IDGenObjectNumber6"
+                                                                    number="{
+                                                                        parts: [{path: 'customerDetail>Amount'}, {path: '/currencyCode'}],
+                                                                        type: 'sap.ui.model.type.Currency',
+                                                                        formatOptions: {showMeasure: false}
+                                                                    }"
+                                                                    unit="VND" />
+                                                                <Text id="_IDGenText83" text="{customerDetail>Description}" />
+                                                                <HBox id="_IDGenHBox22" justifyContent="End">
+                                                                    <Button id="_IDGenButton44" icon="sap-icon://delete" type="Transparent" press=".onDeleteTransaction" />
+                                                                </HBox>
+                                                            </cells>
+                                                        </ColumnListItem>
+                                                    </items>
+                                                </Table>
+                                            </VBox>
+                                        </IconTabFilter>
+                                        
+                                        <!-- Contracts Tab -->
+                                        <IconTabFilter id="contractsTab" icon="sap-icon://document-text" key="contracts" text="Contracts">
+                                            <VBox id="_IDGenVBox37">
+                                                <Toolbar id="_IDGenToolbar8">
+                                                    <Title id="_IDGenTitle14" text="Customer Contracts" level="H2" />
+                                                    <ToolbarSpacer id="_IDGenToolbarSpacer26" />
+                                                    <Button id="_IDGenButton45" icon="sap-icon://add" text="Add Contract" press=".onAddContract" type="Emphasized" />
+                                                </Toolbar>
+                                                
+                                                <Table
+                                                    id="contractsTable"
+                                                    items="{customerDetail>/contracts}"
+                                                    noDataText="No contracts found"
+                                                    growing="true"
+                                                    growingThreshold="10"
+                                                    growingScrollToLoad="true">
+                                                    <columns>
+                                                        <Column id="_IDGenColumn43" width="20%">
+                                                            <Text id="_IDGenText84" text="Contract Date" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn44" width="25%">
+                                                            <Text id="_IDGenText85" text="Tour" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn45" width="15%" hAlign="End">
+                                                            <Text id="_IDGenText86" text="Amount" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn46" width="15%">
+                                                            <Text id="_IDGenText87" text="Status" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn47" width="15%" hAlign="End">
+                                                            <Text id="_IDGenText88" text="Actions" />
+                                                        </Column>
+                                                    </columns>
+                                                    
+                                                    <items>
+                                                        <ColumnListItem id="_IDGenColumnListItem8">
+                                                            <cells>
+                                                                <Text id="_IDGenText89" text="{
+                                                                    path: 'customerDetail>ContractDate',
+                                                                    formatter: '.formatter.formatDate'
+                                                                }" />
+                                                                <Text id="_IDGenText90" text="{customerDetail>TourName}" />
+                                                                <ObjectNumber id="_IDGenObjectNumber7"
+                                                                    number="{
+                                                                        parts: [{path: 'customerDetail>TotalAmount'}, {path: '/currencyCode'}],
+                                                                        type: 'sap.ui.model.type.Currency',
+                                                                        formatOptions: {showMeasure: false}
+                                                                    }"/>
+                                                                <ObjectStatus id="_IDGenObjectStatus9"
+                                                                    text="{customerDetail>Status}"
+                                                                    state="{= ${customerDetail>Status} === 'Completed' ? 'Success' : ${customerDetail>Status} === 'Pending' ? 'Warning' : 'Error' }" />
+                                                                <HBox id="_IDGenHBox23" justifyContent="End">
+                                                                    <Button id="_IDGenButton46" icon="sap-icon://display" type="Transparent" press=".onViewContract" tooltip="View Contract" />
+                                                                </HBox>
+                                                            </cells>
+                                                        </ColumnListItem>
+                                                    </items>
+                                                </Table>
+                                            </VBox>
+                                        </IconTabFilter>
+                                        
+                                        <!-- Orders Tab -->
+                                        <IconTabFilter id="ordersTab" icon="sap-icon://cart" key="orders" text="Orders">
+                                            <VBox id="_IDGenVBox38">
+                                                <Toolbar id="_IDGenToolbar9">
+                                                    <Title id="_IDGenTitle15" text="Customer Orders" level="H2" />
+                                                    <ToolbarSpacer id="_IDGenToolbarSpacer27" />
+                                                    <Button id="_IDGenButton47" icon="sap-icon://add" text="Add Order" press=".onAddOrder" type="Emphasized" />
+                                                </Toolbar>
+                                                
+                                                <Table
+                                                    id="ordersTable"
+                                                    items="{customerDetail>/orders}"
+                                                    noDataText="No orders found"
+                                                    growing="true"
+                                                    growingThreshold="10"
+                                                    growingScrollToLoad="true">
+                                                    <columns>
+                                                        <Column id="_IDGenColumn48" width="20%">
+                                                            <Text id="_IDGenText91" text="Order Date" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn49" width="25%">
+                                                            <Text id="_IDGenText92" text="Tour" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn50" width="15%" hAlign="End">
+                                                            <Text id="_IDGenText93" text="Amount" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn51" width="15%">
+                                                            <Text id="_IDGenText94" text="Status" />
+                                                        </Column>
+                                                        <Column id="_IDGenColumn52" width="15%" hAlign="End">
+                                                            <Text id="_IDGenText95" text="Actions" />
+                                                        </Column>
+                                                    </columns>
+                                                    
+                                                    <items>
+                                                        <ColumnListItem id="_IDGenColumnListItem9">
+                                                            <cells>
+                                                                <Text id="_IDGenText96" text="{
+                                                                    path: 'customerDetail>OrderDate',
+                                                                    formatter: '.formatter.formatDate'
+                                                                }" />
+                                                                <Text id="_IDGenText97" text="{customerDetail>TourName}" />
+                                                                <ObjectNumber id="_IDGenObjectNumber8"
+                                                                    number="{
+                                                                        parts: [{path: 'customerDetail>TotalAmount'}, {path: '/currencyCode'}],
+                                                                        type: 'sap.ui.model.type.Currency',
+                                                                        formatOptions: {showMeasure: false}
+                                                                    }"
+                                                                    unit="VND" />
+                                                                <ObjectStatus id="_IDGenObjectStatus10"
+                                                                    text="{customerDetail>Status}"
+                                                                    state="{= ${customerDetail>Status} === 'Completed' ? 'Success' : ${customerDetail>Status} === 'Pending' ? 'Warning' : 'Error' }" />
+                                                                <HBox id="_IDGenHBox24" justifyContent="End">
+                                                                    <Button id="_IDGenButton48" icon="sap-icon://display" type="Transparent" press=".onViewOrder" tooltip="View Order" />
+                                                                </HBox>
+                                                            </cells>
+                                                        </ColumnListItem>
+                                                    </items>
+                                                </Table>
+                                            </VBox>
+                                        </IconTabFilter>
+                                    </items>
+                                </IconTabBar>
+                            </uxap:blocks>
+                        </uxap:ObjectPageSubSection>
+                    </uxap:subSections>
+                </uxap:ObjectPageSection>
+            </uxap:sections>
+        </uxap:ObjectPageLayout>
+        
+        <footer>
+            <Toolbar id="_IDGenToolbar10">
+                <ToolbarSpacer id="_IDGenToolbarSpacer28" />
+                <Button id="backButton" text="Back to Customer List" press=".onNavBack" type="Default" />
+            </Toolbar>
+        </footer>
+    </Page>
+</mvc:View>

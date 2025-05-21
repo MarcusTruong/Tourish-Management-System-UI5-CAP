@@ -1,0 +1,15 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout">
+    
+    <!-- Individual customer specific fields -->
+    <Label id="_IDGenLabel74" text="Full Name" visible="{= ${customerDetail>/type} === 'Individual'}" />
+    <Text id="_IDGenText102" text="{customerDetail>/name}" visible="{= ${customerDetail>/type} === 'Individual'}" />
+    
+    <Label id="_IDGenLabel81" text="Birth Date" visible="{= ${customerDetail>/type} === 'Individual'}" />
+    <Text id="_IDGenText103" text="{
+        path: 'customerDetail>/birthDay',
+        formatter: '.formatter.formatDate'
+    }" visible="{= ${customerDetail>/type} === 'Individual'}" />
+</core:FragmentDefinition>

@@ -39,13 +39,24 @@ sap.ui.define([
             this.getView().setModel(oStatsModel, "customerStats");
 
             // Load initial data
-            this._loadCustomerStatistics();
+            // this._loadCustomerStatistics();
+            // this._loadCustomers();
+
+                // Lắng nghe sự kiện routeMatched
+            var oRouter = this.getOwnerComponent().getRouter();
+            oRouter.getRoute("customer").attachPatternMatched(this._onRouteMatched, this);
+        },
+
+        _onRouteMatched: function (oEvent) {
+            // Tải lại dữ liệu khi quay lại trang danh sách
             this._loadCustomers();
+            this._loadCustomerStatistics();
         },
 
         // LOADING DATA
         
         _loadCustomerStatistics: function() {
+            console.log(1);
             var oView = this.getView();
             var oStatsModel = oView.getModel("customerStats");
             
@@ -750,75 +761,6 @@ sap.ui.define([
                 .finally(function() {
                     oSpreadsheet.destroy();
                 });
-        },
-        
-        onTableSettings: function() {
-            if (!this._oTableSettingsDialog) {
-                Fragment.load({
-                    id: this.getView().getId(),
-                    name: "tourishui.view.fragments.TableSettings",
-                    controller: this
-                }).then(function(oDialog) {
-                    this.getView().addDependent(oDialog);
-                    this._oTableSettingsDialog = oDialog;
-                    
-                    // Initialize dialog with current columns
-                    this._configureTableSettingsDialog();
-                    this._oTableSettingsDialog.open();
-                }.bind(this));
-            } else {
-                // Update dialog with current columns
-                this._configureTableSettingsDialog();
-                this._oTableSettingsDialog.open();
-            }
-        },
-        
-        _configureTableSettingsDialog: function() {
-            var oTable = this.byId("customersTable");
-            var aColumns = oTable.getColumns();
-            var aItems = [];
-            
-            // Create items array for columns
-            for (var i = 0; i < aColumns.length; i++) {
-                var oColumn = aColumns[i];
-                var oColumnHeader = oColumn.getHeader();
-                var sText = "";
-                
-                if (oColumnHeader instanceof sap.m.Text) {
-                    sText = oColumnHeader.getText();
-                }
-                
-                aItems.push({
-                    text: sText,
-                    selected: oColumn.getVisible()
-                });
-            }
-            
-            // Create model for dialog
-            var oModel = new JSONModel({
-                items: aItems
-            });
-            
-            this._oTableSettingsDialog.setModel(oModel);
-        },
-        
-        onTableSettingsConfirm: function() {
-            var oTable = this.byId("customersTable");
-            var aColumns = oTable.getColumns();
-            var oDialog = this._oTableSettingsDialog;
-            var oModel = oDialog.getModel();
-            var aItems = oModel.getProperty("/items");
-            
-            // Update column visibility
-            for (var i = 0; i < aColumns.length; i++) {
-                aColumns[i].setVisible(aItems[i].selected);
-            }
-            
-            oDialog.close();
-        },
-        
-        onTableSettingsCancel: function() {
-            this._oTableSettingsDialog.close();
         }
     });
 });

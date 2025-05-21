@@ -13,18 +13,6 @@
                     <f:heading>
                         <Title id="_IDGenTitle12" text="Customer Management" level="H1"/>
                     </f:heading>
-                    <f:actions>
-                        <Button
-                            id="tableSettingsButton"
-                            icon="sap-icon://action-settings"
-                            tooltip="Table Settings"
-                            press=".onTableSettings" />
-                        <Button
-                            id="exportButton"
-                            icon="sap-icon://download"
-                            tooltip="Export to Excel"
-                            press=".onExport" />
-                    </f:actions>
                 </f:DynamicPageTitle>
             </f:title>
             
@@ -146,6 +134,11 @@
                             tooltip="Add New Customer"
                             type="Emphasized"
                             press=".onAddCustomer" />
+                        <Button
+                            id="exportButton"
+                            icon="sap-icon://download"
+                            tooltip="Export to Excel"
+                            press=".onExport" />
                     </OverflowToolbar>
 
                     <Table 

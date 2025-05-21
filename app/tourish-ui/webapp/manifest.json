@@ -163,6 +163,11 @@
           "pattern": "customer",
           "name": "customer",
           "target": "customer"
+        },
+        {
+          "name": "customerDetail",
+          "pattern": "customer/{customerId}/{customerType}",
+          "target": "customerDetail"
         }
       ],
       "targets": {
@@ -250,6 +255,13 @@
         "customer": {
           "viewId": "customer",
           "viewName": "customer.CustomerManagement",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "customerDetail": {
+          "viewId": "customerDetail",
+          "viewName": "customer.CustomerDetail",
           "controlId": "mainContents",
           "controlAggregation": "pages",
           "parent": "appContent"

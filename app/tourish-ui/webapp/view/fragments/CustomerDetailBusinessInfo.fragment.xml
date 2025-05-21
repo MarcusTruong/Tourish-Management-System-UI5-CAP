@@ -1,0 +1,18 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout">
+    
+    <!-- Business customer specific fields -->
+    <Label id="_IDGenLabel83" text="Company Name" visible="{= ${customerDetail>/type} === 'Business'}" />
+    <Text id="_IDGenText101" text="{customerDetail>/name}" visible="{= ${customerDetail>/type} === 'Business'}" />
+    
+    <Label id="_IDGenLabel84" text="Tax Code" visible="{= ${customerDetail>/type} === 'Business'}" />
+    <Text id="_IDGenText104" text="{customerDetail>/taxCode}" visible="{= ${customerDetail>/type} === 'Business'}" />
+    
+    <Label id="_IDGenLabel85" text="Contact Person" visible="{= ${customerDetail>/type} === 'Business'}" />
+    <Text id="_IDGenText105" text="{customerDetail>/contactPerson}" visible="{= ${customerDetail>/type} === 'Business'}" />
+    
+    <Label id="_IDGenLabel86" text="Position" visible="{= ${customerDetail>/type} === 'Business'}" />
+    <Text id="_IDGenText106" text="{customerDetail>/position}" visible="{= ${customerDetail>/type} === 'Business'}" />
+</core:FragmentDefinition>

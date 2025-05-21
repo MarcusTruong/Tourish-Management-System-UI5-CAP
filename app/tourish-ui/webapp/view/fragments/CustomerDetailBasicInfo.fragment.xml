@@ -1,0 +1,31 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout">
+    
+    <!-- Common fields for both customer types -->
+    <Label id="_IDGenLabel75" text="Customer ID" />
+    <Text id="_IDGenText98" text="{customerDetail>/id}" />
+    
+    <Label id="_IDGenLabel76" text="Phone" />
+    <Link id="_IDGenLink5" text="{customerDetail>/phone}" href="tel:{customerDetail>/phone}" />
+    
+    <Label id="_IDGenLabel77" text="Email" />
+    <Link id="_IDGenLink6" text="{customerDetail>/email}" href="mailto:{customerDetail>/email}" />
+    
+    <Label id="_IDGenLabel78" text="Address" />
+    <Text id="_IDGenText99" text="{customerDetail>/address}" />
+    
+    <Label id="_IDGenLabel79" text="Notes" />
+    <Text id="_IDGenText100" text="{customerDetail>/notes}" />
+    
+    <Label id="_IDGenLabel80" text="Total Transactions" />
+    <ObjectNumber id="_IDGenObjectNumber9"
+        number="{
+            parts: [{path: 'customerDetail>/totalTransactions'}, {path: '/currencyCode'}],
+            type: 'sap.ui.model.type.Currency',
+            formatOptions: {showMeasure: true}
+        }"
+        unit="VND"
+        state="{= ${customerDetail>/totalTransactions} > 0 ? 'Success' : 'None'}" />
+</core:FragmentDefinition>
