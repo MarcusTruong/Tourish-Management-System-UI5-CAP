@@ -1,74 +1,71 @@
 using tourish.management as tm from '../db/schema';
 
 service OrderService @(path: '/order-service') {
-  // Các thực thể cho phép truy cập qua service này
+  // Entity exposures
   entity Orders as projection on tm.Order;
   entity Payments as projection on tm.Payment;
 
-  // Action để tạo đơn hàng mới
+  // Order Management Actions
   @(requires: 'authenticated-user')
   action createOrder(
     customerID: UUID,
-    tourID: UUID,
-    orderDate: Date,
-    totalAmount: Decimal,
-    promotionID: UUID
+    customerType: String,
+    activeTourID: UUID,
+    adultCount: Integer,
+    childCount: Integer,
+    promotionID: UUID,
+    notes: String
   ) returns {
-    ID: UUID;
-    CustomerID: UUID;
-    TourID: UUID;
-    OrderDate: Date;
-    TotalAmount: Decimal(15,2);
-    Status: String(20);
-    PromotionID: UUID;
+    orderID: UUID;
+    message: String;
+    totalAmount: Decimal;
   };
 
-  // Action để hủy đơn hàng
+  @(requires: 'authenticated-user')
+  action updateOrder(
+    orderID: UUID,
+    adultCount: Integer,
+    childCount: Integer,
+    promotionID: UUID,
+    notes: String
+  ) returns {
+    success: Boolean;
+    message: String;
+    totalAmount: Decimal;
+  };
+
   @(requires: 'authenticated-user')
   action cancelOrder(
     orderID: UUID,
     reason: String
   ) returns {
-    ID: UUID;
-    CustomerID: UUID;
-    TourID: UUID;
-    OrderDate: Date;
-    TotalAmount: Decimal(15,2);
-    Status: String(20);
-    PromotionID: UUID;
+    success: Boolean;
+    message: String;
   };
 
-  // Action để cập nhật trạng thái đơn hàng
   @(requires: 'authenticated-user')
   action updateOrderStatus(
     orderID: UUID,
     status: String
   ) returns {
-    ID: UUID;
-    CustomerID: UUID;
-    TourID: UUID;
-    OrderDate: Date;
-    TotalAmount: Decimal(15,2);
-    Status: String(20);
-    PromotionID: UUID;
+    success: Boolean;
+    message: String;
   };
 
-  // Action để thêm thanh toán cho đơn hàng
+  // Payment Management Actions
   @(requires: 'authenticated-user')
   action addPayment(
     orderID: UUID,
     paymentDate: Date,
     amount: Decimal,
-    paymentMethod: String
+    paymentMethod: String,
+    recordTransaction: Boolean
   ) returns {
-    ID: UUID;
-    OrderID: UUID;
-    PaymentDate: Date;
-    Amount: Decimal(15,2);
-    PaymentMethod: String(50);
+    paymentID: UUID;
+    message: String;
+    remainingAmount: Decimal;
   };
 
-  // Action để cập nhật thông tin thanh toán
   @(requires: 'authenticated-user')
   action updatePayment(
     paymentID: UUID,
@@ -76,86 +73,155 @@ service OrderService @(path: '/order-service') {
     amount: Decimal,
     paymentMethod: String
   ) returns {
-    ID: UUID;
-    OrderID: UUID;
-    PaymentDate: Date;
-    Amount: Decimal(15,2);
-    PaymentMethod: String(50);
+    success: Boolean;
+    message: String;
+    remainingAmount: Decimal;
   };
 
-  // Function để lấy thông tin chi tiết đơn hàng
   @(requires: 'authenticated-user')
-  function getOrderDetails(
+  action deletePayment(
+    paymentID: UUID
+  ) returns {
+    success: Boolean;
+    message: String;
+    remainingAmount: Decimal;
+  };
+
+  @(requires: 'authenticated-user')
+  action processRefund(
+    orderID: UUID,
+    amount: Decimal,
+    refundMethod: String,
+    notes: String
+  ) returns {
+    success: Boolean;
+    message: String;
+    remainingAmount: Decimal;
+  };
+
+  // Order Queries
+  @(requires: 'authenticated-user')
+  action getOrderDetails(
     orderID: UUID
   ) returns {
     order: {
       ID: UUID;
       CustomerID: UUID;
-      TourID: UUID;
+      BusinessCustomerID: UUID;
+      CustomerType: String;
+      ActiveTourID: UUID;
       OrderDate: Date;
-      TotalAmount: Decimal(15,2);
-      Status: String(20);
+      AdultCount: Integer;
+      ChildCount: Integer;
+      TotalAmount: Decimal;
+      PaidAmount: Decimal;
+      RemainingAmount: Decimal;
+      Status: String;
       PromotionID: UUID;
-    };
-    payments: array of {
-      ID: UUID;
-      OrderID: UUID;
-      PaymentDate: Date;
-      Amount: Decimal(15,2);
-      PaymentMethod: String(50);
+      Notes: String;
     };
     customer: {
       ID: UUID;
-      FullName: String(100);
-      Phone: String(20);
-      Email: String(100);
+      Name: String;
+      Phone: String;
+      Email: String;
     };
     tour: {
       ID: UUID;
-      TourName: String(100);
-      Description: String(500);
-      NumberDays: Integer;
-      NumberNights: Integer;
-      Price: Decimal(15,2);
+      TourName: String;
+      DepartureDate: Date;
+      ReturnDate: Date;
+      AdultPrice: Decimal;
+      ChildPrice: Decimal;
+    };
+    promotion: {
+      ID: UUID;
+      PromotionName: String;
+      Discount: Double;
+    };
+    payments: array of {
+      ID: UUID;
+      PaymentDate: Date;
+      Amount: Decimal;
+      PaymentMethod: String;
     };
   };
 
-  // Function để tìm kiếm đơn hàng theo nhiều tiêu chí
   @(requires: 'authenticated-user')
-  function searchOrders(
-    customerName: String,
-    tourName: String,
+  action listOrders(
+    searchTerm: String,
+    customerID: UUID,
+    tourID: UUID,
     status: String,
-    startDate: Date,
-    endDate: Date
-  ) returns array of {
-    ID: UUID;
-    CustomerID: UUID;
-    TourID: UUID;
-    OrderDate: Date;
-    TotalAmount: Decimal(15,2);
-    Status: String(20);
-    CustomerName: String(100);
-    TourName: String(100);
-    PaidAmount: Decimal(15,2);
-    RemainingAmount: Decimal(15,2);
+    fromDate: Date,
+    toDate: Date,
+    skip: Integer,
+    limit: Integer
+  ) returns {
+    items: array of {
+      ID: UUID;
+      OrderDate: Date;
+      CustomerName: String;
+      CustomerType: String;
+      TourName: String;
+      DepartureDate: Date;
+      ReturnDate: Date;
+      TotalAmount: Decimal;
+      PaidAmount: Decimal;
+      RemainingAmount: Decimal;
+      Status: String;
+    };
+    pagination: {
+      total: Integer;
+      skip: Integer;
+      limit: Integer;
+    }
   };
 
-  // Function để lấy tổng quan về thanh toán của đơn hàng
   @(requires: 'authenticated-user')
-  function getOrderPaymentSummary(
-    orderID: UUID
+  action calculateOrderAmount(
+    activeTourID: UUID,
+    adultCount: Integer,
+    childCount: Integer,
+    promotionID: UUID
   ) returns {
-    OrderID: UUID;
-    TotalAmount: Decimal(15,2);
-    PaidAmount: Decimal(15,2);
-    RemainingAmount: Decimal(15,2);
-    LastPaymentDate: Date;
-    PaymentHistory: array of {
+    adultPrice: Decimal;
+    childPrice: Decimal;
+    adultTotal: Decimal;
+    childTotal: Decimal;
+    discountAmount: Decimal;
+    totalAmount: Decimal;
+  };
+
+  @(requires: 'authenticated-user')
+  action getActiveToursForOrder() returns array of {
+    ID: UUID;
+    TourName: String;
+    DepartureDate: Date;
+    ReturnDate: Date;
+    AdultPrice: Decimal;
+    ChildPrice: Decimal;
+    AvailableSeats: Integer;
+    Status: String;
+  };
+
+  @(requires: 'authenticated-user')
+  action getCustomersForOrder(
+    searchTerm: String,
+    customerType: String
+  ) returns {
+    individuals: array of {
       ID: UUID;
-      PaymentDate: Date;
-      Amount: Decimal(15,2);
-      PaymentMethod: String(50);
+      FullName: String;
+      Phone: String;
+      Email: String;
+    };
+    businesses: array of {
+      ID: UUID;
+      CompanyName: String;
+      ContactPerson: String;
+      Phone: String;
+      Email: String;
     };
   };
 }

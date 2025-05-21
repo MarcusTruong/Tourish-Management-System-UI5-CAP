@@ -13,9 +13,6 @@ Content-Type: {{contentType}}
     "password": "Truong@2208"
 }
 
-### Lưu token sau khi xác thực
-@authToken = {{authenticate.response.body.token}}
-
 ### Variables to store IDs from responses
 @individualCustomerId = 00000000-0000-0000-0000-000000000000
 @businessCustomerId = 00000000-0000-0000-0000-000000000000

@@ -1,0 +1,241 @@
+@host = http://localhost:4004
+@path = /order-service
+@baseUrl = {{host}}{{path}}
+@contentType = application/json
+
+### Bước 1: Xác thực 
+# @name authenticate
+POST {{host}}/user-service/authenticate
+Content-Type: {{contentType}}
+
+{
+    "username": "truong",
+    "password": "Truong@2208"
+}
+
+### Variables to store IDs from responses
+@activeToursId = 46d96810-b172-49ca-962f-b9b99f0b95d2
+@customerId = 819b753f-62d1-471e-b2fd-9061e3a00a15
+@orderId = 96e642e9-2db3-4e1c-bf9b-759ce34667fe
+@paymentId = 00000000-0000-0000-0000-000000000000
+@promotionId = 00000000-0000-0000-0000-000000000000
+
+### 1. ORDER INFORMATION ENDPOINTS
+
+### 1.1 Get Available Tours for Order
+# @name getActiveToursForOrder
+POST {{baseUrl}}/getActiveToursForOrder
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{}
+
+### 1.2 Get Customers for Order
+# @name getCustomersForOrder
+POST {{baseUrl}}/getCustomersForOrder
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "",
+  "customerType": "All"
+}
+
+### 1.3 Calculate Order Amount
+# @name calculateOrderAmount
+POST {{baseUrl}}/calculateOrderAmount
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "activeTourID": "{{activeToursId}}",
+  "adultCount": 2,
+  "childCount": 1,
+  "promotionID": null
+}
+
+### 2. ORDER MANAGEMENT
+
+### 2.1 Create New Order
+# @name createOrder
+POST {{baseUrl}}/createOrder
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "customerID": "7898c3d4-589a-4c0a-9b93-bee52e5e99b5",
+  "customerType": "Business",
+  "activeTourID": "{{activeToursId}}",
+  "adultCount": 5,
+  "childCount": 2,
+  "promotionID": null,
+  "notes": "Customer prefers window seats on transportation"
+}
+
+### 2.2 Update Order
+# @name updateOrder
+POST {{baseUrl}}/updateOrder
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "orderID": "{{orderId}}",
+  "adultCount": 3,
+  "childCount": 2,
+  "promotionID": null,
+  "notes": "Updated: Customer needs vegetarian meals"
+}
+
+### 2.3 Cancel Order
+# @name cancelOrder
+POST {{baseUrl}}/cancelOrder
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "orderID": "{{orderId}}",
+  "reason": "Customer requested cancellation due to schedule conflict"
+}
+
+### 2.4 Update Order Status
+# @name updateOrderStatus
+POST {{baseUrl}}/updateOrderStatus
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "orderID": "{{orderId}}",
+  "status": "Completed"
+}
+
+### 3. PAYMENT MANAGEMENT
+
+### 3.1 Add Payment
+# @name addPayment
+POST {{baseUrl}}/addPayment
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "orderID": "eb4bf17b-48c3-447a-b3ff-69c0d8de9e3e",
+  "paymentDate": "2025-05-21",
+  "amount": 2500.00,
+  "paymentMethod": "Bank Transfer",
+  "recordTransaction": true
+}
+
+### 3.2 Update Payment
+# @name updatePayment
+POST {{baseUrl}}/updatePayment
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "paymentID": "64ca578b-f6de-4e50-8247-f37b50f5a76c",
+  "paymentDate": "2025-05-21",
+  "amount": 600.00,
+  "paymentMethod": "Credit Card"
+}
+
+### 3.3 Delete Payment
+# @name deletePayment
+POST {{baseUrl}}/deletePayment
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "paymentID": "6dbf1ae9-b18d-4c9b-b701-8e07a4df93b1"
+}
+
+### 3.4 Process Refund
+# @name processRefund
+POST {{baseUrl}}/processRefund
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "orderID": "eb4bf17b-48c3-447a-b3ff-69c0d8de9e3e",
+  "amount": 150,
+  "refundMethod": "Bank Transfer",
+  "notes": "Refund for overpayment"
+}
+
+### 4. ORDER QUERIES
+
+### 4.1 Get Order Details
+# @name getOrderDetails
+POST {{baseUrl}}/getOrderDetails
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "orderID": "eb4bf17b-48c3-447a-b3ff-69c0d8de9e3e"
+}
+
+### 4.2 List Orders
+# @name listOrders
+POST {{baseUrl}}/listOrders
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "",
+  "customerID": null,
+  "tourID": null,
+  "status": null,
+  "fromDate": "2025-01-01",
+  "toDate": "2025-12-31",
+  "skip": 0,
+  "limit": 20
+}
+
+### 4.3 List Orders by Customer
+# @name listOrdersByCustomer
+POST {{baseUrl}}/listOrders
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "",
+  "customerID": "{{customerId}}",
+  "tourID": null,
+  "status": null,
+  "fromDate": null,
+  "toDate": null,
+  "skip": 0,
+  "limit": 20
+}
+
+### 4.4 List Orders by Status
+# @name listOrdersByStatus
+POST {{baseUrl}}/listOrders
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "",
+  "customerID": null,
+  "tourID": null,
+  "status": "Pending",
+  "fromDate": null,
+  "toDate": null,
+  "skip": 0,
+  "limit": 20
+}
+
+### 4.5 List Orders by Tour
+# @name listOrdersByTour
+POST {{baseUrl}}/listOrders
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "searchTerm": "",
+  "customerID": null,
+  "tourID": "{{activeToursId}}",
+  "status": null,
+  "fromDate": null,
+  "toDate": null,
+  "skip": 0, 
+  "limit": 20
+}

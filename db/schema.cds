@@ -254,14 +254,19 @@ entity Service {
 
 entity Order {
   key ID : UUID;
-  CustomerID : UUID; // Khóa ngoại tham chiếu đến Customer.ID
+  CustomerID : UUID; // Reference to Customer.ID
   BusinessCustomerID : UUID; // Reference to BusinessCustomer.ID
   CustomerType : String(10); // "Individual" or "Business"
-  ActiveTourID : UUID; // Updated reference to ActiveTour.ID
+  ActiveTourID : UUID; // Reference to ActiveTour.ID
   OrderDate : Date;
+  AdultCount : Integer default 0;
+  ChildCount : Integer default 0;
   TotalAmount : Decimal(15,2);
+  PaidAmount : Decimal(15,2) default 0.00;
+  RemainingAmount : Decimal(15,2);
   Status : String(20) default 'Pending'; // Pending/Completed/Canceled
-  PromotionID : UUID; // Khóa ngoại tham chiếu đến Promotion.ID
+  PromotionID : UUID; // Reference to Promotion.ID
+  Notes : String(500);
   Payments : Association to many Payment on Payments.OrderID = $self.ID;
 }
 

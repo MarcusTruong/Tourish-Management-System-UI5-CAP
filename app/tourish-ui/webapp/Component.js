@@ -71,6 +71,16 @@ sap.ui.define([
         });
         this.setModel(oTourModel, "customerService");
 
+        // Khởi tạo model cho order-service
+        var sCustomerServiceUrl = "/order-service/";
+        var oTourModel = new sap.ui.model.odata.v4.ODataModel({
+          serviceUrl: sCustomerServiceUrl,
+          synchronizationMode: "None",
+          groupId: "$auto",
+          operationMode: "Server"
+      });
+      this.setModel(oTourModel, "orderService");
+
 
           // Đặt supplierService làm model mặc định cho các view
           this.setModel(oUserModel);
