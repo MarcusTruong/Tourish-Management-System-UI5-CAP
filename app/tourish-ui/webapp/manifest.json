@@ -168,6 +168,26 @@
           "name": "customerDetail",
           "pattern": "customer/{customerId}/{customerType}",
           "target": "customerDetail"
+        },
+        {
+          "name": "orderList",
+          "pattern": "orders",
+          "target": "orderList"
+        },
+        {
+          "name": "createOrder",
+          "pattern": "orders/create",
+          "target": "createOrder"
+        },
+        {
+          "name": "orderDetail",
+          "pattern": "orders/detail/{orderId}",
+          "target": "orderDetail"
+        },
+        {
+          "name": "editOrder",
+          "pattern": "orders/edit/{orderId}",
+          "target": "editOrder"
         }
       ],
       "targets": {
@@ -262,6 +282,34 @@
         "customerDetail": {
           "viewId": "customerDetail",
           "viewName": "customer.CustomerDetail",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "orderList": {
+          "viewId": "orderList",
+          "viewName": "order.OrderList",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "createOrder": {
+          "viewId": "createOrder",
+          "viewName": "order.CreateOrder",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "orderDetail": {
+          "viewId": "orderDetail",
+          "viewName": "order.OrderDetail",
+          "controlId": "mainContents",
+          "controlAggregation": "pages",
+          "parent": "appContent"
+        },
+        "editOrder": {
+          "viewId": "editOrder",
+          "viewName": "order.EditOrder",
           "controlId": "mainContents",
           "controlAggregation": "pages",
           "parent": "appContent"

@@ -1,66 +1,89 @@
-sap.ui.define([], function() {
+// File: tourishui/formatter.js
+sap.ui.define([], function () {
     "use strict";
-    
+
     return {
         /**
-         * Formats a date object to a readable string
-         * @param {Date} oDate Date object to format
-         * @returns {string} Formatted date string
+         * Formats a date to a readable string
+         * @param {Date|string} oDate - The date to format
+         * @returns {string} The formatted date
          */
         formatDate: function(oDate) {
             if (!oDate) {
                 return "";
             }
             
-            // Convert string to date if needed
-            if (typeof oDate === "string") {
-                oDate = new Date(oDate);
+            // If it's already a Date object, no need to convert
+            var date = oDate instanceof Date ? oDate : new Date(oDate);
+            
+            // Return empty string if invalid date
+            if (isNaN(date.getTime())) {
+                return "";
             }
             
-            var oDateFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({
-                pattern: "dd MMM yyyy, HH:mm"
+            // Format the date
+            var oFormat = sap.ui.core.format.DateFormat.getDateInstance({
+                pattern: "MMM d, yyyy"
             });
             
-            return oDateFormat.format(oDate);
+            return oFormat.format(date);
         },
         
         /**
-         * Formats a number to currency
-         * @param {number} fValue Number to format
-         * @param {string} sCurrency Currency code
-         * @returns {string} Formatted currency string
+         * Formats a date for backend (YYYY-MM-DD)
+         * @param {Date} oDate - The date to format
+         * @returns {string} The formatted date
          */
-        formatCurrency: function(fValue, sCurrency) {
-            var oCurrencyFormat = sap.ui.core.format.NumberFormat.getCurrencyInstance();
-            return oCurrencyFormat.format(fValue, sCurrency);
+        formatDateForBackend: function(oDate) {
+            if (!oDate) {
+                return null;
+            }
+            
+            // Return empty string if invalid date
+            if (isNaN(oDate.getTime())) {
+                return null;
+            }
+            
+            var year = oDate.getFullYear();
+            var month = String(oDate.getMonth() + 1).padStart(2, '0');
+            var day = String(oDate.getDate()).padStart(2, '0');
+            
+            return `${year}-${month}-${day}`;
+        },
+        
+        /**
+         * Formats a customer title based on type
+         * @param {string} sCustomerType - The customer type
+         * @param {string} sName - The customer name
+         * @returns {string} The formatted title
+         */
+        formatCustomerTitle: function(sCustomerType, sName) {
+            if (!sName) {
+                return "";
+            }
+            
+            if (sCustomerType === "Individual") {
+                return "Customer: " + sName;
+            } else if (sCustomerType === "Business") {
+                return "Business: " + sName;
+            } else {
+                return sName;
+            }
         },
         
         /**
          * Formats customer type for display
-         * @param {string} sType Customer type
-         * @returns {string} Formatted customer type
+         * @param {string} sType - The customer type
+         * @returns {string} The formatted type
          */
         formatCustomerType: function(sType) {
             if (sType === "Individual") {
                 return "Individual Customer";
             } else if (sType === "Business") {
-                return "Business Client";
+                return "Business Customer";
+            } else {
+                return sType || "";
             }
-            return sType;
-        },
-        
-        /**
-         * Formats customer title for page header
-         * @param {string} sType Customer type
-         * @param {string} sName Customer name
-         * @returns {string} Formatted customer title
-         */
-        formatCustomerTitle: function(sType, sName) {
-            if (!sName) {
-                return "Customer Details";
-            }
-            
-            return sType === "Individual" ? "Customer: " + sName : "Business Client: " + sName;
         }
     };
 });

@@ -149,7 +149,7 @@
                                                                         type: 'sap.ui.model.type.Currency',
                                                                         formatOptions: {showMeasure: false}
                                                                     }"
-                                                                    unit="VND" />
+                                                                    unit="USD" />
                                                                 <Text id="_IDGenText83" text="{customerDetail>Description}" />
                                                                 <HBox id="_IDGenHBox22" justifyContent="End">
                                                                     <Button id="_IDGenButton44" icon="sap-icon://delete" type="Transparent" press=".onDeleteTransaction" />
@@ -270,7 +270,7 @@
                                                                         type: 'sap.ui.model.type.Currency',
                                                                         formatOptions: {showMeasure: false}
                                                                     }"
-                                                                    unit="VND" />
+                                                                    unit="USD" />
                                                                 <ObjectStatus id="_IDGenObjectStatus10"
                                                                     text="{customerDetail>Status}"
                                                                     state="{= ${customerDetail>Status} === 'Completed' ? 'Success' : ${customerDetail>Status} === 'Pending' ? 'Warning' : 'Error' }" />

@@ -1,0 +1,74 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="refundDialog"
+        title="Process Refund"
+        contentWidth="500px"
+        busy="{refund>/busy}">
+        
+        <content>
+            <VBox id="_IDGenVBox53" class="sapUiSmallMargin">
+                <f:SimpleForm id="_IDGenSimpleForm11"
+                    editable="true"
+                    layout="ResponsiveGridLayout"
+                    labelSpanXL="4"
+                    labelSpanL="4"
+                    labelSpanM="4"
+                    labelSpanS="12"
+                    adjustLabelSpan="false"
+                    emptySpanXL="0"
+                    emptySpanL="0"
+                    emptySpanM="0"
+                    emptySpanS="0"
+                    columnsXL="1"
+                    columnsL="1"
+                    columnsM="1">
+                    <f:content>
+                        <Label id="_IDGenLabel151"  text="Overpaid Amount" />
+                        <Text id="_IDGenText169"  text="{
+                            parts: [{path: 'refund>/maxAmount'}, {path: 'refund>/currencyCode'}],
+                            type: 'sap.ui.model.type.Currency'
+                        }" />
+                        
+                        <Label id="_IDGenLabel152" text="Refund Amount" required="true" />
+                        <Input id="refundAmountInput"
+                            value="{refund>/refund/amount}"
+                            type="Number"
+                            description="{refund>/currencyCode}" />
+                        
+                        <Label id="_IDGenLabel153" text="Refund Method" required="true" />
+                        <Select id="refundMethodSelect"
+                            selectedKey="{refund>/refund/refundMethod}">
+                            <core:Item id="_IDGenItem54"  key="Bank Transfer" text="Bank Transfer" />
+                            <core:Item id="_IDGenItem55"  key="Cash" text="Cash" />
+                            <core:Item id="_IDGenItem56"  key="Credit Card" text="Credit Card" />
+                            <core:Item id="_IDGenItem57"  key="Other" text="Other" />
+                        </Select>
+                        
+                        <Label id="_IDGenLabel154" text="Notes" />
+                        <TextArea id="refundNotesTextArea"
+                            value="{refund>/refund/notes}"
+                            rows="3"
+                            placeholder="Enter notes about this refund" />
+                    </f:content>
+                </f:SimpleForm>
+            </VBox>
+        </content>
+        
+        <beginButton>
+            <Button id="_IDGenButton65" 
+                text="Process Refund"
+                type="Emphasized"
+                press=".onProcessRefundConfirm" />
+        </beginButton>
+        
+        <endButton>
+            <Button id="_IDGenButton66" 
+                text="Cancel"
+                press=".onCancelRefund" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

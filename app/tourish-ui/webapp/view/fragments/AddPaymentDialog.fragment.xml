@@ -1,0 +1,70 @@
+<!-- File: tourishui/view/fragments/AddPaymentDialog.fragment.xml -->
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form">
+    
+    <Dialog
+        id="addPaymentDialog"
+        title="Add Payment"
+        contentWidth="400px">
+        
+        <content>
+            <f:SimpleForm
+                id="paymentForm"
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="4"
+                labelSpanL="4"
+                labelSpanM="4"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="0"
+                emptySpanL="0"
+                emptySpanM="0"
+                emptySpanS="0"
+                columnsXL="1"
+                columnsL="1"
+                columnsM="1">
+                <f:content>
+                    <Label id="_IDGenLabel92"  text="Amount *" required="true" />
+                    <Input 
+                        id="paymentAmountInput" 
+                        value="{payment>/amount}" 
+                        type="Number" 
+                        required="true"
+                        description="USD" />
+                    
+                    <Label id="_IDGenLabel93"  text="Payment Method *" required="true" />
+                    <Select id="paymentMethodSelect" selectedKey="{payment>/paymentMethod}">
+                        <core:Item id="_IDGenItem42" key="Cash" text="Cash" />
+                        <core:Item id="_IDGenItem44" key="Bank Transfer" text="Bank Transfer" />
+                        <core:Item id="_IDGenItem45" key="Credit Card" text="Credit Card" />
+                        <core:Item id="_IDGenItem46" key="Other" text="Other" />
+                    </Select>
+                    
+                    <Label id="_IDGenLabel94"  text="Payment Date" />
+                    <DatePicker 
+                        id="paymentDatePicker" 
+                        value="{payment>/paymentDate}" 
+                        valueFormat="yyyy-MM-dd"
+                        displayFormat="medium" />
+                    
+                    <Label id="_IDGenLabel95"  text="Record Transaction" />
+                    <CheckBox 
+                        id="recordTransactionCheckbox" 
+                        selected="{payment>/recordTransaction}" 
+                        text="Also record as customer transaction" />
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        
+        <beginButton>
+            <Button id="cancelPaymentButton" text="Cancel" press=".onCancelPayment" />
+        </beginButton>
+        
+        <endButton>
+            <Button id="savePaymentButton" text="Save" type="Emphasized" press=".onSavePayment" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

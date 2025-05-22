@@ -1,0 +1,189 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:l="sap.ui.layout">
+    
+    <Dialog
+        id="managePaymentsDialog"
+        title="Manage Payments"
+        contentWidth="800px"
+        contentHeight="600px"
+        resizable="true"
+        draggable="true"
+        busy="{payments>/busy}">
+        
+        <content>
+            <VBox id="_IDGenVBox52" class="sapUiSmallMargin">
+                <!-- Order summary section -->
+                <Panel id="_IDGenPanel7"  expandable="true" expanded="true" headerText="Order Summary">
+                    <f:SimpleForm id="_IDGenSimpleForm9" 
+                        editable="false"
+                        layout="ResponsiveGridLayout"
+                        labelSpanXL="4"
+                        labelSpanL="4"
+                        labelSpanM="4"
+                        labelSpanS="12"
+                        columnsXL="2"
+                        columnsL="2"
+                        columnsM="1">
+                        <f:content>
+                            <Label id="_IDGenLabel142" text="Order ID" />
+                            <Text id="_IDGenText162"  text="{payments>/order/ID}" />
+                            
+                            <Label id="_IDGenLabel143"  text="Total Amount" />
+                            <ObjectNumber id="_IDGenObjectNumber24" 
+                                number="{
+                                    parts: [{path: 'payments>/order/TotalAmount'}, {path: 'payments>/currencyCode'}],
+                                    type: 'sap.ui.model.type.Currency',
+                                    formatOptions: {showMeasure: false}
+                                }"
+                                unit="{payments>/currencyCode}" />
+                            
+                            <Label id="_IDGenLabel144"  text="Paid Amount" />
+                            <ObjectNumber id="_IDGenObjectNumber25" 
+                                number="{
+                                    parts: [{path: 'payments>/order/PaidAmount'}, {path: 'payments>/currencyCode'}],
+                                    type: 'sap.ui.model.type.Currency',
+                                    formatOptions: {showMeasure: false}
+                                }"
+                                unit="{payments>/currencyCode}"
+                                state="{= ${payments>/order/PaidAmount} &lt;= ${payments>/order/TotalAmount} ? 'Success' : 'Warning' }" />
+                            
+                            <Label id="_IDGenLabel145" text="Remaining Amount" />
+                            <ObjectNumber id="_IDGenObjectNumber26" 
+                                number="{
+                                    parts: [{path: 'payments>/order/RemainingAmount'}, {path: 'payments>/currencyCode'}],
+                                    type: 'sap.ui.model.type.Currency',
+                                    formatOptions: {showMeasure: false}
+                                }"
+                                unit="{payments>/currencyCode}"
+                                state="{= 0 &lt;= ${payments>/order/RemainingAmount} ? 'Success' : 'Warning' }" />
+                            
+                            <Label id="_IDGenLabel146" text="Status" />
+                            <ObjectStatus id="_IDGenObjectStatus14" 
+                                text="{payments>/order/Status}"
+                                state="{= ${payments>/order/Status} === 'Completed' ? 'Success' : 
+                                       ${payments>/order/Status} === 'Pending' ? 'Warning' : 'Error' }" />
+                        </f:content>
+                    </f:SimpleForm>
+                </Panel>
+                
+                <!-- Payment list section -->
+                <Panel id="_IDGenPanel8" expandable="true" expanded="true" headerText="Payment List">
+                    <Table id="_IDGenTable1" 
+                        items="{payments>/payments}"
+                        noDataText="No payments found"
+                        growing="true"
+                        growingThreshold="10"
+                        growingScrollToLoad="true">
+                        <columns>
+                            <Column id="_IDGenColumn76" width="20%">
+                                <Text id="_IDGenText163" text="Payment Date" />
+                            </Column>
+                            <Column id="_IDGenColumn77"  width="15%">
+                                <Text id="_IDGenText164"  text="Payment Method" />
+                            </Column>
+                            <Column id="_IDGenColumn78"  width="15%" hAlign="End">
+                                <Text id="_IDGenText165" text="Amount" />
+                            </Column>
+                            <Column id="_IDGenColumn79"  width="10%" hAlign="End">
+                                <Text id="_IDGenText166"  text="Actions" />
+                            </Column>
+                        </columns>
+                        
+                        <items>
+                            <ColumnListItem id="_IDGenColumnListItem14" >
+                                <cells>
+                                    <Text id="_IDGenText167"  text="{
+                                        path: 'payments>PaymentDate',
+                                        formatter: '.formatter.formatDate'
+                                    }" />
+                                    <Text id="_IDGenText168" text="{payments>PaymentMethod}" />
+                                    <ObjectNumber id="_IDGenObjectNumber27"
+                                        number="{
+                                            parts: [{path: 'payments>Amount'}, {path: 'payments>/currencyCode'}],
+                                            type: 'sap.ui.model.type.Currency',
+                                            formatOptions: {showMeasure: false}
+                                        }"
+                                        unit="{payments>/currencyCode}"
+                                        state="{= ${payments>Amount} &lt; 0 ? 'Error' : 'Success' }" />
+                                    <Button id="_IDGenButton61" 
+                                        icon="sap-icon://delete"
+                                        press=".onDeletePayment"
+                                        tooltip="Delete Payment"
+                                        type="Transparent"
+                                        visible="{= ${payments>/order/Status} !== 'Canceled' }" />
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </Panel>
+                
+                <!-- Add new payment section -->
+                <Panel id="_IDGenPanel9"  expandable="true" expanded="true" headerText="Add Payment" visible="{= ${payments>/order/Status} !== 'Canceled' }">
+                    <f:SimpleForm id="_IDGenSimpleForm10" 
+                        editable="true"
+                        layout="ResponsiveGridLayout"
+                        labelSpanXL="4"
+                        labelSpanL="4"
+                        labelSpanM="4"
+                        labelSpanS="12"
+                        columnsXL="2"
+                        columnsL="2"
+                        columnsM="1">
+                        <f:content>
+                            <Label id="_IDGenLabel147"  text="Amount" required="true" />
+                            <Input id="_IDGenInput11" 
+                                value="{payments>/newPayment/amount}"
+                                type="Number"
+                                description="{payments>/currencyCode}"
+                                placeholder="Enter amount" />
+                            
+                            <Label id="_IDGenLabel148"  text="Payment Method" required="true" />
+                            <Select id="_IDGenSelect"
+                                selectedKey="{payments>/newPayment/paymentMethod}">
+                                <core:Item id="_IDGenItem50"  key="Cash" text="Cash" />
+                                <core:Item id="_IDGenItem51"  key="Bank Transfer" text="Bank Transfer" />
+                                <core:Item id="_IDGenItem52"  key="Credit Card" text="Credit Card" />
+                                <core:Item id="_IDGenItem53"  key="Other" text="Other" />
+                            </Select>
+                            
+                            <Label id="_IDGenLabel149"  text="Payment Date" />
+                            <DatePicker id="_IDGenDatePicker1" 
+                                value="{payments>/newPayment/paymentDate}"
+                                valueFormat="yyyy-MM-dd"
+                                displayFormat="medium" />
+                            
+                            <Label id="_IDGenLabel150"  text="Record Transaction" />
+                            <CheckBox id="_IDGenCheckBox" 
+                                selected="{payments>/newPayment/recordTransaction}" 
+                                text="Also record as customer transaction" />
+                        </f:content>
+                    </f:SimpleForm>
+                    <HBox id="_IDGenHBox31" alignItems="End">
+                    <Button id="_IDGenButton62" 
+                        text="Add Payment"
+                        type="Emphasized"
+                        class="sapUiSmallMarginBegin sapUiSmallMarginBottom End"
+                        press=".onAddPayment" />
+                    </HBox>
+                </Panel>
+            </VBox>
+        </content>
+        
+        <beginButton>
+            <Button id="_IDGenButton63" 
+                text="Process Refund"
+                enabled="{= ${payments>/order/RemainingAmount} &lt; 0 }"
+                visible="{= ${payments>/order/Status} !== 'Canceled' }"
+                press=".onProcessRefund" />
+        </beginButton>
+        
+        <endButton>
+            <Button id="_IDGenButton64" 
+                text="Close"
+                press=".onClosePaymentsDialog" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,438 @@
+<!-- File: tourishui/view/order/CreateOrder.view.xml -->
+<mvc:View
+    controllerName="tourishui.controller.order.CreateOrder"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:core="sap.ui.core"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:layout="sap.ui.layout">
+    
+    <Page id="createOrderPage" title="Create Order" showNavButton="true" navButtonPress=".onNavBack">
+        <content>
+            <f:DynamicPage id="createOrderDynamicPage" toggleHeaderOnTitleClick="false">
+                <f:title>
+                    <f:DynamicPageTitle id="_IDGenDynamicPageTitle5">
+                        <f:heading>
+                            <Title id="_IDGenTitle19"  text="Create New Order" level="H2"/>
+                        </f:heading>
+                    </f:DynamicPageTitle>
+                </f:title>
+                
+                <f:content>
+                    <VBox id="_IDGenVBox48"  class="sapUiSmallMargin">
+                        <!-- Step 1: Select Tour -->
+                        <Panel id="tourSelectionPanel" headerText="Step 1: Select Tour" expandable="true" expanded="true" class="sapUiResponsiveMargin">
+                            <VBox id="_IDGenVBox49"  class="sapUiSmallMargin">
+                                <Label id="_IDGenLabel113"  text="Available Tours:" class="sapUiSmallMarginBottom" />
+                                <Table
+                                    id="toursTable"
+                                    items="{createOrder>/availableTours}"
+                                    mode="SingleSelect"
+                                    selectionChange=".onTourSelectionChange"
+                                    noDataText="Loading available tours..."
+                                    growing="true"
+                                    growingThreshold="10"
+                                    growingScrollToLoad="true">
+                                    <columns>
+                                        <Column id="_IDGenColumn65"  width="25%">
+                                            <Text id="_IDGenText140" text="Tour Name" />
+                                        </Column>
+                                        <Column id="_IDGenColumn66"  width="15%">
+                                            <Text id="_IDGenText141" text="Departure" />
+                                        </Column>
+                                        <Column id="_IDGenColumn67"  width="15%">
+                                            <Text id="_IDGenText142" text="Return" />
+                                        </Column>
+                                        <Column id="_IDGenColumn68"  width="12%" hAlign="End">
+                                            <Text id="_IDGenText143" text="Adult Price" />
+                                        </Column>
+                                        <Column id="_IDGenColumn69"  width="12%" hAlign="End">
+                                            <Text id="_IDGenText144" text="Child Price" />
+                                        </Column>
+                                        <Column id="_IDGenColumn70"  width="12%" hAlign="Center">
+                                            <Text id="_IDGenText145" text="Available Seats" />
+                                        </Column>
+                                        <Column id="_IDGenColumn71"  width="9%">
+                                            <Text id="_IDGenText146" text="Status" />
+                                        </Column>
+                                    </columns>
+                                    
+                                    <items>
+                                        <ColumnListItem id="_IDGenColumnListItem12" type="Active">
+                                            <cells>
+                                                <Text id="_IDGenText147" text="{createOrder>TourName}" />
+                                                <Text id="_IDGenText148" text="{
+                                                    path: 'createOrder>DepartureDate',
+                                                    formatter: '.formatter.formatDate'
+                                                }" />
+                                                <Text id="_IDGenText149" text="{
+                                                    path: 'createOrder>ReturnDate',
+                                                    formatter: '.formatter.formatDate'
+                                                }" />
+                                                <ObjectNumber id="_IDGenObjectNumber17"
+                                                    number="{
+                                                        parts: [{path: 'createOrder>AdultPrice'}, {path: 'createOrder>/currencyCode'}],
+                                                        type: 'sap.ui.model.type.Currency',
+                                                        formatOptions: {showMeasure: false}
+                                                    }"
+                                                    unit="{createOrder>/currencyCode}" />
+                                                <ObjectNumber id="_IDGenObjectNumber18" 
+                                                    number="{
+                                                        parts: [{path: 'createOrder>ChildPrice'}, {path: 'createOrder>/currencyCode'}],
+                                                        type: 'sap.ui.model.type.Currency',
+                                                        formatOptions: {showMeasure: false}
+                                                    }"
+                                                    unit="{createOrder>/currencyCode}" />
+                                                <Text id="_IDGenText150"  text="{createOrder>AvailableSeats}" />
+                                                <ObjectStatus id="_IDGenObjectStatus13" 
+                                                    text="{createOrder>Status}"
+                                                    state="{= ${createOrder>Status} === 'Open' ? 'Success' : 'Warning' }" />
+                                            </cells>
+                                        </ColumnListItem>
+                                    </items>
+                                </Table>
+                            </VBox>
+                        </Panel>
+                        
+                        <!-- Step 2: Specify Participants -->
+                        <Panel id="participantsPanel" headerText="Step 2: Specify Participants" expandable="true" expanded="{= !!${createOrder>/selectedTour} }" class="sapUiResponsiveMargin">
+                            <VBox id="_IDGenVBox50"  class="sapUiSmallMargin">
+                                <form:SimpleForm id="_IDGenSimpleForm6" 
+                                    editable="true"
+                                    layout="ResponsiveGridLayout"
+                                    labelSpanXL="3"
+                                    labelSpanL="3"
+                                    labelSpanM="3"
+                                    labelSpanS="12"
+                                    columnsXL="2"
+                                    columnsL="2"
+                                    columnsM="1">
+                                    <form:content>
+                                        <Label id="_IDGenLabel114" text="Number of Adults *" required="true" />
+                                        <StepInput 
+                                            id="adultCountInput" 
+                                            value="{createOrder>/adultCount}" 
+                                            min="0" 
+                                            max="50" 
+                                            change=".onParticipantCountChange" />
+                                        
+                                        <Label id="_IDGenLabel115" text="Number of Children" />
+                                        <StepInput 
+                                            id="childCountInput" 
+                                            value="{createOrder>/childCount}" 
+                                            min="0" 
+                                            max="50" 
+                                            change=".onParticipantCountChange" />
+                                    </form:content>
+                                </form:SimpleForm>
+                                
+                                <!-- Price Calculation Display -->
+                                <Panel id="priceCalculationPanel" headerText="Price Calculation" class="sapUiSmallMarginTop" visible="{= ${createOrder>/adultCount} > 0 || ${createOrder>/childCount} > 0 }">
+                                    <form:SimpleForm id="_IDGenSimpleForm7"
+                                        editable="false"
+                                        layout="ResponsiveGridLayout"
+                                        labelSpanXL="4"
+                                        labelSpanL="4"
+                                        labelSpanM="4"
+                                        labelSpanS="12"
+                                        columnsXL="2"
+                                        columnsL="2"
+                                        columnsM="1">
+                                        <form:content>
+                                            <Label id="_IDGenLabel116" text="Adults ({createOrder>/adultCount})" />
+                                            <ObjectNumber id="_IDGenObjectNumber19"
+                                                number="{
+                                                    parts: [{path: 'createOrder>/calculation/adultTotal'}, {path: 'createOrder>/currencyCode'}],
+                                                    type: 'sap.ui.model.type.Currency',
+                                                    formatOptions: {showMeasure: false}
+                                                }"
+                                                unit="{createOrder>/currencyCode}" />
+                                            
+                                            <Label id="_IDGenLabel117" text="Children ({createOrder>/childCount})" />
+                                            <ObjectNumber id="_IDGenObjectNumber20"
+                                                number="{
+                                                    parts: [{path: 'createOrder>/calculation/childTotal'}, {path: 'createOrder>/currencyCode'}],
+                                                    type: 'sap.ui.model.type.Currency',
+                                                    formatOptions: {showMeasure: false}
+                                                }"
+                                                unit="{createOrder>/currencyCode}" />
+                                            
+                                            <Label id="_IDGenLabel118" text="Discount" visible="{= ${createOrder>/calculation/discountAmount} > 0 }" />
+                                            <ObjectNumber id="_IDGenObjectNumber21"
+                                                number="{
+                                                    parts: [{path: 'createOrder>/calculation/discountAmount'}, {path: 'createOrder>/currencyCode'}],
+                                                    type: 'sap.ui.model.type.Currency',
+                                                    formatOptions: {showMeasure: false}
+                                                }"
+                                                unit="{createOrder>/currencyCode}"
+                                                state="Error"
+                                                visible="{= ${createOrder>/calculation/discountAmount} > 0 }" />
+                                            
+                                            <Label id="_IDGenLabel119" text="Total Amount" />
+                                            <ObjectNumber id="_IDGenObjectNumber22"
+                                                number="{
+                                                    parts: [{path: 'createOrder>/calculation/totalAmount'}, {path: 'createOrder>/currencyCode'}],
+                                                    type: 'sap.ui.model.type.Currency',
+                                                    formatOptions: {showMeasure: false}
+                                                }"
+                                                unit="{createOrder>/currencyCode}"
+                                                state="Success"
+                                                emphasized="true" />
+                                        </form:content>
+                                    </form:SimpleForm>
+                                </Panel>
+                            </VBox>
+                        </Panel>
+                        
+                        <!-- Step 3: Select Customer -->
+                        <Panel id="customerPanel" headerText="Step 3: Select Customer" expandable="true" expanded="{= (${createOrder>/adultCount} > 0 || ${createOrder>/childCount} > 0) &amp;&amp; !!${createOrder>/selectedTour} }" class="sapUiResponsiveMargin">
+                            <VBox id="_IDGenVBox51" class="sapUiSmallMargin">
+                                <!-- Customer Selection Type -->
+                                <HBox id="_IDGenHBox28" alignItems="Center" class="sapUiSmallMarginBottom">
+                                    <Label id="_IDGenLabel120" text="Customer Type:" class="sapUiSmallMarginEnd" />
+                                    <SegmentedButton id="_IDGenSegmentedButton"
+                                        selectedKey="{createOrder>/customerSelectionType}"
+                                        selectionChange=".onCustomerTypeChange">
+                                        <items>
+                                            <SegmentedButtonItem id="existingCustomerSegment" key="existing" text="Existing Customer" width="180px"/>
+                                            <SegmentedButtonItem id="newCustomerSegment" key="new" text="New Customer" width="180px"/>
+                                        </items>
+                                    </SegmentedButton>
+                                </HBox>
+                                
+                                <!-- Existing Customer Selection -->
+                                <VBox id="existingCustomerBox" visible="{= ${createOrder>/customerSelectionType} === 'existing' }">
+                                    <HBox id="_IDGenHBox29" alignItems="Center" class="sapUiSmallMarginBottom">
+                                        <SearchField 
+                                            id="customerSearchField2" 
+                                            width="300px" 
+                                            placeholder="Search customers..." 
+                                            search=".onCustomerSearch" 
+                                            class="sapUiSmallMarginEnd"/>
+                                        <Select 
+                                            id="customerTypeFilter" 
+                                            width="150px" 
+                                            change=".onCustomerSearch"
+                                            selectedKey="{createOrder>/customerTypeFilter}">
+                                            <core:Item id="_IDGenItem47" key="All" text="All" />
+                                            <core:Item id="_IDGenItem48" key="Individual" text="Individual" />
+                                            <core:Item id="_IDGenItem49" key="Business" text="Business" />
+                                        </Select>
+                                    </HBox>
+                                    
+                                    <Table id="_IDGenTable"
+                                        items="{createOrder>/customers}"
+                                        mode="SingleSelect"
+                                        selectionChange=".onCustomerSelectionChange"
+                                        noDataText="Search for customers..."
+                                        growing="true"
+                                        growingThreshold="10"
+                                        growingScrollToLoad="true">
+                                        <columns>
+                                            <Column id="_IDGenColumn72"  width="30%">
+                                                <Text id="_IDGenText151"  text="Name" />
+                                            </Column>
+                                            <Column id="_IDGenColumn73"  width="15%">
+                                                <Text id="_IDGenText152"  text="Type" />
+                                            </Column>
+                                            <Column id="_IDGenColumn74"  width="20%">
+                                                <Text id="_IDGenText153"  text="Phone" />
+                                            </Column>
+                                            <Column id="_IDGenColumn75"  width="35%">
+                                                <Text id="_IDGenText154"  text="Email" />
+                                            </Column>
+                                        </columns>
+                                        
+                                        <items>
+                                            <ColumnListItem id="_IDGenColumnListItem13" type="Active">
+                                                <cells>
+                                                    <Text id="_IDGenText155" text="{createOrder>Name}" />
+                                                    <Text id="_IDGenText156" text="{createOrder>Type}" />
+                                                    <Text id="_IDGenText157" text="{createOrder>Phone}" />
+                                                    <Text id="_IDGenText158" text="{createOrder>Email}" />
+                                                </cells>
+                                            </ColumnListItem>
+                                        </items>
+                                    </Table>
+                                </VBox>
+                                
+                                <!-- New Customer Creation -->
+                                <VBox id="newCustomerBox" visible="{= ${createOrder>/customerSelectionType} === 'new' }">
+                                    <HBox id="_IDGenHBox30"  alignItems="Center" class="sapUiSmallMarginBottom">
+                                        <Label id="_IDGenLabel121"  text="Customer Type:" class="sapUiSmallMarginEnd" />
+                                        <SegmentedButton
+                                            id="newCustomerTypeSegmentedButton"
+                                            selectedKey="{createOrder>/newCustomer/type}"
+                                            selectionChange=".onNewCustomerTypeChange">
+                                            <items>
+                                                <SegmentedButtonItem id="individualSegment3" key="Individual" text="Individual"
+                                                width="160px"/>
+                                                <SegmentedButtonItem id="businessSegment3" key="Business" text="Business" width="160px" />
+                                            </items>
+                                        </SegmentedButton>
+                                    </HBox>
+                                    
+                                    <!-- Individual Customer Form -->
+                                    <form:SimpleForm id="individualCustomerForm2"
+                                        editable="true"
+                                        layout="ResponsiveGridLayout"
+                                        labelSpanXL="3"
+                                        labelSpanL="3"
+                                        labelSpanM="3"
+                                        labelSpanS="12"
+                                        columnsXL="2"
+                                        columnsL="2"
+                                        columnsM="1"
+                                        visible="{= ${createOrder>/newCustomer/type} === 'Individual' }">
+                                        <form:content>
+                                            <Label id="_IDGenLabel122" text="Full Name *" required="true" />
+                                            <Input id="_IDGenInput" value="{createOrder>/newCustomer/fullName}" maxLength="100" />
+                                            
+                                            <Label id="_IDGenLabel124" text="Phone" />
+                                            <Input id="_IDGenInput1" value="{createOrder>/newCustomer/phone}" maxLength="20" />
+                                            
+                                            <Label id="_IDGenLabel125" text="Email" />
+                                            <Input id="_IDGenInput2" value="{createOrder>/newCustomer/email}" maxLength="100" />
+                                            
+                                            <Label id="_IDGenLabel126"  text="Address" />
+                                            <Input id="_IDGenInput3"  value="{createOrder>/newCustomer/address}" maxLength="200" />
+                                            
+                                            <Label id="_IDGenLabel127"  text="Birth Date" />
+                                            <DatePicker id="_IDGenDatePicker"
+                                                value="{createOrder>/newCustomer/birthday}"
+                                                valueFormat="yyyy-MM-dd"
+                                                displayFormat="long" />
+                                            
+                                            <Label id="_IDGenLabel128" text="Notes" />
+                                            <TextArea id="_IDGenTextArea"  value="{createOrder>/newCustomer/notes}" rows="2" />
+                                        </form:content>
+                                    </form:SimpleForm>
+                                    
+                                    <!-- Business Customer Form -->
+                                    <form:SimpleForm id="businessCustomerForm2"
+                                        editable="true"
+                                        layout="ResponsiveGridLayout"
+                                        labelSpanXL="3"
+                                        labelSpanL="3"
+                                        labelSpanM="3"
+                                        labelSpanS="12"
+                                        columnsXL="2"
+                                        columnsL="2"
+                                        columnsM="1"
+                                        visible="{= ${createOrder>/newCustomer/type} === 'Business' }">
+                                        <form:content>
+                                            <Label id="_IDGenLabel129"  text="Company Name *" required="true" />
+                                            <Input id="_IDGenInput4"  value="{createOrder>/newCustomer/companyName}" maxLength="100" />
+                                            
+                                            <Label id="_IDGenLabel130"  text="Tax Code" />
+                                            <Input id="_IDGenInput5"  value="{createOrder>/newCustomer/taxCode}" maxLength="20" />
+                                            
+                                            <Label id="_IDGenLabel131"  text="Contact Person" />
+                                            <Input id="_IDGenInput6"  value="{createOrder>/newCustomer/contactPerson}" maxLength="100" />
+                                            
+                                            <Label id="_IDGenLabel132" text="Position" />
+                                            <Input id="_IDGenInput7" value="{createOrder>/newCustomer/position}" maxLength="50" />
+                                            
+                                            <Label id="_IDGenLabel133" text="Phone" />
+                                            <Input id="_IDGenInput8" value="{createOrder>/newCustomer/phone}" maxLength="20" />
+                                            
+                                            <Label id="_IDGenLabel134" text="Email" />
+                                            <Input id="_IDGenInput9" value="{createOrder>/newCustomer/email}" maxLength="100" />
+                                            
+                                            <Label id="_IDGenLabel135" text="Address" />
+                                            <Input id="_IDGenInput10" value="{createOrder>/newCustomer/address}" maxLength="200" />
+                                            
+                                            <Label id="_IDGenLabel136" text="Notes" />
+                                            <TextArea id="_IDGenTextArea1" value="{createOrder>/newCustomer/notes}" rows="2" />
+                                        </form:content>
+                                    </form:SimpleForm>
+                                </VBox>
+                            </VBox>
+                        </Panel>
+                        
+                        <!-- Step 4: Order Notes and Submit -->
+                        <Panel id="finalizePanel" headerText="Step 4: Order Notes and Submit" expandable="true" expanded="{= !!${createOrder>/selectedCustomer} || (${createOrder>/customerSelectionType} === 'new' &amp;&amp; !!${createOrder>/newCustomer/fullName}) }" class="sapUiResponsiveMargin">
+                            <VBox id="_IDGenVBoxclass" class="sapUiSmallMargin">
+                                <form:SimpleForm id="_IDGenSimpleForm8"
+                                    editable="true"
+                                    layout="ResponsiveGridLayout"
+                                    labelSpanXL="2"
+                                    labelSpanL="2"
+                                    labelSpanM="2"
+                                    labelSpanS="12"
+                                    columnsXL="1"
+                                    columnsL="1"
+                                    columnsM="1">
+                                    <form:content>
+                                        <Label id="_IDGenLabel137" text="Order Notes" />
+                                        <TextArea id="orderNotesTextArea" value="{createOrder>/orderNotes}" rows="3" placeholder="Enter any special notes or requirements for this order..." />
+                                    </form:content>
+                                </form:SimpleForm>
+                                
+                                <!-- Order Summary -->
+                                <Panel id="orderSummaryPanel" headerText="Order Summary" class="sapUiSmallMarginTop">
+                                    <form:SimpleForm id="_IDGenSimpleForm4"
+                                        editable="false"
+                                        layout="ResponsiveGridLayout"
+                                        labelSpanXL="3"
+                                        labelSpanL="3"
+                                        labelSpanM="3"
+                                        labelSpanS="12"
+                                        columnsXL="2"
+                                        columnsL="2"
+                                        columnsM="1">
+                                        <form:content>
+                                            <Label id="_IDGenLabel138" text="Tour" />
+                                            <Text id="_IDGenText159" text="{createOrder>/selectedTour/TourName}" />
+                                            
+                                            <Label id="_IDGenLabel139"  text="Customer" />
+                                            <Text id="_IDGenText160" text="{= ${createOrder>/selectedCustomer} ? ${createOrder>/selectedCustomer/Name} : (${createOrder>/newCustomer/type} === 'Individual' ? ${createOrder>/newCustomer/fullName} : ${createOrder>/newCustomer/companyName}) }" />
+                                            
+                                            <Label id="_IDGenLabel140"  text="Participants" />
+                                            <Text id="_IDGenText161"  text="{= ${createOrder>/adultCount} + ' Adults, ' + ${createOrder>/childCount} + ' Children' }" />
+                                            
+                                            <Label id="_IDGenLabel141" text="Total Amount" />
+                                            <ObjectNumber id="_IDGenObjectNumber23"
+                                                number="{
+                                                    parts: [{path: 'createOrder>/calculation/totalAmount'}, {path: 'createOrder>/currencyCode'}],
+                                                    type: 'sap.ui.model.type.Currency',
+                                                    formatOptions: {showMeasure: false}
+                                                }"
+                                                unit="{createOrder>/currencyCode}"
+                                                state="Success"
+                                                emphasized="true" />
+                                        </form:content>
+                                    </form:SimpleForm>
+                                </Panel>
+                            </VBox>
+                        </Panel>
+                    </VBox>
+                </f:content>
+                
+                <!-- <f:footer>
+                    <OverflowToolbar id="_IDGenOverflowToolbar13">
+                        <ToolbarSpacer id="_IDGenToolbarSpacer29" />
+                        <Button id="_IDGenButton60" text="Cancel" press=".onNavBack" />
+                        <Button id="createOrderButton" 
+                            text="Create Order" 
+                            type="Emphasized" 
+                            press=".onCreateOrder"
+                            enabled="{= !!${createOrder>/selectedTour} &amp;&amp; (${createOrder>/adultCount} > 0 || ${createOrder>/childCount} > 0) &amp;&amp; (!!${createOrder>/selectedCustomer} || (${createOrder>/customerSelectionType} === 'new' &amp;&amp; ((${createOrder>/newCustomer/type} === 'Individual' &amp;&amp; !!${createOrder>/newCustomer/fullName}) || (${createOrder>/newCustomer/type} === 'Business' &amp;&amp; !!${createOrder>/newCustomer/companyName})))) }" />
+                    </OverflowToolbar>
+                </f:footer> -->
+            </f:DynamicPage>
+        </content>
+        <footer>
+            <OverflowToolbar id="_IDGenOverflowToolbar13">
+                        <ToolbarSpacer id="_IDGenToolbarSpacer29" />
+                        <Button id="_IDGenButton60" text="Cancel" press=".onNavBack" />
+                        <Button id="createOrderButton" 
+                            text="Create Order" 
+                            type="Emphasized" 
+                            press=".onCreateOrder"
+                            enabled="{= !!${createOrder>/selectedTour} &amp;&amp; (${createOrder>/adultCount} > 0 || ${createOrder>/childCount} > 0) &amp;&amp; (!!${createOrder>/selectedCustomer} || (${createOrder>/customerSelectionType} === 'new' &amp;&amp; ((${createOrder>/newCustomer/type} === 'Individual' &amp;&amp; !!${createOrder>/newCustomer/fullName}) || (${createOrder>/newCustomer/type} === 'Business' &amp;&amp; !!${createOrder>/newCustomer/companyName})))) }" />
+                    </OverflowToolbar>
+        </footer>
+    </Page>
+</mvc:View>

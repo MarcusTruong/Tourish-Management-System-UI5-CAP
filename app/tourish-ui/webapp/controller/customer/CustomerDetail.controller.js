@@ -15,7 +15,7 @@ sap.ui.define([
             // Create models
             var oViewModel = new JSONModel({
                 busy: false,
-                currencyCode: "VND"
+                currencyCode: "USD"
             });
             this.getView().setModel(oViewModel);
             

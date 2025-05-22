@@ -26,6 +26,5 @@
             type: 'sap.ui.model.type.Currency',
             formatOptions: {showMeasure: true}
         }"
-        unit="VND"
         state="{= ${customerDetail>/totalTransactions} > 0 ? 'Success' : 'None'}" />
 </core:FragmentDefinition>

@@ -1,0 +1,277 @@
+<mvc:View
+    controllerName="tourishui.controller.order.OrderDetail"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:uxap="sap.uxap"
+    xmlns:core="sap.ui.core"
+    xmlns:form="sap.ui.layout.form"
+    xmlns:layout="sap.ui.layout">
+
+<Page id="orderDetailPage" showNavButton="true" navButtonPress=".onNavBack">
+
+    <customHeader>
+            <Toolbar id="_IDGenToolbar5" >
+                <Button id="_IDGenButton51"  icon="sap-icon://nav-back" press=".onNavBack" />
+                <Title id="orderDetailTitle" text="Order Details" />
+                <ToolbarSpacer id="_IDGenToolbarSpacer33"  />
+                <Button id="editOrderButton" text="Edit" icon="sap-icon://edit" press=".onEditOrder" type="Transparent" visible="{= ${orderDetail>/Status} !== 'Canceled' }" />
+                <Button id="cancelOrderButton" text="Cancel" icon="sap-icon://decline" press=".onCancelOrder" type="Transparent" visible="{= ${orderDetail>/Status} === 'Pending' }" />
+            </Toolbar>
+    </customHeader>
+
+        <uxap:ObjectPageLayout id="_IDGenObjectPageLayout"
+            
+            enableLazyLoading="false"
+            showTitleInHeaderContent="false"
+            showHeaderContent="true"
+            upperCaseAnchorBar="false">
+
+
+            <uxap:headerTitle>
+                <uxap:ObjectPageHeader id="_IDGenObjectPageHeader"
+                    objectTitle="Order {orderDetail>/ID}"
+                    objectSubtitle="{orderDetail>/TourName}">
+                </uxap:ObjectPageHeader>
+            </uxap:headerTitle>
+
+            <uxap:headerContent>
+                <layout:VerticalLayout id="_IDGenVerticalLayout3" >
+                    <layout:HorizontalLayout id="_IDGenHorizontalLayout5" >
+                        
+                        <VBox id="_IDGenVBox41"  class="sapUiSmallMarginEnd">
+                            <Label id="_IDGenLabel91"  text="Customer" class="sapUiTinyMarginBottom" />
+                            <Text id="_IDGenText119"  text="{orderDetail>/CustomerName}" />
+                            <Text id="_IDGenText120"  text="{orderDetail>/CustomerType}" class="sapUiTinyText" />
+                        </VBox>
+
+                        <VBox id="_IDGenVBox42"  class="sapUiSmallMarginEnd">
+                            <Label id="_IDGenLabel96"  text="Tour" class="sapUiTinyMarginBottom" />
+                            <Text id="_IDGenText121"  text="{orderDetail>/TourName}" />
+                            <Text id="_IDGenText122"  text="{
+                                path: 'orderDetail>/DepartureDate',
+                                formatter: '.formatter.formatDate'
+                            }" class="sapUiTinyText" />
+                        </VBox>
+
+                        <VBox id="_IDGenVBox43"  class="sapUiSmallMarginEnd">
+                            <Label id="_IDGenLabel97"  text="Amount" class="sapUiTinyMarginBottom" />
+                            <ObjectNumber id="_IDGenObjectNumber12" 
+                                number="{
+                                    parts: [{path: 'orderDetail>/TotalAmount'}, {path: '/currencyCode'}],
+                                    type: 'sap.ui.model.type.Currency',
+                                    formatOptions: {showMeasure: false}
+                                }"
+                                unit="{/currencyCode}" />
+                        </VBox>
+
+                        <VBox id="_IDGenVBox44">
+                            <Label id="_IDGenLabel98"  text="Payment Status" class="sapUiTinyMarginBottom" />
+                            <ObjectNumber id="_IDGenObjectNumber13" number="{
+                                parts: [{path: 'orderDetail>/RemainingAmount'}, {path: '/currencyCode'}],
+                                    type: 'sap.ui.model.type.Currency',
+                                    formatOptions: {showMeasure: false}
+                            }"
+                                state="{= ${orderDetail>/RemainingAmount} &lt;= 0 ? 'Success' : 'Warning'}">
+                            </ObjectNumber>
+                            <Text id="_IDGenText123" text="{= ${orderDetail>/RemainingAmount} &lt;= 0 ? 'Fully Paid' : 'Outstanding Balance'}" class="sapUiTinyText"/>
+                        </VBox>
+
+                    </layout:HorizontalLayout>
+                </layout:VerticalLayout>
+            </uxap:headerContent>
+
+            <uxap:sections>
+                <uxap:ObjectPageSection id="_IDGenObjectPageSection" title="ORDER DETAILS">
+                    <uxap:subSections>
+                        <uxap:ObjectPageSubSection id="_IDGenObjectPageSubSection" >
+                            <uxap:blocks>
+                                <VBox id="_IDGenVBox45" class="sapUiResponsiveContentPadding">
+                                
+                                    <IconTabBar id="orderDetailsTabs" expandable="false" applyContentPadding="false">
+                                    
+                                    <items>
+                                    
+                                        <IconTabFilter id="basicInfoTab3" icon="sap-icon://hint" key="basicInfo" text="Basic Information">
+                                        
+                                            <VBox id="_IDGenVBox46" >
+                                                <form:SimpleForm id="_IDGenSimpleForm5" 
+                                                        editable="false"
+                                                        layout="ResponsiveGridLayout"
+                                                        labelSpanXL="4"
+                                                        labelSpanL="4"
+                                                        labelSpanM="4"
+                                                        labelSpanS="12"
+                                                        columnsXL="2"
+                                                        columnsL="2"
+                                                        columnsM="1">
+
+                                                        <form:content>
+
+                                                            <Label id="_IDGenLabel99"  text="Order ID" />
+                                                            <Text id="_IDGenText124" text="{orderDetail>/ID}" />
+                                                            
+                                                            <Label id="_IDGenLabel100"  text="Order Date" />
+                                                            <Text id="_IDGenText125" text="{
+                                                                path: 'orderDetail>/OrderDate',
+                                                                formatter: '.formatter.formatDate'
+                                                            }" />
+                                                            
+                                                            <Label id="_IDGenLabel101"  text="Customer Name" />
+                                                            <Text id="_IDGenText126" text="{orderDetail>/CustomerName}" />
+                                                            
+                                                            <Label id="_IDGenLabel102"  text="Customer Type" />
+                                                            <Text id="_IDGenText127" text="{orderDetail>/CustomerType}" />
+                                                            
+                                                            <Label id="_IDGenLabel103"  text="Tour Name" />
+                                                            <Text id="_IDGenText128"  text="{orderDetail>/TourName}" />
+                                                            
+                                                            <Label id="_IDGenLabel104"  text="Departure Date" />
+                                                            <Text id="_IDGenText129"  text="{
+                                                                path: 'orderDetail>/DepartureDate',
+                                                                formatter: '.formatter.formatDate'
+                                                            }" />
+                                                            
+                                                            <Label id="_IDGenLabel105" text="Return Date" />
+                                                            <Text id="_IDGenText130"  text="{
+                                                                path: 'orderDetail>/ReturnDate',
+                                                                formatter: '.formatter.formatDate'
+                                                            }" />
+
+                                                            <Label id="_IDGenLabel106"  text="Adults" />
+                                                            <Text id="_IDGenText131" text="{orderDetail>/AdultCount}" />
+                                                            
+                                                            <Label id="_IDGenLabel107"  text="Children" />
+                                                            <Text id="_IDGenText132" text="{orderDetail>/ChildCount}" />
+                                                            
+                                                            <Label id="_IDGenLabel108"  text="Total Amount" />
+                                                            <ObjectNumber id="_IDGenObjectNumber33"
+                                                                number="{
+                                                                    parts: [{path: 'orderDetail>/TotalAmount'}, {path: '/currencyCode'}],
+                                                                    type: 'sap.ui.model.type.Currency',
+                                                                    formatOptions: {showMeasure: false}
+                                                                }"
+                                                                unit="{/currencyCode}" />
+                                                            <Label id="_IDGenLabel109"  text="Paid Amount" />
+                                                            <ObjectNumber id="_IDGenObjectNumber14" 
+                                                                number="{
+                                                                    parts: [{path: 'orderDetail>/PaidAmount'}, {path: '/currencyCode'}],
+                                                                    type: 'sap.ui.model.type.Currency',
+                                                                    formatOptions: {showMeasure: false}
+                                                                }"
+                                                                unit="{/currencyCode}"
+                                                                state="Success" />
+
+                                                            <Label id="_IDGenLabel110" text="Remaining Amount" />
+                                                            <ObjectNumber id="_IDGenObjectNumber15" 
+                                                                number="{
+                                                                    parts: [{path: 'orderDetail>/RemainingAmount'}, {path: '/currencyCode'}],
+                                                                    type: 'sap.ui.model.type.Currency',
+                                                                    formatOptions: {showMeasure: false}
+                                                                }"
+                                                                unit="{/currencyCode}"
+                                                                state="{= ${orderDetail>/RemainingAmount} &lt;= 0 ? 'Success' : 'Warning' }" />
+
+                                                            <Label id="_IDGenLabel111"  text="Status" />
+                                                            <ObjectStatus id="_IDGenObjectStatus12" 
+                                                                text="{orderDetail>/Status}"
+                                                                state="{= ${orderDetail>/Status} === 'Completed' ? 'Success' : 
+                                                                       ${orderDetail>/Status} === 'Pending' ? 'Warning' : 'Error' }" />
+                                                            
+                                                            <Label id="_IDGenLabel112"  text="Notes" />
+                                                            <Text id="_IDGenText133"  text="{orderDetail>/Notes}" />
+
+                                                        </form:content>
+
+                                                    </form:SimpleForm>
+                                            </VBox>
+
+                                        </IconTabFilter>
+
+
+                                        <!-- Payments Tab -->
+                                            <IconTabFilter id="paymentsTab" icon="sap-icon://payment-approval" key="payments" text="Payments">
+
+                                            <VBox id="_IDGenVBox47" >
+                                                <Toolbar id="_IDGenToolbar11">
+                                                        <Title id="_IDGenTitle18" text="Payment History" level="H2" />
+                                                        <ToolbarSpacer id="_IDGenToolbarSpacer34"  />
+                                                        <Button id="_IDGenButton56"  icon="sap-icon://add" text="Add Payment" press=".onAddPayment" type="Emphasized" visible="{= ${orderDetail>/Status} !== 'Canceled' }" />
+                                                    </Toolbar>
+
+                                                <Table
+                                                        id="paymentsTable"
+                                                        items="{orderDetail>/Payments}"
+                                                        noDataText="No payments found"
+                                                        growing="true"
+                                                        growingThreshold="10"
+                                                        growingScrollToLoad="true">
+
+                                                     <columns>
+                                                            <Column id="_IDGenColumn61"  width="20%">
+                                                                <Text id="_IDGenText134"  text="Payment Date" />
+                                                            </Column>
+                                                            <Column id="_IDGenColumn62"  width="20%">
+                                                                <Text id="_IDGenText135"  text="Payment Method" />
+                                                            </Column>
+                                                            <Column id="_IDGenColumn63"  width="15%" hAlign="End">
+                                                                <Text id="_IDGenText136"  text="Amount" />
+                                                            </Column>
+                                                            <Column id="_IDGenColumn64"  width="10%" hAlign="End">
+                                                                <Text id="_IDGenText137"  text="Actions" />
+                                                            </Column>
+                                                        </columns>
+
+                                                     <items>
+                                                            <ColumnListItem id="_IDGenColumnListItem11" >
+                                                                <cells>
+                                                                    <Text id="_IDGenText138"  text="{
+                                                                        path: 'orderDetail>PaymentDate',
+                                                                        formatter: '.formatter.formatDate'
+                                                                    }" />
+                                                                    <Text id="_IDGenText139"  text="{orderDetail>PaymentMethod}" />
+                                                                    <ObjectNumber id="_IDGenObjectNumber16"
+                                                                        number="{
+                                                                            parts: [{path: 'orderDetail>Amount'}, {path: '/currencyCode'}],
+                                                                            type: 'sap.ui.model.type.Currency',
+                                                                            formatOptions: {showMeasure: false}
+                                                                        }"
+                                                                        unit="{/currencyCode}"
+                                                                        state="{= ${orderDetail>Amount} &lt; 0 ? 'Error' : 'Success' }" />
+                                                                    <HBox id="_IDGenHBox27"  justifyContent="End">
+                                                                        <Button id="_IDGenButton57" icon="sap-icon://delete" type="Transparent" press=".onDeletePayment" visible="{= ${orderDetail>/Status} !== 'Canceled' }" />
+                                                                    </HBox>
+                                                                </cells>
+                                                            </ColumnListItem>
+                                                        </items>      
+                                                </Table>    
+                                            </VBox>
+
+                                            </IconTabFilter>
+
+                                    </items>
+
+                                    </IconTabBar>
+
+                                </VBox>
+                            </uxap:blocks>
+                        </uxap:ObjectPageSubSection>
+                    </uxap:subSections>
+                </uxap:ObjectPageSection>
+            </uxap:sections>
+
+
+            
+
+        </uxap:ObjectPageLayout>
+
+        <footer>
+            <Toolbar id="_IDGenToolbar12" >
+                <ToolbarSpacer id="_IDGenToolbarSpacer35" />
+                <Button id="_IDGenButton58"  text="Back to Orders" press=".onNavBack" type="Default" />
+                <Button id="managePaymentsButton" text="Manage Payments" press=".onManagePayments" type="Emphasized" visible="{= ${orderDetail>/Status} !== 'Canceled' }" />
+            </Toolbar>
+        </footer>
+
+</Page>
+</mvc:View>
