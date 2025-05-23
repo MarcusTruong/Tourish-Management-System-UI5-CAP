@@ -26,7 +26,7 @@
                 columnsL="1"
                 columnsM="1">
                 <f:content>
-                    <Label id="_IDGenLabel13" text="Supplier Name *" required="true" />
+                    <Label id="_IDGenLabel162"  text="Supplier Name *" required="true" />
                     <Input id="supplierNameInput" value="{supplier>/SupplierName}" maxLength="100" required="true" />
                     
                     <Label id="_IDGenLabel14" text="Address" />

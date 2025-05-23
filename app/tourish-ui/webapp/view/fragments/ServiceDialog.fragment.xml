@@ -68,11 +68,11 @@
         </content>
         
         <beginButton>
-            <Button id="_IDGenButton3" text="Cancel" press=".onCancelService" />
+            <Button id="_IDGenButton67"  text="Cancel" press=".onCancelService" />
         </beginButton>
         
         <endButton>
-            <Button id="_IDGenButton4" text="Save" type="Emphasized" press=".onSaveService" />
+            <Button id="_IDGenButton68"  text="Save" type="Emphasized" press=".onSaveService" />
         </endButton>
     </Dialog>
 </core:FragmentDefinition>

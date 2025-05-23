@@ -34,7 +34,6 @@ sap.ui.define([
         },
                 
         onTourPress: function (oEvent) {
-            console.log(1);
             // Get the selected item context
             var oItem = oEvent.getSource();
             var oBindingContext = oItem.getBindingContext("templates");

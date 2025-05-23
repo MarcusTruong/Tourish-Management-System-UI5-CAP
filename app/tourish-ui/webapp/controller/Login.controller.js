@@ -1,8 +1,9 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/m/MessageBox",
+  "sap/m/MessageToast",
   "sap/ui/model/odata/v4/ODataModel"
-], function (Controller, MessageBox, ODataModel) {
+], function (Controller, MessageBox, MessageToast, ODataModel) {
   "use strict";
 
   return Controller.extend("tourishui.controller.Login", {
@@ -47,7 +48,7 @@ sap.ui.define([
             user: oResult.user
           });
 
-          MessageBox.success("Login successful!");
+          MessageToast.show("Login successful!");
           this.getOwnerComponent().getRouter().navTo("dashboard");
         } else {
           MessageBox.error("Login failed: Incorrect username or password!");

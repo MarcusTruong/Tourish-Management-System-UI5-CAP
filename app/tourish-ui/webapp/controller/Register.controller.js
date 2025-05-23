@@ -96,8 +96,8 @@ sap.ui.define([
         const sUsername = oView.byId("usernameInput2").getValue();
         const sPassword = oView.byId("passwordInput2").getValue();
         const sFullName = oView.byId("fullNameInput").getValue();
-        const sEmail = oView.byId("emailInput").getValue();
-        const sPhone = oView.byId("phoneInput").getValue();
+        const sEmail = oView.byId("emailInput11").getValue();
+        const sPhone = oView.byId("phoneInput11").getValue();
   
         if (!sUsername || !sPassword || !sFullName || !sEmail || !sPhone) {
           MessageBox.error("Please enter complete information!");
@@ -131,10 +131,10 @@ sap.ui.define([
         oContext.execute().then(() => {
           const oResult = oContext.getBoundContext().getObject();
           if (oResult.ID) {
-            MessageBox.success("Registration successful! Please login.");
+            MessageToast.show("Registration successful! Please login.");
             this.getOwnerComponent().getRouter().navTo("login");
           } else {
-            MessageBox.error("Register failed: Unknown error");
+            MessageToast.show("Register failed: Unknown error");
           }
         }).catch(error => {
           console.error("Error during registration:", error);

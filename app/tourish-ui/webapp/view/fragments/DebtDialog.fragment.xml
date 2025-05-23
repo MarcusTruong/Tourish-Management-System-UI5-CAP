@@ -47,7 +47,7 @@
                         displayFormat="long"
                         required="true" />
                     
-                    <Label id="_IDGenLabel3"  text="Status" />
+                    <Label id="_IDGenLabel163"   text="Status" />
                     <Select id="debtStatusSelect" selectedKey="{newDebt>/status}">
                         <core:Item id="_IDGenItem7" key="Pending" text="Pending" />
                         <core:Item id="_IDGenItem8" key="Completed" text="Completed" />
@@ -57,11 +57,11 @@
         </content>
         
         <beginButton>
-            <Button id="_IDGenButton5" text="Cancel" press=".onCancelDebt" />
+            <Button id="_IDGenButton69"  text="Cancel" press=".onCancelDebt" />
         </beginButton>
         
         <endButton>
-            <Button id="_IDGenButton6" text="Save" type="Emphasized" press=".onSaveDebt" />
+            <Button id="_IDGenButton70"  text="Save" type="Emphasized" press=".onSaveDebt" />
         </endButton>
     </Dialog>
 </core:FragmentDefinition>

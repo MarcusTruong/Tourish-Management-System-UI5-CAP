@@ -13,7 +13,7 @@
         navButtonPress="onNavBack"
     >
         <content>
-            <l:Grid id="_IDGenGrid1"
+            <l:Grid id="_IDGenGrid5"
                 defaultSpan="XL12 L12 M12 S12"
                 class="sapUiMediumMargin"
             >
@@ -25,7 +25,7 @@
                         wrap="Wrap"
                     >
                         <items>
-                            <VBox id="_IDGenVBox2" width="40%" class="sapUiMediumMarginBegin">
+                            <VBox id="_IDGenVBox55" width="40%" class="sapUiMediumMarginBegin">
                                 <form:SimpleForm
                                     id="registerForm"
                                     editable="true"
@@ -45,11 +45,11 @@
                                     xmlns:form="sap.ui.layout.form"
                                 >
                                     <form:content>
-                                        <Label id="_IDGenLabel2" text="User Name" required="true" />
+                                        <Label id="_IDGenLabel155" text="User Name" required="true" />
                                         <Input id="usernameInput2" placeholder="Enter your username" />
                                         
-                                        <Label id="_IDGenLabel3" text="Password" required="true" />
-                                        <VBox id="_IDGenVBox4" >
+                                        <Label id="_IDGenLabel158" text="Password" required="true" />
+                                        <VBox id="_IDGenVBox56" >
                                         <Input
                                             id="passwordInput2"
                                             type="Password"
@@ -62,14 +62,14 @@
                                         </VBox>
                                         </VBox>
                                         
-                                        <Label id="_IDGenLabel4" text="Full name" required="true" />
+                                        <Label id="_IDGenLabel159" text="Full name" required="true" />
                                         <Input id="fullNameInput" placeholder="Enter your full name" />
                                         
-                                        <Label id="_IDGenLabel5" text="Email" required="true" />
-                                        <Input id="emailInput" placeholder="Enter your email" />
+                                        <Label id="_IDGenLabel160" text="Email" required="true" />
+                                        <Input id="emailInput11" placeholder="Enter your email" />
                                         
-                                        <Label id="_IDGenLabel6" text="Phone number" />
-                                        <Input id="phoneInput" placeholder="Enter your phone number" />
+                                        <Label id="_IDGenLabel161" text="Phone number" />
+                                        <Input id="phoneInput11" placeholder="Enter your phone number" />
                                     </form:content>
                                 </form:SimpleForm>
                                 
@@ -83,14 +83,14 @@
                                 />
                             </VBox>
 
-                            <VBox id="_IDGenVBox1" width="40%" class="sapUiMediumMarginBegin" alignItems="Center">
+                            <VBox id="_IDGenVBox57"  width="40%" class="sapUiMediumMarginBegin" alignItems="Center">
                                 <Image id="_IDGenImage" 
                                     src="https://www.neovasolutions.com/wp-content/uploads/2021/05/Travel-management-system-min.png" 
                                     width="100%"
                                     height="auto"
                                     class="sapUiMediumMarginBottom" />
-                                <Text id="_IDGenText1" text="Register to join our" class="sapMTitleStyleH2" textAlign="Center"/>
-                                <Text id="_IDGenText2" text="Tourish Management System!" class="sapUiMediumMarginBottom sapMTitleStyleH2" textAlign="Center"/>
+                                <Text id="_IDGenText172" text="Register to join our" class="sapMTitleStyleH2" textAlign="Center"/>
+                                <Text id="_IDGenText173" text="Tourish Management System!" class="sapUiMediumMarginBottom sapMTitleStyleH2" textAlign="Center"/>
                             </VBox>
                             
                             

@@ -93,7 +93,6 @@
                     growingScrollToLoad="true"
                     sticky="HeaderToolbar,ColumnHeaders"
                     alternateRowColors="true"
-                    mode="SingleSelectMaster"
                     selectionChange=".onTemplateSelect"
                     busyIndicatorDelay="0">
                     
@@ -137,7 +136,7 @@
                     </columns>
                     
                     <items>
-                        <ColumnListItem id="_IDGenColumnListItem4" type="Navigation" press=".onTourPress">
+                        <ColumnListItem id="_IDGenColumnListItem4" type="Navigation" press=".onEdit">
                             <cells>
                                 <HBox id="_IDGenHBox7" justifyContent="Center" alignItems="Center" height="80px">
                                     <Image id="_IDGenImage1" 
@@ -158,7 +157,7 @@
                                 <Text id="_IDGenText49" text="{templates>TemplateName}"/>
                                 <Text id="_IDGenText50" text="{templates>TourType}"/>
                                 <Text id="_IDGenText51" text="{= ${templates>NumberDays} + ' days / ' + ${templates>NumberNights} + ' nights'}"/>
-                                <ObjectNumber id="_IDGenObjectNumber3" 
+                                <ObjectNumber id="_IDGenObjectNumber333" 
                                     number="{
                                         parts: [{path: 'templates>AdultPrice'}, {path: 'templates>/currency'}],
                                         type: 'sap.ui.model.type.Currency',
