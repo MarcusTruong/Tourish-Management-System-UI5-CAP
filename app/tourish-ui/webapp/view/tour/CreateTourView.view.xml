@@ -37,52 +37,27 @@
                                 </f:SimpleForm>
                             </VBox>
                             <VBox id="_IDGenVBox11" class="sapUiMediumMargin" width="40%">
-                                <upload:UploadSet
-    id="templateImageUpload"
-    instantUpload="true"
-    multiple="true"
-    maxFileSize="5"
-    mediaTypes="image/jpeg,image/png,image/gif"
-    items="{tour>/images}"
-    uploadUrl="/api/cloudinary/upload"
-    uploadEnabled="true"
-    uploadCompleted=".onImageUploadComplete"
-    beforeUploadStarts=".onBeforeUploadStarts"
-    afterItemRemoved=".onFileDeleted">
-    <upload:toolbar>
-        <OverflowToolbar id="_IDGenOverflowToolbar4">
-            <Title id="_IDGenTitle4" text="Tour Images" level="H4"/>
-            <ToolbarSpacer id="_IDGenToolbarSpacer10"/>
-        </OverflowToolbar>
-    </upload:toolbar>
-    <upload:items>
-        <upload:UploadSetItem id="_IDGenUploadSetItem"
-            fileName="{tour>fileName}"
-            url="{tour>url}"
-            thumbnailUrl="{tour>thumbnailUrl}"
-            visibleEdit="false"
-            visibleRemove="true">
-            <upload:attributes>
-                <ObjectAttribute id="_IDGenObjectAttribute3"
-                    title="{tour>title}"
-                    text="{tour>text}"/>
-                <!-- Thêm một ObjectAttribute khác hiển thị như nút -->
-                <ObjectAttribute id="mainImageAttribute"
-                    title="{= !${tour>isMain} ? 'Actions' : ''}"
-                    text="{= !${tour>isMain} ? 'Set as Main' : ''}"
-                    active="true"
-                    press=".onSetAsMainImage"
-                    visible="{= !${tour>isMain}}"/>
-            </upload:attributes>
-            <upload:statuses>
-                <ObjectStatus id="_IDGenObjectStatus6"
-                    text="{= ${tour>isMain} ? 'Main Image' : ''}"
-                    state="Success"
-                    visible="{tour>isMain}"/>
-            </upload:statuses>
-        </upload:UploadSetItem>
-    </upload:items>
-</upload:UploadSet>
+                                <upload:UploadSet id="templateImageUpload" instantUpload="true" multiple="true" maxFileSize="5" mediaTypes="image/jpeg,image/png,image/gif" items="{tour>/images}" uploadUrl="/api/cloudinary/upload" uploadEnabled="true" uploadCompleted=".onImageUploadComplete" beforeUploadStarts=".onBeforeUploadStarts" afterItemRemoved=".onFileDeleted">
+                                    <upload:toolbar>
+                                        <OverflowToolbar id="_IDGenOverflowToolbar4">
+                                            <Title id="_IDGenTitle4" text="Tour Images" level="H4"/>
+                                            <ToolbarSpacer id="_IDGenToolbarSpacer10"/>
+                                        </OverflowToolbar>
+                                    </upload:toolbar>
+                                    <upload:items>
+                                        <upload:UploadSetItem id="_IDGenUploadSetItem" fileName="{tour>fileName}" url="{tour>url}" thumbnailUrl="{tour>thumbnailUrl}" visibleEdit="false" visibleRemove="true">
+                                            <upload:attributes>
+                                                <ObjectAttribute
+                                                id="_IDGenObjectAttribute3" title="{tour>title}" text="{tour>text}"/>
+                                                <!-- Thêm một ObjectAttribute khác hiển thị như nút -->
+                                                <ObjectAttribute id="mainImageAttribute" title="{= !${tour>isMain} ? 'Actions' : ''}" text="{= !${tour>isMain} ? 'Set as Main' : ''}" active="true" press=".onSetAsMainImage" visible="{= !${tour>isMain}}"/>
+                                            </upload:attributes>
+                                            <upload:statuses>
+                                                <ObjectStatus id="_IDGenObjectStatus6" text="{= ${tour>isMain} ? 'Main Image' : ''}" state="Success" visible="{tour>isMain}"/>
+                                            </upload:statuses>
+                                        </upload:UploadSetItem>
+                                    </upload:items>
+                                </upload:UploadSet>
                             </VBox>
                         </HBox>
                     </IconTabFilter>

@@ -129,7 +129,7 @@
                                     <ObjectStatus id="_IDGenObjectStatus"
                                         text="{Status}"
                                         state="{= ${Status} === 'Active' ? 'Success' : 'Error'}"/>
-                                    <HBox id="_IDGenHBox">
+                                    <HBox id="_IDGenHBox" justifyContent="End">
                                         <Button id="_IDGenButton6"
                                             icon="sap-icon://edit"
                                             type="Transparent"

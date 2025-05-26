@@ -1,116 +1,54 @@
-<mvc:View
-    controllerName="tourishui.controller.tour.Tour"
-    xmlns="sap.m"
-    xmlns:mvc="sap.ui.core.mvc"
-    xmlns:f="sap.f"
-    xmlns:core="sap.ui.core"
-    xmlns:l="sap.ui.layout"
-    displayBlock="true"
-    height="100%">
+<mvc:View controllerName="tourishui.controller.tour.Tour" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:f="sap.f" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" displayBlock="true" height="100%">
 
-    <f:DynamicPage id="tourTemplatesPage" toggleHeaderOnTitleClick="false">
-        <f:title>
-            <f:DynamicPageTitle id="_IDGenDynamicPageTitle1">
-                <f:heading>
-                    <Title id="_IDGenTitle8" text="Tour Templates" level="H2"/>
-                </f:heading>
-                <f:actions>
-                    <Button 
-                        id="createTemplateBtn" 
-                        text="Create Template" 
-                        type="Emphasized" 
-                        press=".onCreateTemplate" 
-                        icon="sap-icon://add"/>
-                </f:actions>
-            </f:DynamicPageTitle>
-        </f:title>
+    <Page id="tourTemplatesPage" title="Tour Templates">
+        <f:DynamicPageHeader id="_IDGenDynamicPageHeader3">
+            <FlexBox id="_IDGenFlexBox2" alignItems="Start" justifyContent="SpaceBetween">
+                <VBox id="_IDGenVBox19">
+                    <HBox id="_IDGenHBox6" alignItems="Center" class="sapUiSmallMarginBottom" wrap="Wrap">
+                        <SearchField id="searchField" width="300px" placeholder="Search tour templates..." search=".onSearch" class="sapUiSmallMarginEnd"/>
 
-        <f:header>
-            <f:DynamicPageHeader id="_IDGenDynamicPageHeader3">
-                <FlexBox id="_IDGenFlexBox2" alignItems="Start" justifyContent="SpaceBetween">
-                    <VBox id="_IDGenVBox19">
-                        <HBox id="_IDGenHBox6" alignItems="Center" class="sapUiSmallMarginBottom" wrap="Wrap">
-                            <SearchField 
-                                id="searchField" 
-                                width="300px" 
-                                placeholder="Search tour templates..." 
-                                search=".onSearch" 
-                                class="sapUiSmallMarginEnd"/>
-                                
-                            <Label id="_IDGenLabel39" text="Tour Type:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
-                            <Select 
-                                id="tourTypeFilter" 
-                                width="200px" 
-                                change=".onFilterChange"
-                                forceSelection="false"
-                                class="sapUiSmallMarginEnd">
-                                <core:Item id="_IDGenItem16" key="" text="All Types"/>
-                                <core:Item id="_IDGenItem17" key="Cultural" text="Cultural"/>
-                                <core:Item id="_IDGenItem18" key="Adventure" text="Adventure"/>
-                                <core:Item id="_IDGenItem19" key="Relaxation" text="Relaxation"/>
-                                <core:Item id="_IDGenItem20" key="Beach" text="Beach"/>
-                                <core:Item id="_IDGenItem22" key="Mountain" text="Mountain"/>
-                            </Select>
-                            
-                            <Label id="_IDGenLabel40" text="Status:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
-                            <Select 
-                                id="statusFilter" 
-                                width="200px" 
-                                change=".onFilterChange"
-                                forceSelection="false"
-                                class="sapUiSmallMarginEnd">
-                                <core:Item id="_IDGenItem23" key="" text="All Statuses"/>
-                                <core:Item id="_IDGenItem24" key="Draft" text="Draft"/>
-                                <core:Item id="_IDGenItem25" key="Published" text="Published"/>
-                                <core:Item id="_IDGenItem26" key="Archived" text="Archived"/>
-                            </Select>
-                            
-                            <Button 
-                                id="clearFiltersBtn" 
-                                text="Clear Filters" 
-                                press=".onClearFilters" 
-                                class="sapUiSmallMarginEnd"/>
-                        </HBox>
-                    </VBox>
-                </FlexBox>
-            </f:DynamicPageHeader>
-        </f:header>
+                        <Label id="_IDGenLabel39" text="Tour Type:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                        <Select id="tourTypeFilter" width="200px" change=".onFilterChange" forceSelection="false" class="sapUiSmallMarginEnd">
+                            <core:Item id="_IDGenItem16" key="" text="All Types"/>
+                            <core:Item id="_IDGenItem17" key="Cultural" text="Cultural"/>
+                            <core:Item id="_IDGenItem18" key="Adventure" text="Adventure"/>
+                            <core:Item id="_IDGenItem19" key="Relaxation" text="Relaxation"/>
+                            <core:Item id="_IDGenItem20" key="Beach" text="Beach"/>
+                            <core:Item id="_IDGenItem22" key="Mountain" text="Mountain"/>
+                        </Select>
 
-        <f:content>
+                        <Label id="_IDGenLabel40" text="Status:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                        <Select id="statusFilter" width="200px" change=".onFilterChange" forceSelection="false" class="sapUiSmallMarginEnd">
+                            <core:Item id="_IDGenItem23" key="" text="All Statuses"/>
+                            <core:Item id="_IDGenItem24" key="Draft" text="Draft"/>
+                            <core:Item id="_IDGenItem25" key="Published" text="Published"/>
+                            <core:Item id="_IDGenItem26" key="Archived" text="Archived"/>
+                        </Select>
+
+                        <Button id="clearFiltersBtn" text="Clear Filters" press=".onClearFilters" class="sapUiSmallMarginEnd"/>
+                    </HBox>
+                </VBox>
+            </FlexBox>
+        </f:DynamicPageHeader>
+
+        <content>
             <VBox id="_IDGenVBox20" class="sapUiSmallMargin">
-                <Table 
-                    id="tourTemplatesTable"
-                    inset="false"
-                    items="{
-                        path: 'templates>/items',
-                        sorter: {
-                            path: 'TemplateName',
-                            descending: false
-                        }
-                    }"
-                    growing="true"
-                    growingThreshold="20"
-                    growingScrollToLoad="true"
-                    sticky="HeaderToolbar,ColumnHeaders"
-                    alternateRowColors="true"
-                    selectionChange=".onTemplateSelect"
-                    busyIndicatorDelay="0">
-                    
-                    <headerToolbar>
-                        <OverflowToolbar id="_IDGenOverflowToolbar7">
-                            <Title id="_IDGenTitle9" text="Tour Templates"/>
-                            <ToolbarSpacer id="_IDGenToolbarSpacer16"/>
-                            <Button id="_IDGenButton27" 
-                                icon="sap-icon://download" 
-                                tooltip="Export to Excel" 
-                                press=".onExport"/>
-                            <Button id="_IDGenButton28" 
-                                icon="sap-icon://action-settings" 
-                                tooltip="Table Settings" 
-                                press=".onTableSettings"/>
-                        </OverflowToolbar>
-                    </headerToolbar>
-                    
+                <OverflowToolbar id="_IDGenOverflowToolbar7">
+                    <Title id="_IDGenTitle9" text="Tour Templates"/>
+                    <ToolbarSpacer id="_IDGenToolbarSpacer16"/>
+                    <Button id="createTemplateBtn" text="Create Template" type="Emphasized" press=".onCreateTemplate" icon="sap-icon://add"/>
+                    <Button id="_IDGenButton27" icon="sap-icon://download" tooltip="Export to Excel" press=".onExport"/>
+                    <Button id="_IDGenButton28" icon="sap-icon://action-settings" tooltip="Table Settings" press=".onTableSettings"/>
+                </OverflowToolbar>
+
+                <Table id="tourTemplatesTable" inset="false" items="{
+                                            path: 'templates>/items',
+                                            sorter: {
+                                                path: 'TemplateName',
+                                                descending: false
+                                            }
+                                        }" growing="true" growingThreshold="20" growingScrollToLoad="true" sticky="HeaderToolbar,ColumnHeaders" alternateRowColors="true" selectionChange=".onTemplateSelect" busyIndicatorDelay="0">
+
                     <columns>
                         <Column id="_IDGenColumn24" minScreenWidth="Tablet" demandPopin="true" width="120px">
                             <Text id="_IDGenText29" text="Image"/>
@@ -134,79 +72,42 @@
                             <Text id="_IDGenText48" text="Actions"/>
                         </Column>
                     </columns>
-                    
+
                     <items>
                         <ColumnListItem id="_IDGenColumnListItem4" type="Navigation" press=".onEdit">
                             <cells>
                                 <HBox id="_IDGenHBox7" justifyContent="Center" alignItems="Center" height="80px">
-                                    <Image id="_IDGenImage1" 
-                                        src="{= ${templates>MainImageURL} || 'sap-icon://picture'}" 
-                                        width="100px"
-                                        height="60px"
-                                        densityAware="false"
-                                        mode="Image"
-                                        press=".onImagePress"
-                                        visible="{= !!${templates>MainImageURL}}"
-                                        class="sapUiTinyMargin"/>
-                                    <core:Icon id="_IDGenIcon" 
-                                        src="sap-icon://picture" 
-                                        size="2rem" 
-                                        visible="{= !${templates>MainImageURL}}"
-                                        color="Neutral"/>
+                                    <Image id="_IDGenImage1" src="{= ${templates>MainImageURL} || 'sap-icon://picture'}" width="100px" height="60px" densityAware="false" mode="Image" press=".onImagePress" visible="{= !!${templates>MainImageURL}}" class="sapUiTinyMargin"/>
+                                    <core:Icon id="_IDGenIcon" src="sap-icon://picture" size="2rem" visible="{= !${templates>MainImageURL}}" color="Neutral"/>
                                 </HBox>
                                 <Text id="_IDGenText49" text="{templates>TemplateName}"/>
                                 <Text id="_IDGenText50" text="{templates>TourType}"/>
                                 <Text id="_IDGenText51" text="{= ${templates>NumberDays} + ' days / ' + ${templates>NumberNights} + ' nights'}"/>
-                                <ObjectNumber id="_IDGenObjectNumber333" 
-                                    number="{
-                                        parts: [{path: 'templates>AdultPrice'}, {path: 'templates>/currency'}],
-                                        type: 'sap.ui.model.type.Currency',
-                                        formatOptions: {showMeasure: false}
-                                    }"
-                                    unit="USD"/>
-                                <ObjectStatus id="_IDGenObjectStatus5" 
-                                    text="{templates>Status}" 
-                                    state="{= ${templates>Status} === 'Published' ? 'Success' : 
-                                        ${templates>Status} === 'Draft' ? 'Warning' : 'Information'}"/>
+                                <ObjectNumber id="_IDGenObjectNumber333" number="{
+                                                                            parts: [{path: 'templates>AdultPrice'}, {path: 'templates>/currency'}],
+                                                                            type: 'sap.ui.model.type.Currency',
+                                                                            formatOptions: {showMeasure: false}
+                                                                        }" unit="USD"/>
+                                <ObjectStatus id="_IDGenObjectStatus5" text="{templates>Status}" state="{= ${templates>Status} === 'Published' ? 'Success' : ${templates>Status} === 'Draft' ? 'Warning' : 'Information'}"/>
                                 <HBox id="_IDGenHBox8" justifyContent="End">
-                                    <Button id="_IDGenButton29" 
-                                        icon="sap-icon://edit" 
-                                        press=".onEdit" 
-                                        tooltip="Edit Template"/>
-                                    <Button id="_IDGenButton30" 
-                                        icon="sap-icon://copy" 
-                                        press=".onCopy" 
-                                        tooltip="Copy Template" 
-                                        class="sapUiTinyMarginBegin"/>
-                                    <Button id="_IDGenButton31" 
-                                        icon="sap-icon://create" 
-                                        press=".onCreateActiveTour" 
-                                        tooltip="Create Active Tour" 
-                                        class="sapUiTinyMarginBegin"/>
-                                    <Button id="_IDGenButton35" 
-                                        icon="sap-icon://delete" 
-                                        press=".onDeleteTemplateTour" 
-                                        tooltip="Delete Template Tour" 
-                                        class="sapUiTinyMarginBegin"/>
+                                    <Button id="_IDGenButton29" icon="sap-icon://edit" press=".onEdit" tooltip="Edit Template"/>
+                                    <Button id="_IDGenButton30" icon="sap-icon://copy" press=".onCopy" tooltip="Copy Template" class="sapUiTinyMarginBegin"/>
+                                    <Button id="_IDGenButton31" icon="sap-icon://create" press=".onCreateActiveTour" tooltip="Create Active Tour" class="sapUiTinyMarginBegin"/>
+                                    <Button id="_IDGenButton35" icon="sap-icon://delete" press=".onDeleteTemplateTour" tooltip="Delete Template Tour" class="sapUiTinyMarginBegin"/>
                                 </HBox>
                             </cells>
                         </ColumnListItem>
                     </items>
                 </Table>
             </VBox>
-        </f:content>
-        
-        <f:footer>
+        </content>
+
+        <footer>
             <OverflowToolbar id="_IDGenOverflowToolbar8">
                 <ToolbarSpacer id="_IDGenToolbarSpacer17"/>
                 <Text id="_IDGenText52" text="Templates: {templates>/pagination/total}"/>
                 <ToolbarSpacer id="_IDGenToolbarSpacer18"/>
-                <Button id="_IDGenButton32" 
-                    text="Create Tour Template" 
-                    type="Emphasized" 
-                    press=".onCreateTemplate"
-                    icon="sap-icon://add"/>
             </OverflowToolbar>
-        </f:footer>
-    </f:DynamicPage>
+        </footer>
+    </Page>
 </mvc:View>

@@ -50,7 +50,7 @@
         </f:DynamicPageHeader>
 
         <content>
-            <VBox id="_IDGenVBox18" >
+            <VBox id="_IDGenVBox18" class="sapUiSmallMargin">
                 <OverflowToolbar id="_IDGenOverflowToolbar5" >
                     <Title id="_IDGenTitle7"  text="All Services" level="H2" />
                     <ToolbarSpacer id="_IDGenToolbarSpacer12"  />

@@ -7,20 +7,20 @@
     xmlns:smartFilterBar="sap.ui.comp.smartfilterbar"
     xmlns:smartTable="sap.ui.comp.smarttable">
 
-    <Page id="supplierListReportPage" title="Suppliers" titleLevel="H2">
-        <f:DynamicPageHeader id="_IDGenDynamicPageHeader">
+    <Page id="supplierListReportPage" title="Suppliers Management" titleLevel="H2">
+        <f:DynamicPageHeader id="_IDGenDynamicPageHeader7">
                 
                     <HBox id="_IDGenHBox1" width="100%" justifyContent="SpaceBetween">
 							<HBox id="_IDGenHBox2" >
 								<SearchField id="supplierSearchField" placeholder="Search suppliers..." search=".onSearch" class="sapUiSmallMarginEnd"/>
                         
-                            <Label id="_IDGenLabel9" text="Supplier ID:" class="sapUiSmallMarginEnd sapUiTinyMarginTop sapUiSmallMarginBegin" />
+                            <Label id="_IDGenLabel172"  text="Supplier ID:" class="sapUiSmallMarginEnd sapUiTinyMarginTop sapUiSmallMarginBegin" />
                             <Input id="supplierIDFilter" width="12rem" class="sapUiSmallMarginEnd" />
                             
-                            <Label id="_IDGenLabel10" text="Supplier Name:" class="sapUiSmallMarginEnd sapUiTinyMarginTop" />
+                            <Label id="_IDGenLabel173" text="Supplier Name:" class="sapUiSmallMarginEnd sapUiTinyMarginTop" />
                             <Input id="supplierNameFilter" width="12rem" class="sapUiSmallMarginEnd" />
                             
-                            <Label id="_IDGenLabel11" text="Address:" class="sapUiSmallMarginEnd sapUiTinyMarginTop" />
+                            <Label id="_IDGenLabel174"  text="Address:" class="sapUiSmallMarginEnd sapUiTinyMarginTop" />
                             <Input id="addressFilter" width="12rem" class="sapUiSmallMarginEnd" />
 							</HBox>
                             
@@ -35,12 +35,14 @@
         </f:DynamicPageHeader>
 
         <content>
-            <VBox id="_IDGenVBox3">
+            <VBox id="_IDGenVBox63" class="sapUiSmallMargin">
                 <OverflowToolbar id="_IDGenOverflowToolbar2">
-                    <Title id="_IDGenTitle2" text="Manage Suppliers Information" level="H2" />
-                    <ToolbarSpacer id="_IDGenToolbarSpacer3" />
+                    <Title id="_IDGenTitle22"  text="Manage Suppliers Information" level="H2" />
+                    <ToolbarSpacer id="_IDGenToolbarSpacer38" />
                     <Button id="_IDGenButton12"
                         icon="sap-icon://add"
+                        text="Add New Supplier"
+                        type="Emphasized"
                         tooltip="Add New Supplier"
                         press=".onAddSupplier" />
                     <Button id="_IDGenButton13"
@@ -71,14 +73,14 @@
                     alternateRowColors="true">
 
                     <columns>
-                        <Column id="_IDGenColumn6" minScreenWidth="Tablet" demandPopin="true">
-                            <Text id="_IDGenText18" text="Supplier ID" />
+                        <Column id="_IDGenColumn90"  minScreenWidth="Tablet" demandPopin="true">
+                            <Text id="_IDGenText208"  text="Supplier ID" />
                         </Column>
                         <Column id="_IDGenColumn7" minScreenWidth="Tablet" demandPopin="true">
-                            <Text id="_IDGenText19" text="Supplier Name" />
+                            <Text id="_IDGenText209"  text="Supplier Name" />
                         </Column>
                         <Column id="_IDGenColumn8" minScreenWidth="Desktop" demandPopin="true">
-                            <Text id="_IDGenText20" text="Address" />
+                            <Text id="_IDGenText210"  text="Address" />
                         </Column>
                         <Column id="_IDGenColumn9" minScreenWidth="Desktop" demandPopin="true">
                             <Text id="_IDGenText21" text="Phone" />

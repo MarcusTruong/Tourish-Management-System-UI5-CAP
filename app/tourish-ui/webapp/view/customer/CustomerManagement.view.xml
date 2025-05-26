@@ -8,14 +8,7 @@
     
     <Page id="customerListReportPage" title="Customer Management" titleLevel="H1" showNavButton="false">
         <f:DynamicPage id="customerDynamicPage" headerExpanded="{= !${device>/system/phone} }" fitContent="true" toggleHeaderOnTitleClick="false">
-            <f:title>
-                <f:DynamicPageTitle id="_IDGenDynamicPageTitle4">
-                    <f:heading>
-                        <Title id="_IDGenTitle12" text="Customer Management" level="H1"/>
-                    </f:heading>
-                </f:DynamicPageTitle>
-            </f:title>
-            
+
             <f:header>
                 <f:DynamicPageHeader id="_IDGenDynamicPageHeader5" pinnable="true" >
                     <layout:HorizontalLayout id="_IDGenHorizontalLayout2" allowWrapping="true">

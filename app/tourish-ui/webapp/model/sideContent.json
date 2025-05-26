@@ -28,7 +28,7 @@
             "expanded": true,
             "items": [
                 {
-                    "titleI18nKey": "Create Sample Tour",
+                    "titleI18nKey": "Create Template Tour",
                     "icon": "sap-icon://write-new",
                     "key": "createSampleTour"
                 },
