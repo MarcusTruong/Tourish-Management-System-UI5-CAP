@@ -63,8 +63,130 @@ sap.ui.define([
         },
 
         _onRouteMatched: function (oEvent) {
+            var oViewModel = this.getView().getModel("createOrder");
+            oViewModel.setData({
+                busy: false,
+                currencyCode: "USD",
+                isEditMode: false,
+                editOrderId: null,
+                // Available tours
+                availableTours: [],
+                // Selected tour
+                selectedTour: null,
+                // Participant counts
+                adultCount: 0,
+                childCount: 0,
+                // Price calculation
+                calculation: {
+                    adultPrice: 0,
+                    childPrice: 0,
+                    adultTotal: 0,
+                    childTotal: 0,
+                    discountAmount: 0,
+                    totalAmount: 0
+                },
+                // Customer selection
+                customerSelectionType: "existing", // existing or new
+                customerTypeFilter: "All",
+                customers: [],
+                selectedCustomer: null,
+                // New customer data
+                newCustomer: {
+                    type: "Individual", // Individual or Business
+                    fullName: "",
+                    phone: "",
+                    email: "",
+                    address: "",
+                    birthday: null,
+                    notes: "",
+                    // Business customer fields
+                    companyName: "",
+                    taxCode: "",
+                    contactPerson: "",
+                    position: ""
+                },
+                // Order notes
+                orderNotes: ""
+            })
+
+            var sOrderId = null;
+            var oOrderEditModel = this.getOwnerComponent().getModel("orderEdit");
+            if (oOrderEditModel) {
+                sOrderId = oOrderEditModel.getProperty("/orderId");
+                console.log("Order Id : ", sOrderId);
+
+                oOrderEditModel.setProperty("/orderId", null);
+            }
             // Load available tours when the route is matched
             this._loadAvailableTours();
+
+            this._loadOrderForEdit(sOrderId);
+            
+            // Load available customers 
+            this._loadCustomers();
+        },
+
+        _loadOrderForEdit: function(sOrderId) {
+            if (!sOrderId) return;
+            
+            var oView = this.getView();
+            var oViewModel = oView.getModel("createOrder");
+            
+            oView.setBusy(true);
+            
+            var oService = this.getOwnerComponent().getModel("orderService");
+            var oContext = oService.bindContext("/getOrderDetails(...)");
+            
+            oContext.setParameter("orderID", sOrderId);
+            
+            oContext.execute().then(function() {
+                var oResult = oContext.getBoundContext().getObject();
+                
+                if (oResult) {
+                    // Set edit mode
+                    oViewModel.setProperty("/isEditMode", true);
+                    oViewModel.setProperty("/editOrderId", sOrderId);
+                    
+                    // Set tour selection
+                    var oSelectedTour = oViewModel.getProperty("/availableTours").find(tour => 
+                        tour.ID === oResult.order.ActiveTourID);
+                    oViewModel.setProperty("/selectedTour", oSelectedTour);
+                    
+                    // Set participant counts
+                    oViewModel.setProperty("/adultCount", oResult.order.AdultCount);
+                    oViewModel.setProperty("/childCount", oResult.order.ChildCount);
+                    
+                    // Set customer
+                    if (oResult.customer) {
+                        oViewModel.setProperty("/customerSelectionType", "existing");
+                        oViewModel.setProperty("/selectedCustomer", {
+                            ID: oResult.customer.ID,
+                            Name: oResult.customer.Name,
+                            Type: oResult.order.CustomerType,
+                            Phone: oResult.customer.Phone,
+                            Email: oResult.customer.Email
+                        });
+                    }
+                    
+                    // Set order notes
+                    oViewModel.setProperty("/orderNotes", oResult.order.Notes || "");
+                    
+                    // Calculate prices
+                    if (oSelectedTour) {
+                        this._calculateAmount();
+                    }
+                    
+                    // Update page title
+                    this.byId("createOrderPage").setTitle("Edit Order");
+                    this.byId("saveOrderButton").setText("Update Order");
+                }
+                
+                oView.setBusy(false);
+            }.bind(this)).catch(function(oError) {
+                console.error("Error loading order for edit:", oError);
+                MessageToast.show("Error loading order details");
+                oView.setBusy(false);
+            }.bind(this));
         },
 
         _loadAvailableTours: function() {

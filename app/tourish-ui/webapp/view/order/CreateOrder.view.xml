@@ -214,11 +214,13 @@
                                             id="customerTypeFilter" 
                                             width="150px" 
                                             change=".onCustomerSearch"
-                                            selectedKey="{createOrder>/customerTypeFilter}">
+                                            selectedKey="{createOrder>/customerTypeFilter}"
+                                            class="sapUiSmallMarginEnd">
                                             <core:Item id="_IDGenItem47" key="All" text="All" />
                                             <core:Item id="_IDGenItem48" key="Individual" text="Individual" />
                                             <core:Item id="_IDGenItem49" key="Business" text="Business" />
                                         </Select>
+                                        <Button id="_IDGenButton32" text="Search" type="Emphasized" press=".onCustomerSearch"/>
                                     </HBox>
                                     
                                     <Table id="_IDGenTable"
@@ -409,18 +411,7 @@
                         </Panel>
                     </VBox>
                 </f:content>
-                
-                <!-- <f:footer>
-                    <OverflowToolbar id="_IDGenOverflowToolbar13">
-                        <ToolbarSpacer id="_IDGenToolbarSpacer29" />
-                        <Button id="_IDGenButton60" text="Cancel" press=".onNavBack" />
-                        <Button id="createOrderButton" 
-                            text="Create Order" 
-                            type="Emphasized" 
-                            press=".onCreateOrder"
-                            enabled="{= !!${createOrder>/selectedTour} &amp;&amp; (${createOrder>/adultCount} > 0 || ${createOrder>/childCount} > 0) &amp;&amp; (!!${createOrder>/selectedCustomer} || (${createOrder>/customerSelectionType} === 'new' &amp;&amp; ((${createOrder>/newCustomer/type} === 'Individual' &amp;&amp; !!${createOrder>/newCustomer/fullName}) || (${createOrder>/newCustomer/type} === 'Business' &amp;&amp; !!${createOrder>/newCustomer/companyName})))) }" />
-                    </OverflowToolbar>
-                </f:footer> -->
+
             </f:DynamicPage>
         </content>
         <footer>

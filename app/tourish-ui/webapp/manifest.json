@@ -176,18 +176,13 @@
         },
         {
           "name": "createOrder",
-          "pattern": "orders/create",
-          "target": "createOrder"
+          "pattern": "orders/create:?orderId:",
+          "target": ["createOrder"]
         },
         {
           "name": "orderDetail",
           "pattern": "orders/detail/{orderId}",
           "target": "orderDetail"
-        },
-        {
-          "name": "editOrder",
-          "pattern": "orders/edit/{orderId}",
-          "target": "editOrder"
         }
       ],
       "targets": {
@@ -303,13 +298,6 @@
         "orderDetail": {
           "viewId": "orderDetail",
           "viewName": "order.OrderDetail",
-          "controlId": "mainContents",
-          "controlAggregation": "pages",
-          "parent": "appContent"
-        },
-        "editOrder": {
-          "viewId": "editOrder",
-          "viewName": "order.EditOrder",
           "controlId": "mainContents",
           "controlAggregation": "pages",
           "parent": "appContent"

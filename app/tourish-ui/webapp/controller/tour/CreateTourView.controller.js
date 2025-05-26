@@ -1302,7 +1302,9 @@ sap.ui.define([
                 var oRouter = this.getOwnerComponent().getRouter();
                 oRouter.navTo("tour", {}, true);
             }
-        }, _loadTemplateForEdit: function (sTemplateId) {
+        }, 
+        
+        _loadTemplateForEdit: function (sTemplateId) {
             // Set busy state
             var oView = this.getView();
             oView.setBusy(true);

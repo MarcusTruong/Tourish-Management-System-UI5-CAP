@@ -155,11 +155,21 @@ sap.ui.define([
             var oButton = oEvent.getSource();
             var sOrderId = oButton.getBindingContext("orders").getProperty("ID");
             
-            // Navigate to the order edit page
-            var oRouter = this.getOwnerComponent().getRouter();
-            oRouter.navTo("editOrder", {
+            console.log("Order Id for Edit:", sOrderId);
+
+            var oOrderEditModel = new sap.ui.model.json.JSONModel({
                 orderId: sOrderId
             });
+
+            this.getOwnerComponent().setModel(oOrderEditModel, "orderEdit");
+
+            // Navigate to the order edit page without parameter
+            try {
+                this.getOwnerComponent().getRouter().navTo("createOrder");
+            } catch (oError) {
+                console.error("Navigation error:", oError);
+                MessageBox.error("Error navigating: " + oError.message);
+            }
         },
         
         onManagePayments: function(oEvent) {
