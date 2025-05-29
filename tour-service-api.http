@@ -418,29 +418,30 @@ Authorization: Basic {{base64 username:password}}
 ### 3. PASSENGER MANAGEMENT
 
 ### 3.1 Add Passenger
+### 3.2 Add Passenger (Adult) - CẬP NHẬT API MỚI
 POST {{baseUrl}}/addPassenger
 Content-Type: application/json
 Authorization: Basic {{base64 username:password}}
 
 {
-  "tourID": "{{activeTourId}}",
-  "customerID": null,
-  "fullName": "Nguyen Van A",
+  "orderID": "0ee9e08b-f2ed-474c-bf3d-795dac011a72",
+  "fullName": "Nguyen Van B",
   "gender": "Male",
   "birthDate": "1985-05-20",
   "idNumber": "123456789",
   "phone": "0912345678",
   "email": "nguyenvana@example.com",
-  "specialRequirements": "Vegetarian meals"
+  "specialRequirements": "Vegetarian meals",
+  "isAdult": true
 }
 
 ### 3.2 Update Passenger
 POST {{baseUrl}}/updatePassenger
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Basic {{base64 username:password}}
 
 {
-  "passengerID": "{{passengerId}}",
+  "passengerID": "eb134d2d-46db-4cab-898c-c3195154a849",
   "fullName": "Nguyen Van A",
   "gender": "Male",
   "birthDate": "1985-05-20",
@@ -453,7 +454,7 @@ Authorization: {{adminAuth}}
 ### 3.3 Remove Passenger
 POST {{baseUrl}}/removePassenger
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Basic {{base64 username:password}}
 
 {
   "passengerID": "{{passengerId}}"
@@ -462,10 +463,10 @@ Authorization: {{adminAuth}}
 ### 3.4 Get Passenger List
 POST {{baseUrl}}/getPassengerList
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Basic {{base64 username:password}}
 
 {
-  "tourID": "{{activeTourId}}"
+  "tourID": "7f0a34f8-8b8c-440b-8fc3-056ffd94cd72"
 }
 
 ### 4. TOUR SERVICES MANAGEMENT

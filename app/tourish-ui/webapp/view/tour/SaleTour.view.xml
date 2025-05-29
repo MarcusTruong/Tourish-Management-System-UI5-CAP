@@ -61,7 +61,6 @@
                 <OverflowToolbar id="_IDGenOverflowToolbar9">
                     <Title id="_IDGenTitle11" text="Active Tours"/>
                     <ToolbarSpacer id="_IDGenToolbarSpacer20"/>
-                    <Button id="_IDGenButton33" text="Create Active Tour" type="Emphasized" press=".onCreateActiveTour" icon="sap-icon://add"/>
                     <Button id="_IDGenButton37" icon="sap-icon://download" tooltip="Export to Excel" press=".onExport"/>
                     <Button id="_IDGenButton38" icon="sap-icon://action-settings" tooltip="Table Settings" press=".onTableSettings"/>
                 </OverflowToolbar>
@@ -87,6 +86,12 @@
                         </Column>
                         <Column id="_IDGenColumn35" minScreenWidth="Desktop" demandPopin="true">
                             <Text id="_IDGenText57" text="Return Date"/>
+                        </Column>
+                        <Column id="_IDGenColumn97" minScreenWidth="Desktop" demandPopin="true">
+                            <Text id="_IDGenText207"  text="Sale Start Date"/>
+                        </Column>
+                        <Column id="_IDGenColumn98"  minScreenWidth="Desktop" demandPopin="true">
+                            <Text id="_IDGenText225" text="Sale End Date"/>
                         </Column>
                         <Column id="_IDGenColumn36" minScreenWidth="Desktop" demandPopin="true">
                             <Text id="_IDGenText58" text="Capacity"/>
@@ -114,6 +119,14 @@
                                                                     }"/>
                                 <Text id="_IDGenText64" text="{
                                                                         path: 'activeTours>ReturnDate',
+                                                                        formatter: '.formatDate'
+                                                                    }"/>
+                                <Text id="_IDGenText223" text="{
+                                                                        path: 'activeTours>SaleStartDate',
+                                                                        formatter: '.formatDate'
+                                                                    }"/>
+                                <Text id="_IDGenText224" text="{
+                                                                        path: 'activeTours>SaleEndDate',
                                                                         formatter: '.formatDate'
                                                                     }"/>
                                 <Text id="_IDGenText65" text="{= ${activeTours>CurrentBookings} + '/' + ${activeTours>MaxCapacity}}"/>

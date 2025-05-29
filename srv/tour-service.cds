@@ -379,60 +379,83 @@ service TourService @(path: '/tour-service') {
   
   // PASSENGER MANAGEMENT
   
-  @(requires: 'authenticated-user')
-  action addPassenger(
-    tourID: UUID,
-    customerID: UUID,
-    fullName: String,
-    gender: String,
-    birthDate: Date,
-    idNumber: String,
-    phone: String,
-    email: String,
-    specialRequirements: String
-  ) returns {
-    passengerID: UUID;
-    message: String
-  };
+ // Trong file srv/tour-service.cds, cập nhật phần PASSENGER MANAGEMENT:
+
+// PASSENGER MANAGEMENT
   
-  @(requires: 'authenticated-user')
-  action updatePassenger(
-    passengerID: UUID,
-    fullName: String,
-    gender: String,
-    birthDate: Date,
-    idNumber: String,
-    phone: String,
-    email: String,
-    specialRequirements: String
-  ) returns {
-    success: Boolean;
-    message: String
-  };
-  
-  @(requires: 'authenticated-user')
-  action removePassenger(
-    passengerID: UUID
-  ) returns {
-    success: Boolean;
-    message: String
-  };
-  
-  @(requires: 'authenticated-user')
-  action getPassengerList(
-    tourID: UUID
-  ) returns array of {
-    ID: UUID;
-    FullName: String;
-    Gender: String;
-    BirthDate: Date;
-    IDNumber: String;
-    Phone: String;
-    Email: String;
-    SpecialRequirements: String;
-    IsCustomer: Boolean;
-    CustomerID: UUID
-  };
+@(requires: 'authenticated-user')
+action addPassenger(
+  orderID: UUID,  // Thay đổi từ tourID sang orderID
+  fullName: String,
+  gender: String,
+  birthDate: Date,
+  idNumber: String,
+  phone: String,
+  email: String,
+  specialRequirements: String,
+  isAdult: Boolean
+) returns {
+  passengerID: UUID;
+  message: String
+};
+
+@(requires: 'authenticated-user')
+action updatePassenger(
+  passengerID: UUID,
+  fullName: String,
+  gender: String,
+  birthDate: Date,
+  idNumber: String,
+  phone: String,
+  email: String,
+  specialRequirements: String,
+  isAdult: Boolean
+) returns {
+  success: Boolean;
+  message: String
+};
+
+@(requires: 'authenticated-user')
+action removePassenger(
+  passengerID: UUID
+) returns {
+  success: Boolean;
+  message: String
+};
+
+@(requires: 'authenticated-user')
+action getPassengerList(
+  tourID: UUID
+) returns array of {
+  ID: UUID;
+  OrderID: UUID;
+  CustomerName: String;
+  OrderDate: Date;
+  FullName: String;
+  Gender: String;
+  BirthDate: Date;
+  IDNumber: String;
+  Phone: String;
+  Email: String;
+  SpecialRequirements: String;
+  IsAdult: Boolean;
+};
+
+// Thêm action mới để lấy passengers theo orderID
+@(requires: 'authenticated-user')
+action getPassengersByOrder(
+  orderID: UUID
+) returns array of {
+  ID: UUID;
+  FullName: String;
+  Gender: String;
+  BirthDate: Date;
+  IDNumber: String;
+  Phone: String;
+  Email: String;
+  SpecialRequirements: String;
+  IsAdult: Boolean;
+};
   
   // TOUR SERVICES MANAGEMENT
   

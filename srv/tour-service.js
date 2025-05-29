@@ -1321,221 +1321,295 @@ module.exports = async (srv) => {
   /**
    * Adds a passenger to an active tour
    */
-  srv.on('addPassenger', async (req) => {
-    const { 
-      tourID, customerID, fullName, gender, 
-      birthDate, idNumber, phone, email, specialRequirements 
-    } = req.data;
-    const passengerID = cds.utils.uuid();
-    const timestamp = new Date();
+// Trong file srv/tour-service.js, cập nhật phần PASSENGER MANAGEMENT:
+
+// PASSENGER MANAGEMENT
+  
+/**
+ * Adds a passenger to an order
+ */
+srv.on('addPassenger', async (req) => {
+  const { 
+    orderID, fullName, gender, 
+    birthDate, idNumber, phone, email, 
+    specialRequirements, isAdult 
+  } = req.data;
+  const passengerID = cds.utils.uuid();
+  const timestamp = new Date();
+  
+  try {
+    // Check if order exists
+    const order = await SELECT.one.from('tourish.management.Order')
+      .where({ ID: orderID });
     
-    try {
-      // Check if tour exists and has capacity
-      const tour = await SELECT.one.from(ActiveTours)
-        .where({ ID: tourID });
-      
-      if (!tour) {
-        return {
-          passengerID: null,
-          message: 'Active tour not found'
-        };
-      }
-      
-      if (tour.Status !== 'Open') {
-        return {
-          passengerID: null,
-          message: 'Cannot add passengers to tours that are not open'
-        };
-      }
-      
-      if (tour.CurrentBookings >= tour.MaxCapacity) {
-        return {
-          passengerID: null,
-          message: 'Tour is at maximum capacity'
-        };
-      }
-      
-      // Create passenger
-      await cds.transaction(req).run(
-        INSERT.into(Passengers).entries({
-          ID: passengerID,
-          ActiveTourID: tourID,
-          CustomerID: customerID,
+    if (!order) {
+      return {
+        passengerID: null,
+        message: 'Order not found'
+      };
+    }
+    
+    // Get the active tour to check capacity
+    const tour = await SELECT.one.from(ActiveTours)
+      .where({ ID: order.ActiveTourID });
+    
+    if (!tour) {
+      return {
+        passengerID: null,
+        message: 'Active tour not found'
+      };
+    }
+    
+    if (order.Status !== 'Pending' && order.Status !== 'Completed') {
+      return {
+        passengerID: null,
+        message: 'Cannot add passengers to canceled orders'
+      };
+    }
+    
+    // Count current passengers for this order
+    const currentPassengers = await SELECT.from(Passengers)
+      .where({ OrderID: orderID });
+    
+    const currentAdults = currentPassengers.filter(p => p.IsAdult).length;
+    const currentChildren = currentPassengers.filter(p => !p.IsAdult).length;
+    
+    // Check if we're not exceeding the order's passenger count
+    if (isAdult && currentAdults >= order.AdultCount) {
+      return {
+        passengerID: null,
+        message: 'Cannot add more adults than specified in the order'
+      };
+    }
+    
+    if (!isAdult && currentChildren >= order.ChildCount) {
+      return {
+        passengerID: null,
+        message: 'Cannot add more children than specified in the order'
+      };
+    }
+    
+    // Create passenger
+    await cds.transaction(req).run(
+      INSERT.into(Passengers).entries({
+        ID: passengerID,
+        OrderID: orderID,
+        FullName: fullName,
+        Gender: gender,
+        BirthDate: birthDate,
+        IDNumber: idNumber,
+        Phone: phone,
+        Email: email,
+        SpecialRequirements: specialRequirements,
+        IsAdult: isAdult
+      })
+    );
+    
+    // Log the change in active tour history
+    await cds.transaction(req).run(
+      INSERT.into(ActiveTourHistories).entries({
+        ID: cds.utils.uuid(),
+        ActiveTourID: order.ActiveTourID,
+        ModifiedDate: timestamp,
+        ModifiedBy: req.user.id || 'system',
+        Changes: `Added passenger: ${fullName} to Order ${orderID.substring(0, 8)}`
+      })
+    );
+    
+    return {
+      passengerID: passengerID,
+      message: 'Passenger added successfully'
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      passengerID: null,
+      message: `Error adding passenger: ${error.message}`
+    };
+  }
+});
+
+/**
+ * Updates passenger information
+ */
+srv.on('updatePassenger', async (req) => {
+  const { 
+    passengerID, fullName, gender, 
+    birthDate, idNumber, phone, email, 
+    specialRequirements, isAdult 
+  } = req.data;
+  
+  try {
+    // Update the passenger
+    const result = await cds.transaction(req).run(
+      UPDATE(Passengers)
+        .set({
           FullName: fullName,
           Gender: gender,
           BirthDate: birthDate,
           IDNumber: idNumber,
           Phone: phone,
           Email: email,
-          SpecialRequirements: specialRequirements
+          SpecialRequirements: specialRequirements,
+          IsAdult: isAdult
         })
-      );
-      
-      // Update tour booking count
-      await cds.transaction(req).run(
-        UPDATE(ActiveTours)
-          .set({
-            CurrentBookings: { '+=': 1 },
-            UpdatedAt: timestamp
-          })
-          .where({ ID: tourID })
-      );
-      
-      // Log the change
-      await cds.transaction(req).run(
-        INSERT.into(ActiveTourHistories).entries({
-          ID: cds.utils.uuid(),
-          ActiveTourID: tourID,
-          ModifiedDate: timestamp,
-          ModifiedBy: 'system',
-          Changes: `Added passenger: ${fullName}`
-        })
-      );
-      
-      return {
-        passengerID: passengerID,
-        message: 'Passenger added successfully'
-      };
-    } catch (error) {
-      console.error(error);
-      return {
-        passengerID: null,
-        message: `Error adding passenger: ${error.message}`
-      };
-    }
-  });
-  
-  /**
-   * Updates passenger information
-   */
-  srv.on('updatePassenger', async (req) => {
-    const { 
-      passengerID, fullName, gender, 
-      birthDate, idNumber, phone, email, specialRequirements 
-    } = req.data;
+        .where({ ID: passengerID })
+    );
     
-    try {
-      // Update the passenger
-      const result = await cds.transaction(req).run(
-        UPDATE(Passengers)
-          .set({
-            FullName: fullName,
-            Gender: gender,
-            BirthDate: birthDate,
-            IDNumber: idNumber,
-            Phone: phone,
-            Email: email,
-            SpecialRequirements: specialRequirements
-          })
-          .where({ ID: passengerID })
-      );
-      
-      if (result === 0) {
-        return {
-          success: false,
-          message: 'Passenger not found'
-        };
-      }
-      
-      return {
-        success: true,
-        message: 'Passenger updated successfully'
-      };
-    } catch (error) {
-      console.error(error);
+    if (result === 0) {
       return {
         success: false,
-        message: `Error updating passenger: ${error.message}`
+        message: 'Passenger not found'
       };
     }
-  });
-  
-  /**
-   * Removes a passenger from a tour
-   */
-  srv.on('removePassenger', async (req) => {
-    const { passengerID } = req.data;
-    const timestamp = new Date();
     
-    try {
-      // Get passenger info for history log
-      const passenger = await SELECT.one.from(Passengers).where({ ID: passengerID });
-      
-      if (!passenger) {
-        return {
-          success: false,
-          message: 'Passenger not found'
-        };
-      }
-      
-      // Delete the passenger
-      await cds.transaction(req).run(
-        DELETE.from(Passengers).where({ ID: passengerID })
-      );
-      
-      // Update tour booking count
-      await cds.transaction(req).run(
-        UPDATE(ActiveTours)
-          .set({
-            CurrentBookings: { '-=': 1 },
-            UpdatedAt: timestamp
-          })
-          .where({ ID: passenger.ActiveTourID })
-      );
-      
-      // Log the change
-      await cds.transaction(req).run(
-        INSERT.into(ActiveTourHistories).entries({
-          ID: cds.utils.uuid(),
-          ActiveTourID: passenger.ActiveTourID,
-          ModifiedDate: timestamp,
-          ModifiedBy: 'system',
-          Changes: `Removed passenger: ${passenger.FullName}`
-        })
-      );
-      
-      return {
-        success: true,
-        message: 'Passenger removed successfully'
-      };
-    } catch (error) {
-      console.error(error);
+    return {
+      success: true,
+      message: 'Passenger updated successfully'
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: `Error updating passenger: ${error.message}`
+    };
+  }
+});
+
+/**
+ * Removes a passenger from an order
+ */
+srv.on('removePassenger', async (req) => {
+  const { passengerID } = req.data;
+  const timestamp = new Date();
+  
+  try {
+    // Get passenger info for history log
+    const passenger = await SELECT.one.from(Passengers).where({ ID: passengerID });
+    
+    if (!passenger) {
       return {
         success: false,
-        message: `Error removing passenger: ${error.message}`
+        message: 'Passenger not found'
       };
     }
-  });
-  
-  /**
-   * Gets the list of passengers for a tour
-   */
-  srv.on('getPassengerList', async (req) => {
-    const { tourID } = req.data;
     
-    try {
-      // Get all passengers for the tour
-      const passengers = await SELECT.from(Passengers)
-        .where({ ActiveTourID: tourID });
-      
-      // Transform to required format
-      return passengers.map(p => ({
-        ID: p.ID,
-        FullName: p.FullName,
-        Gender: p.Gender,
-        BirthDate: p.BirthDate,
-        IDNumber: p.IDNumber,
-        Phone: p.Phone,
-        Email: p.Email,
-        SpecialRequirements: p.SpecialRequirements,
-        IsCustomer: !!p.CustomerID,
-        CustomerID: p.CustomerID
-      }));
-    } catch (error) {
-      console.error(error);
-      return req.error(500, `Error retrieving passengers: ${error.message}`);
+    // Get order info
+    const order = await SELECT.one.from('tourish.management.Order')
+      .where({ ID: passenger.OrderID });
+    
+    if (!order) {
+      return {
+        success: false,
+        message: 'Associated order not found'
+      };
     }
-  });
+    
+    // Delete the passenger
+    await cds.transaction(req).run(
+      DELETE.from(Passengers).where({ ID: passengerID })
+    );
+    
+    // Log the change
+    await cds.transaction(req).run(
+      INSERT.into(ActiveTourHistories).entries({
+        ID: cds.utils.uuid(),
+        ActiveTourID: order.ActiveTourID,
+        ModifiedDate: timestamp,
+        ModifiedBy: req.user.id || 'system',
+        Changes: `Removed passenger: ${passenger.FullName} from Order ${order.ID.substring(0, 8)}`
+      })
+    );
+    
+    return {
+      success: true,
+      message: 'Passenger removed successfully'
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: `Error removing passenger: ${error.message}`
+    };
+  }
+});
+
+/**
+ * Gets the list of all passengers for a tour (across all orders)
+ */
+srv.on('getPassengerList', async (req) => {
+  const { tourID } = req.data;
+  
+  try {
+    // Get all orders for this tour
+    const orders = await SELECT.from('tourish.management.Order')
+      .where({ ActiveTourID: tourID });
+    
+    // Get all passengers for these orders
+    const passengers = [];
+    
+    for (const order of orders) {
+      // Get customer info
+      let customerName = 'Unknown';
+      if (order.CustomerType === 'Individual' && order.CustomerID) {
+        const customer = await SELECT.one.from('tourish.management.Customer')
+          .columns('FullName')
+          .where({ ID: order.CustomerID });
+        customerName = customer ? customer.FullName : 'Unknown';
+      } else if (order.CustomerType === 'Business' && order.BusinessCustomerID) {
+        const business = await SELECT.one.from('tourish.management.BusinessCustomer')
+          .columns('CompanyName')
+          .where({ ID: order.BusinessCustomerID });
+        customerName = business ? business.CompanyName : 'Unknown';
+      }
+      
+      // Get passengers for this order
+      const orderPassengers = await SELECT.from(Passengers)
+        .where({ OrderID: order.ID });
+      
+      // Add customer info to each passenger
+      orderPassengers.forEach(p => {
+        passengers.push({
+          ID: p.ID,
+          OrderID: p.OrderID,
+          CustomerName: customerName,
+          OrderDate: order.OrderDate,
+          FullName: p.FullName,
+          Gender: p.Gender,
+          BirthDate: p.BirthDate,
+          IDNumber: p.IDNumber,
+          Phone: p.Phone,
+          Email: p.Email,
+          SpecialRequirements: p.SpecialRequirements,
+          IsAdult: p.IsAdult
+        });
+      });
+    }
+    
+    return passengers;
+  } catch (error) {
+    console.error(error);
+    return req.error(500, `Error retrieving passengers: ${error.message}`);
+  }
+});
+
+/**
+ * Gets passengers for a specific order
+ */
+srv.on('getPassengersByOrder', async (req) => {
+  const { orderID } = req.data;
+  
+  try {
+    // Get all passengers for the order
+    const passengers = await SELECT.from(Passengers)
+      .where({ OrderID: orderID });
+    
+    return passengers;
+  } catch (error) {
+    console.error(error);
+    return req.error(500, `Error retrieving passengers: ${error.message}`);
+  }
+});
   
   // TOUR SERVICES MANAGEMENT
   

@@ -770,6 +770,16 @@ sap.ui.define([
                     type: EdmType.Date
                 },
                 {
+                    label: "Sale Start Date",
+                    property: "SaleStartDate",
+                    type: EdmType.Date
+                },
+                {
+                    label: "Sale End Date",
+                    property: "SaleEndDate",
+                    type: EdmType.Date
+                },
+                {
                     label: "Current Bookings",
                     property: "CurrentBookings",
                     type: EdmType.Number

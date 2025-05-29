@@ -34,7 +34,7 @@ entity TourTemplate {
   CreatedByID : UUID; // Reference to User.ID
   CreatedAt : Timestamp;
   UpdatedAt : Timestamp;
-  Status : String(20) default 'Draft'; // Draft/Published/Archived
+  Status : String(20) default 'Draft'; // Draft/Published
   Images : Association to many TourTemplateImage on Images.TourTemplateID = $self.ID;
   Schedules : Association to many TourTemplateSchedule on Schedules.TourTemplateID = $self.ID;
   PriceTerms : Association to one TourTemplatePriceTerms on PriceTerms.TourTemplateID = $self.ID;
@@ -105,7 +105,6 @@ entity ActiveTour {
   Status : String(20) default 'Open'; // Open/Closed/Canceled/Completed
   CreatedAt : Timestamp;
   UpdatedAt : Timestamp;
-  Passengers : Association to many Passenger on Passengers.ActiveTourID = $self.ID;
   TourServices : Association to many ActiveTourService on TourServices.ActiveTourID = $self.ID;
   Estimate : Association to one TourEstimate on Estimate.ActiveTourID = $self.ID;
   Orders : Association to many Order on Orders.ActiveTourID = $self.ID;
@@ -114,8 +113,7 @@ entity ActiveTour {
 
 entity Passenger {
   key ID : UUID;
-  ActiveTourID : UUID; // Reference to ActiveTour.ID
-  CustomerID : UUID; // Reference to Customer.ID (optional)
+  OrderID : UUID; // Reference to Order.ID - Thay đổi từ ActiveTourID
   FullName : String(100);
   Gender : String(10);
   BirthDate : Date;
@@ -123,6 +121,8 @@ entity Passenger {
   Phone : String(20);
   Email : String(100);
   SpecialRequirements : String(500);
+  IsAdult : Boolean default true; // Thêm field để phân biệt người lớn/trẻ em
+  Order : Association to Order; // Thêm association
 }
 
 entity ActiveTourService {
@@ -200,7 +200,6 @@ entity Customer {
   Contracts : Association to many Contract on Contracts.CustomerID = $self.ID;
   Orders : Association to many Order on Orders.CustomerID = $self.ID;
   TransactionHistories : Association to many CustomerTransactionHistory on TransactionHistories.CustomerID = $self.ID;
-  Passengers : Association to many Passenger on Passengers.CustomerID = $self.ID;
 }
 
 entity CustomerTransactionHistory {
@@ -268,6 +267,7 @@ entity Order {
   PromotionID : UUID; // Reference to Promotion.ID
   Notes : String(500);
   Payments : Association to many Payment on Payments.OrderID = $self.ID;
+  Passengers : Association to many Passenger on Passengers.OrderID = $self.ID;
 }
 
 entity Payment {
