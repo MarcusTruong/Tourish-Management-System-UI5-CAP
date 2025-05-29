@@ -8,14 +8,22 @@
     xmlns:form="sap.ui.layout.form"
     xmlns:layout="sap.ui.layout">
     
-    <Page id="createOrderPage" title="Create Order" showNavButton="true" navButtonPress=".onNavBack">
+    <Page id="createOrderPage" title="{= ${createOrder>/isEditMode} ? 'Edit Order' : 'Create Order'}" showNavButton="true" navButtonPress=".onNavBack">
         <content>
             <f:DynamicPage id="createOrderDynamicPage" toggleHeaderOnTitleClick="false">
                 <f:title>
                     <f:DynamicPageTitle id="_IDGenDynamicPageTitle5">
                         <f:heading>
-                            <Title id="_IDGenTitle19"  text="Create New Order" level="H2"/>
+                            <Title id="_IDGenTitle19" text="{= ${createOrder>/isEditMode} ? 'Edit Order: ' + ${createOrder>/editOrderId} : 'Create New Order' }" level="H2"/>
                         </f:heading>
+                        <f:snappedContent>
+                            <FlexBox id="_IDGenFlexBox22" alignItems="Center" visible="{createOrder>/isEditMode}">
+                                <ObjectStatus id="_IDGenObjectStatus22" 
+                                    text="Edit Mode" 
+                                    state="Warning" 
+                                    icon="sap-icon://edit"/>
+                            </FlexBox>
+                        </f:snappedContent>
                     </f:DynamicPageTitle>
                 </f:title>
                 
@@ -419,7 +427,7 @@
                         <ToolbarSpacer id="_IDGenToolbarSpacer29" />
                         <Button id="_IDGenButton60" text="Cancel" press=".onNavBack" />
                         <Button id="createOrderButton" 
-                            text="Create Order" 
+                            text="{= ${createOrder>/isEditMode} ? 'Update Order' : 'Create Order' }"
                             type="Emphasized" 
                             press=".onCreateOrder"
                             enabled="{= !!${createOrder>/selectedTour} &amp;&amp; (${createOrder>/adultCount} > 0 || ${createOrder>/childCount} > 0) &amp;&amp; (!!${createOrder>/selectedCustomer} || (${createOrder>/customerSelectionType} === 'new' &amp;&amp; ((${createOrder>/newCustomer/type} === 'Individual' &amp;&amp; !!${createOrder>/newCustomer/fullName}) || (${createOrder>/newCustomer/type} === 'Business' &amp;&amp; !!${createOrder>/newCustomer/companyName})))) }" />

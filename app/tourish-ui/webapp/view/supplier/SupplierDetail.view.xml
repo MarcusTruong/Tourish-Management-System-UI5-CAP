@@ -60,7 +60,13 @@
                                 
                                 <Label id="_IDGenLabel6" text="Supplier Name" required="{viewModel>/editMode}" />
                                 <HBox id="_IDGenHBox37">
-                                    <Input id="supplierNameInput2" value="{supplier>/SupplierName}" width="300px" visible="{viewModel>/editMode}" />
+                                    <Input id="supplierNameInput2" 
+           value="{supplier>/SupplierName}" 
+           width="300px" 
+           visible="{viewModel>/editMode}"
+           valueState="{supplier>/supplierNameState}"
+           valueStateText="{supplier>/supplierNameStateText}"
+           liveChange=".onSupplierNameChange" />
                                     <Text id="supplierNameText" text="{supplier>/SupplierName}" visible="{= !${viewModel>/editMode} }" />
                                 </HBox>
                                 
@@ -74,13 +80,25 @@
                                 
                                 <Label id="_IDGenLabel176" text="Phone" required="{viewModel>/editMode}"/>
                                 <HBox id="_IDGenHBox39">
-                                    <Input id="phoneInput2" value="{supplier>/Phone}" width="300px" visible="{viewModel>/editMode}" />
+                                    <Input id="phoneInput2" 
+           value="{supplier>/Phone}" 
+           width="300px" 
+           visible="{viewModel>/editMode}"
+           valueState="{supplier>/phoneState}"
+           valueStateText="{supplier>/phoneStateText}"
+           liveChange=".onPhoneChange" />
                                     <Text id="phoneText" text="{supplier>/Phone}" visible="{= !${viewModel>/editMode} }" />
                                 </HBox>
                                 
                                 <Label id="_IDGenLabel12" text="Email" required="{viewModel>/editMode}"/>
                                 <HBox id="_IDGenHBox40">
-                                    <Input id="emailInput2" value="{supplier>/Email}" width="300px" visible="{viewModel>/editMode}" />
+                                    <Input id="emailInput2" 
+           value="{supplier>/Email}" 
+           width="300px" 
+           visible="{viewModel>/editMode}"
+           valueState="{supplier>/emailState}"
+           valueStateText="{supplier>/emailStateText}"
+           liveChange=".onEmailChange" />
                                     <Text id="emailText" text="{supplier>/Email}" visible="{= !${viewModel>/editMode} }" />
                                 </HBox>
                             </form:content>

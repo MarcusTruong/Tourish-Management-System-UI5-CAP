@@ -46,7 +46,11 @@
                                 >
                                     <form:content>
                                         <Label id="_IDGenLabel155" text="User Name" required="true" />
-                                        <Input id="usernameInput2" placeholder="Enter your username" />
+                                        <Input 
+                                            id="usernameInput2" 
+                                            placeholder="Enter your username"
+                                            liveChange="onUsernameLiveChange"
+                                        />
                                         
                                         <Label id="_IDGenLabel158" text="Password" required="true" />
                                         <VBox id="_IDGenVBox56" >
@@ -63,13 +67,25 @@
                                         </VBox>
                                         
                                         <Label id="_IDGenLabel159" text="Full name" required="true" />
-                                        <Input id="fullNameInput" placeholder="Enter your full name" />
+                                        <Input 
+                                            id="fullNameInput" 
+                                            placeholder="Enter your full name"
+                                            liveChange="onFullNameLiveChange"
+                                        />
                                         
                                         <Label id="_IDGenLabel160" text="Email" required="true" />
-                                        <Input id="emailInput11" placeholder="Enter your email" />
+                                        <Input 
+                                            id="emailInput11" 
+                                            placeholder="Enter your email"
+                                            liveChange="onEmailLiveChange"
+                                        />
                                         
                                         <Label id="_IDGenLabel161" text="Phone number" />
-                                        <Input id="phoneInput11" placeholder="Enter your phone number" />
+                                        <Input 
+                                            id="phoneInput11" 
+                                            placeholder="Enter your phone number"
+                                            liveChange="onPhoneLiveChange"
+                                        />
                                     </form:content>
                                 </form:SimpleForm>
                                 

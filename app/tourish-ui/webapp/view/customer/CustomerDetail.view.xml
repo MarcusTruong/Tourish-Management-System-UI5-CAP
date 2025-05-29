@@ -111,7 +111,7 @@
                                                 <Toolbar id="_IDGenToolbar7">
                                                     <Title id="_IDGenTitle13" text="Customer Transactions" level="H2" />
                                                     <ToolbarSpacer id="_IDGenToolbarSpacer25" />
-                                                    <Button id="_IDGenButton43" icon="sap-icon://add" text="Add Transaction" press=".onAddTransaction" type="Emphasized" />
+                                                    <!-- <Button id="_IDGenButton43" icon="sap-icon://add" text="Add Transaction" press=".onAddTransaction" type="Emphasized" /> -->
                                                 </Toolbar>
                                                 
                                                 <Table

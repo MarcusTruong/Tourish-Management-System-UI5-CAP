@@ -7,7 +7,7 @@
     <Page id="_IDGenPage10" showHeader="false">
         <content>
             <VBox id="_IDGenVBox10" class="sapUiMediumMargin">
-                <Title id="_IDGenTitle1" text="{i18n>myProfile}" level="H2" class="sapUiSmallMarginBottom"/>
+                <Title id="_IDGenTitle1" text="My Profile" level="H2" class="sapUiSmallMarginBottom"/>
                 <form:SimpleForm
                     id="profileForm"
                     editable="true"
@@ -25,17 +25,17 @@
                     columnsL="1"
                     columnsM="1">
                     <form:content>
-                        <Label id="_IDGenLabel10" text="{i18n>fullName}" required="true"/>
-                        <Input id="fullNameInput0" value="{auth>/user/FullName}" placeholder="{i18n>enterFullName}"/>
-                        <Label id="_IDGenLabel20" text="{i18n>email}" required="true"/>
-                        <Input id="emailInput0" value="{auth>/user/Email}" type="Email" placeholder="{i18n>enterEmail}"/>
-                        <Label id="_IDGenLabel30" text="{i18n>phone}"/>
-                        <Input id="phoneInput0" value="{auth>/user/Phone}" type="Tel" placeholder="{i18n>enterPhone}"/>
+                        <Label id="_IDGenLabel10" text="Full Name" required="true"/>
+                        <Input id="fullNameInput0" value="{auth>/user/FullName}" placeholder="Enter Full Name..."/>
+                        <Label id="_IDGenLabel20" text="Email" required="true"/>
+                        <Input id="emailInput0" value="{auth>/user/Email}" type="Email" placeholder="Enter Email..."/>
+                        <Label id="_IDGenLabel30" text="Phone" required="true"/>
+                        <Input id="phoneInput0" value="{auth>/user/Phone}" type="Tel" placeholder="Enter Phone Number..."/>
                     </form:content>
                 </form:SimpleForm>
                 <HBox id="_IDGenHBox10" class="sapUiSmallMarginTop">
-                    <Button id="updateButton" text="{i18n>updateProfile}" press=".onUpdateProfilePress" type="Emphasized"/>
-                    <Button id="changePasswordButton" text="{i18n>changePassword}" press=".onChangePasswordPress" class="sapUiSmallMarginBegin"/>
+                    <Button id="updateButton" text="Update Profile" press=".onUpdateProfilePress" type="Emphasized"/>
+                    <Button id="changePasswordButton" text="Change Password" press=".onChangePasswordPress" class="sapUiSmallMarginBegin"/>
                 </HBox>
             </VBox>
         </content>

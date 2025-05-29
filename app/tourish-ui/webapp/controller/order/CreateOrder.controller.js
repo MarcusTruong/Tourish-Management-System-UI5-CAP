@@ -131,7 +131,7 @@ sap.ui.define([
             
             var oView = this.getView();
             var oViewModel = oView.getModel("createOrder");
-            
+            var title;
             oView.setBusy(true);
             
             var oService = this.getOwnerComponent().getModel("orderService");
@@ -141,7 +141,6 @@ sap.ui.define([
             
             oContext.execute().then(function() {
                 var oResult = oContext.getBoundContext().getObject();
-                
                 if (oResult) {
                     // Set edit mode
                     oViewModel.setProperty("/isEditMode", true);
@@ -173,12 +172,9 @@ sap.ui.define([
                     
                     // Calculate prices
                     if (oSelectedTour) {
-                        this._calculateAmount();
+                        this._updatePriceCalculation();
                     }
                     
-                    // Update page title
-                    this.byId("createOrderPage").setTitle("Edit Order");
-                    this.byId("saveOrderButton").setText("Update Order");
                 }
                 
                 oView.setBusy(false);
@@ -396,7 +392,9 @@ sap.ui.define([
         onCreateOrder: function() {
             var oViewModel = this.getView().getModel("createOrder");
             var oView = this.getView();
+            var bIsEditMode = oViewModel.getProperty("/isEditMode");
             
+
             // Validate the form
             if (!this._validateOrderData()) {
                 return;
@@ -404,6 +402,11 @@ sap.ui.define([
             
             oView.setBusy(true);
             
+            if (bIsEditMode) {
+                // Update existing order
+                this._updateOrder();
+            } else {
+            // Create new order
             // Prepare order data
             var oOrderData = this._prepareOrderData();
             
@@ -413,6 +416,67 @@ sap.ui.define([
             } else {
                 this._createOrder(oOrderData);
             }
+        }
+        },
+
+        _updateOrder: function() {
+            var oViewModel = this.getView().getModel("createOrder");
+            var oView = this.getView();
+            var sOrderId = oViewModel.getProperty("/editOrderId");
+            
+            // Prepare update data
+            var oUpdateData = this._prepareUpdateData();
+            
+            // Get the order service model
+            var oOrderService = this.getOwnerComponent().getModel("orderService");
+            
+            // Call the updateOrder action
+            var oContext = oOrderService.bindContext("/updateOrder(...)");
+            
+            // Set parameters
+            oContext.setParameter("orderID", sOrderId);
+            oContext.setParameter("adultCount", oUpdateData.adultCount);
+            oContext.setParameter("childCount", oUpdateData.childCount);
+            oContext.setParameter("promotionID", oUpdateData.promotionID);
+            oContext.setParameter("notes", oUpdateData.notes);
+            
+            // Execute order update
+            oContext.execute().then(function() {
+                var oResult = oContext.getBoundContext().getObject();
+                
+                if (oResult && oResult.success) {
+                    // Order updated successfully
+                    MessageToast.show("Order updated successfully");
+                    
+                    // Navigate back to order list
+                    var oRouter = this.getOwnerComponent().getRouter();
+                    oRouter.navTo("orderList");
+                } else {
+                    // Order update failed
+                    MessageBox.error(oResult.message || "Failed to update order");
+                }
+                
+                oView.setBusy(false);
+            }.bind(this)).catch(function(oError) {
+                console.error("Error updating order:", oError);
+                MessageBox.error("Error updating order: " + (oError.message || "Unknown error"));
+                oView.setBusy(false);
+            });
+        },
+
+        _prepareUpdateData: function() {
+            var oViewModel = this.getView().getModel("createOrder");
+            
+            var iAdultCount = oViewModel.getProperty("/adultCount") || 0;
+            var iChildCount = oViewModel.getProperty("/childCount") || 0;
+            var sOrderNotes = oViewModel.getProperty("/orderNotes") || "";
+            
+            return {
+                adultCount: iAdultCount,
+                childCount: iChildCount,
+                promotionID: null, // TODO: Add promotion support
+                notes: sOrderNotes
+            };
         },
 
         _validateOrderData: function() {

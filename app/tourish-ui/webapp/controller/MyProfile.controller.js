@@ -55,31 +55,40 @@ sap.ui.define([
             var oView = this.getView();
             var oODataModel = this.getOwnerComponent().getModel("userService");
             var oAuthModel = this.getOwnerComponent().getModel("auth");
-
+        
             var oUpdatedData = {
-                fullName: oView.byId("fullNameInput0").getValue(),
-                email: oView.byId("emailInput0").getValue(),
-                phone: oView.byId("phoneInput0").getValue()
+                fullName: oView.byId("fullNameInput0").getValue().trim(),
+                email: oView.byId("emailInput0").getValue().trim().toLowerCase(),
+                phone: oView.byId("phoneInput0").getValue().trim()
             };
-
-            // Validate input
-            if (!oUpdatedData.fullName || !oUpdatedData.email) {
-                MessageBox.error("Vui lòng nhập đầy đủ họ tên và email!");
+        
+            // Comprehensive validation
+            const errors = [];
+        
+            // Validate full name
+            const fullNameValidation = this._validateFullName(oUpdatedData.fullName);
+            if (!fullNameValidation.valid) errors.push(fullNameValidation.message);
+        
+            // Validate email
+            const emailValidation = this._validateEmail(oUpdatedData.email);
+            if (!emailValidation.valid) errors.push(emailValidation.message);
+        
+            // Validate phone
+            const phoneValidation = this._validatePhone(oUpdatedData.phone);
+            if (!phoneValidation.valid) errors.push(phoneValidation.message);
+        
+            // If there are validation errors, show them all
+            if (errors.length > 0) {
+                MessageBox.error("Please fix the following errors:\n\n" + errors.join("\n"));
                 return;
             }
-
-            // Validate email format
-            if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(oUpdatedData.email)) {
-                MessageBox.error("Email không hợp lệ!");
-                return;
-            }
-
+        
             // Call updateUserProfile action
             var oContext = oODataModel.bindContext("/updateUserProfile(...)");
             oContext.setParameter("fullName", oUpdatedData.fullName);
             oContext.setParameter("email", oUpdatedData.email);
             oContext.setParameter("phone", oUpdatedData.phone);
-
+        
             oContext.execute().then(function () {
                 var oResult = oContext.getBoundContext().getObject();
                 console.log(oResult);
@@ -88,12 +97,12 @@ sap.ui.define([
                     oAuthModel.setProperty("/user/FullName", oUpdatedData.fullName);
                     oAuthModel.setProperty("/user/Email", oUpdatedData.email);
                     oAuthModel.setProperty("/user/Phone", oUpdatedData.phone);
-                    MessageBox.success("Cập nhật thông tin thành công!");
+                    MessageBox.success("Profile updated successfully!");
                 } else {
-                    MessageBox.error("Cập nhật thất bại: " + (oResult.message || "Lỗi không xác định"));
+                    MessageBox.error("Update failed: " + (oResult.message || "Unknown error"));
                 }
             }.bind(this)).catch(function (oError) {
-                var sMessage = "Cập nhật thất bại!";
+                var sMessage = "Update failed!";
                 try {
                     var oResponse = JSON.parse(oError.responseText);
                     sMessage = oResponse.error.message || sMessage;
@@ -103,30 +112,109 @@ sap.ui.define([
                 MessageBox.error(sMessage);
             });
         },
+        
+        // Helper validation functions (add these if not already present)
+        _validateFullName: function(sFullName) {
+            if (!sFullName || sFullName.trim() === "") {
+                return { valid: false, message: "Full name is required" };
+            }
+            
+            if (sFullName.trim().length < 2) {
+                return { valid: false, message: "Full name must be at least 2 characters long" };
+            }
+            
+            if (sFullName.length > 100) {
+                return { valid: false, message: "Full name cannot exceed 100 characters" };
+            }
+            
+            if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(sFullName)) {
+                return { valid: false, message: "Full name can only contain letters and spaces" };
+            }
+            
+            if (sFullName.trim().split(/\s+/).length < 2) {
+                return { valid: false, message: "Please enter both first and last name" };
+            }
+            
+            return { valid: true };
+        },
+        
+        _validateEmail: function(sEmail) {
+            if (!sEmail || sEmail.trim() === "") {
+                return { valid: false, message: "Email is required" };
+            }
+            
+            // Comprehensive email regex pattern
+            const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            
+            if (!emailPattern.test(sEmail.trim())) {
+                return { valid: false, message: "Please enter a valid email address" };
+            }
+            
+            // Additional checks
+            if (sEmail.length > 254) {
+                return { valid: false, message: "Email address is too long" };
+            }
+            
+            // Check for consecutive dots
+            if (sEmail.includes("..")) {
+                return { valid: false, message: "Email cannot contain consecutive dots" };
+            }
+            
+            return { valid: true };
+        },
+        
+        _validatePhone: function(sPhone) {
+            if (!sPhone || sPhone.trim() === "") {
+                return { valid: false, message: "Phone number is required" };
+            }
+            
+            // Remove all non-digit characters for validation
+            const cleanPhone = sPhone.replace(/\D/g, '');
+            
+            if (cleanPhone.length < 10) {
+                return { valid: false, message: "Phone number must be at least 10 digits" };
+            }
+            
+            if (cleanPhone.length > 15) {
+                return { valid: false, message: "Phone number cannot exceed 15 digits" };
+            }
+            
+            // Check for valid phone number format (allows digits, spaces, dashes, plus, parentheses, dots)
+            if (!/^[\+]?[\d\s\-\(\)\.]+$/.test(sPhone)) {
+                return { valid: false, message: "Phone number contains invalid characters" };
+            }
+            
+            // Check for minimum meaningful digits (not all zeros or ones)
+            if (/^[0-1]+$/.test(cleanPhone)) {
+                return { valid: false, message: "Please enter a valid phone number" };
+            }
+            
+            return { valid: true };
+        },
 
         onChangePasswordPress: function () {
             var oView = this.getView();
         
             // Tạo các control và lưu biến tham chiếu
-            var oCurrentInput = new Input({ type: "Password", placeholder: "Nhập mật khẩu hiện tại" });
-            var oNewInput = new Input({ type: "Password", placeholder: "Nhập mật khẩu mới" });
-            var oConfirmInput = new Input({ type: "Password", placeholder: "Xác nhận mật khẩu mới" });
+            var oCurrentInput = new Input({ type: "Password", placeholder: "Enter current password" });
+            var oNewInput = new Input({ type: "Password", placeholder: "Enter new password" });
+            var oConfirmInput = new Input({ type: "Password", placeholder: "Confirm new password" });
         
             var oDialog = new Dialog({
-                title: "Đổi mật khẩu",
+                title: "Change Password",
                 type: "Message",
                 content: new VBox({
                     items: [
-                        new Label({ text: "Mật khẩu hiện tại", required: true }),
+                        new Label({ text: "Current password", required: true }),
                         oCurrentInput,
-                        new Label({ text: "Mật khẩu mới", required: true }),
+                        new Label({ text: "New password", required: true }),
                         oNewInput,
-                        new Label({ text: "Xác nhận mật khẩu mới", required: true }),
+                        new Label({ text: "Confirm new password", required: true }),
                         oConfirmInput
                     ]
                 }),
                 beginButton: new Button({
-                    text: "Gửi",
+                    text: "Change password",
                     type: "Emphasized",
                     press: function () {
                         var sCurrentPassword = oCurrentInput.getValue();
@@ -135,17 +223,17 @@ sap.ui.define([
         
                         // Validation và gọi OData như cũ...
                         if (!sCurrentPassword || !sNewPassword || !sConfirmPassword) {
-                            MessageBox.error("Vui lòng nhập đầy đủ các trường!");
+                            MessageBox.error("Please fill in all fields!");
                             return;
                         }
         
                         if (sNewPassword !== sConfirmPassword) {
-                            MessageBox.error("Mật khẩu mới và xác nhận mật khẩu không khớp!");
+                            MessageBox.error("New password and confirm password do not match!");
                             return;
                         }
         
                         if (sNewPassword.length < 8 || !/[A-Z]/.test(sNewPassword) || !/[a-z]/.test(sNewPassword) || !/[0-9]/.test(sNewPassword) || !/[!@#$%^&*(),.?":{}|<>]/.test(sNewPassword)) {
-                            MessageBox.error("Mật khẩu mới phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt!");
+                            MessageBox.error("New password must be at least 8 characters, including uppercase, lowercase, numbers and special characters!");
                             return;
                         }
         
@@ -157,13 +245,13 @@ sap.ui.define([
                         oContext.execute().then(function () {
                             var oResult = oContext.getBoundContext().getObject();
                             if (oResult.success) {
-                                MessageBox.success("Đổi mật khẩu thành công!");
+                                MessageBox.success("Password changed successfully!");
                                 oDialog.close();
                             } else {
-                                MessageBox.error("Đổi mật khẩu thất bại: " + (oResult.message || "Lỗi không xác định"));
+                                MessageBox.error("Password change failed: " + (oResult.message || "Unknown error"));
                             }
                         }.bind(this)).catch(function (oError) {
-                            var sMessage = "Đổi mật khẩu thất bại!";
+                            var sMessage = "Password change failed!";
                             try {
                                 var oResponse = JSON.parse(oError.responseText);
                                 sMessage = oResponse.error.message || sMessage;
@@ -174,7 +262,7 @@ sap.ui.define([
                     }.bind(this)
                 }),
                 endButton: new Button({
-                    text: "Hủy",
+                    text: "Cancel",
                     press: function () {
                         oDialog.close();
                     }

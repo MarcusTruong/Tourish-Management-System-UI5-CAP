@@ -60,7 +60,14 @@ sap.ui.define([
                 supplierName: "",
                 address: "",
                 phone: "",
-                email: ""
+                email: "",
+                // Thêm validation states
+                supplierNameState: "None",
+                supplierNameStateText: "",
+                phoneState: "None", 
+                phoneStateText: "",
+                emailState: "None",
+                emailStateText: ""
             });
             
             // Reset services model
@@ -107,8 +114,16 @@ sap.ui.define([
                 var oResult = oContext.getBoundContext().getObject();
                 console.log("Supplier details loaded:", oResult);
                 
+                var oSupplierData = oResult.supplier;
+// Thêm validation states
+oSupplierData.supplierNameState = "None";
+oSupplierData.supplierNameStateText = "";
+oSupplierData.phoneState = "None";
+oSupplierData.phoneStateText = "";
+oSupplierData.emailState = "None";
+oSupplierData.emailStateText = "";
                 // Set data vào supplier model
-                oSupplierModel.setData(oResult.supplier);
+                oSupplierModel.setData(oSupplierData);
                 
                 // Cập nhật services model
                 var oServicesModel = new JSONModel({
@@ -227,20 +242,54 @@ sap.ui.define([
         _validateSupplierForm: function () {
             var oSupplierModel = this.getView().getModel("supplier");
             var oSupplierData = oSupplierModel.getData();
+            var bValid = true;
             
-            // Validate required fields
+            // Reset all validation states first
+            oSupplierModel.setProperty("/supplierNameState", "None");
+            oSupplierModel.setProperty("/supplierNameStateText", "");
+            oSupplierModel.setProperty("/phoneState", "None");
+            oSupplierModel.setProperty("/phoneStateText", "");
+            oSupplierModel.setProperty("/emailState", "None");
+            oSupplierModel.setProperty("/emailStateText", "");
+            
+            // Validate supplier name (required)
             if (!oSupplierData.SupplierName || oSupplierData.SupplierName.trim() === "") {
-                MessageBox.error("Supplier Name is required");
-                return false;
+                oSupplierModel.setProperty("/supplierNameState", "Error");
+                oSupplierModel.setProperty("/supplierNameStateText", "Supplier Name is required");
+                bValid = false;
+            } else if (oSupplierData.SupplierName.length < 2) {
+                oSupplierModel.setProperty("/supplierNameState", "Warning");
+                oSupplierModel.setProperty("/supplierNameStateText", "Supplier Name should be at least 2 characters");
+                bValid = false;
             }
             
-            // Validate email format nếu có
-            if (oSupplierData.Email && !this._isValidEmail(oSupplierData.Email)) {
-                MessageBox.error("Invalid email format");
-                return false;
+            // Validate phone if provided
+            if (oSupplierData.Phone && oSupplierData.Phone.trim() !== "") {
+                var phoneRegex = /^[\+]?[0-9\s\-\(\)]+$/;
+                if (!phoneRegex.test(oSupplierData.Phone)) {
+                    oSupplierModel.setProperty("/phoneState", "Error");
+                    oSupplierModel.setProperty("/phoneStateText", "Invalid phone number format");
+                    bValid = false;
+                } else if (oSupplierData.Phone.replace(/\D/g, '').length < 10) {
+                    oSupplierModel.setProperty("/phoneState", "Warning");
+                    oSupplierModel.setProperty("/phoneStateText", "Phone number seems too short");
+                }
             }
             
-            return true;
+            // Validate email if provided
+            if (oSupplierData.Email && oSupplierData.Email.trim() !== "") {
+                if (!this._isValidEmail(oSupplierData.Email)) {
+                    oSupplierModel.setProperty("/emailState", "Error");
+                    oSupplierModel.setProperty("/emailStateText", "Invalid email format");
+                    bValid = false;
+                }
+            }
+            
+            if (!bValid) {
+                MessageBox.error("Please correct the highlighted fields before saving");
+            }
+            
+            return bValid;
         },
         
         _isValidEmail: function (sEmail) {
@@ -318,7 +367,7 @@ sap.ui.define([
                 MessageToast.show("Supplier updated successfully");
                 
                 // Cập nhật tiêu đề
-                that.byId("detailPageTitle").setText("Supplier: " + oResult.supplierName);
+                that.byId("detailPageTitle").setText("Supplier: " + oResult.supplier.SupplierName);
             }).catch(function (oError) {
                 // Tắt busy indicator
                 oViewModel.setProperty("/busy", false);
@@ -351,6 +400,63 @@ sap.ui.define([
                 this._loadSupplier(sSupplierID);
             }
         },
+        // Thêm sau hàm onCancel
+onSupplierNameChange: function(oEvent) {
+    var sValue = oEvent.getParameter("value");
+    var oSupplierModel = this.getView().getModel("supplier");
+    
+    if (!sValue || sValue.trim() === "") {
+        oSupplierModel.setProperty("/supplierNameState", "Error");
+        oSupplierModel.setProperty("/supplierNameStateText", "Supplier Name is required");
+    } else if (sValue.length < 2) {
+        oSupplierModel.setProperty("/supplierNameState", "Warning");
+        oSupplierModel.setProperty("/supplierNameStateText", "Supplier Name should be at least 2 characters");
+    } else {
+        oSupplierModel.setProperty("/supplierNameState", "Success");
+        oSupplierModel.setProperty("/supplierNameStateText", "");
+    }
+},
+
+onPhoneChange: function(oEvent) {
+    var sValue = oEvent.getParameter("value");
+    var oSupplierModel = this.getView().getModel("supplier");
+    
+    if (sValue && sValue.trim() !== "") {
+        // Simple phone validation (digits, spaces, hyphens, parentheses, plus sign)
+        var phoneRegex = /^[\+]?[0-9\s\-\(\)]+$/;
+        if (!phoneRegex.test(sValue)) {
+            oSupplierModel.setProperty("/phoneState", "Error");
+            oSupplierModel.setProperty("/phoneStateText", "Invalid phone number format");
+        } else if (sValue.replace(/\D/g, '').length < 10) {
+            oSupplierModel.setProperty("/phoneState", "Warning");
+            oSupplierModel.setProperty("/phoneStateText", "Phone number seems too short");
+        } else {
+            oSupplierModel.setProperty("/phoneState", "Success");
+            oSupplierModel.setProperty("/phoneStateText", "");
+        }
+    } else {
+        oSupplierModel.setProperty("/phoneState", "None");
+        oSupplierModel.setProperty("/phoneStateText", "");
+    }
+},
+
+onEmailChange: function(oEvent) {
+    var sValue = oEvent.getParameter("value");
+    var oSupplierModel = this.getView().getModel("supplier");
+    
+    if (sValue && sValue.trim() !== "") {
+        if (!this._isValidEmail(sValue)) {
+            oSupplierModel.setProperty("/emailState", "Error");
+            oSupplierModel.setProperty("/emailStateText", "Invalid email format");
+        } else {
+            oSupplierModel.setProperty("/emailState", "Success");
+            oSupplierModel.setProperty("/emailStateText", "");
+        }
+    } else {
+        oSupplierModel.setProperty("/emailState", "None");
+        oSupplierModel.setProperty("/emailStateText", "");
+    }
+},
         
         // Service Tab Methods
         onAddService: function () {
