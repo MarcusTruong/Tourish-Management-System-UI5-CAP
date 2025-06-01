@@ -1534,6 +1534,105 @@ srv.on('removePassenger', async (req) => {
   }
 });
 
+
+
+srv.on('getOrdersWithPassengers', async (req) => {
+  const { tourID } = req.data;
+  
+  try {
+    // Get all orders for this tour
+    const orders = await SELECT.from('tourish.management.Order')
+      .where({ ActiveTourID: tourID, Status: { '!=': 'Canceled' } });
+    
+    // Process each order
+    const ordersWithPassengers = [];
+    
+    for (const order of orders) {
+      // Get customer name
+      let customerName = 'Unknown';
+      if (order.CustomerType === 'Individual' && order.CustomerID) {
+        const customer = await SELECT.one.from('tourish.management.Customer')
+          .columns('FullName')
+          .where({ ID: order.CustomerID });
+        customerName = customer ? customer.FullName : 'Unknown';
+      } else if (order.CustomerType === 'Business' && order.BusinessCustomerID) {
+        const business = await SELECT.one.from('tourish.management.BusinessCustomer')
+          .columns('CompanyName')
+          .where({ ID: order.BusinessCustomerID });
+        customerName = business ? business.CompanyName : 'Unknown';
+      }
+      
+      // Get existing passengers for this order
+      const existingPassengers = await SELECT.from(Passengers)
+        .where({ OrderID: order.ID });
+      
+      // Count adults and children
+      const existingAdults = existingPassengers.filter(p => p.IsAdult).length;
+      const existingChildren = existingPassengers.filter(p => !p.IsAdult).length;
+      
+      // Create passenger list with placeholders
+      const passengerList = [];
+      
+      // Add existing passengers
+      existingPassengers.forEach(p => {
+        passengerList.push({
+          ...p,
+          IsPlaceholder: false
+        });
+      });
+      
+      // Add placeholder slots for remaining adults
+      for (let i = existingAdults; i < order.AdultCount; i++) {
+        passengerList.push({
+          ID: null,
+          FullName: '',
+          Gender: '',
+          BirthDate: null,
+          IDNumber: '',
+          Phone: '',
+          Email: '',
+          SpecialRequirements: '',
+          IsAdult: true,
+          IsPlaceholder: true
+        });
+      }
+      
+      // Add placeholder slots for remaining children
+      for (let i = existingChildren; i < order.ChildCount; i++) {
+        passengerList.push({
+          ID: null,
+          FullName: '',
+          Gender: '',
+          BirthDate: null,
+          IDNumber: '',
+          Phone: '',
+          Email: '',
+          SpecialRequirements: '',
+          IsAdult: false,
+          IsPlaceholder: true
+        });
+      }
+      
+      ordersWithPassengers.push({
+        OrderID: order.ID,
+        CustomerID: order.CustomerID || order.BusinessCustomerID,
+        CustomerName: customerName,
+        CustomerType: order.CustomerType,
+        OrderDate: order.OrderDate,
+        AdultCount: order.AdultCount,
+        ChildCount: order.ChildCount,
+        Status: order.Status,
+        Passengers: passengerList
+      });
+    }
+    
+    return ordersWithPassengers;
+  } catch (error) {
+    console.error(error);
+    return req.error(500, `Error retrieving orders with passengers: ${error.message}`);
+  }
+});
+
 /**
  * Gets the list of all passengers for a tour (across all orders)
  */
@@ -2122,15 +2221,24 @@ srv.on('getPassengersByOrder', async (req) => {
       const images = await SELECT.from(TourTemplateImages)
         .where({ TourTemplateID: tour.TemplateID });
       
-      // Get passenger count
-      const passengerCount = await SELECT.from(Passengers)
-        .where({ ActiveTourID: tourID })
-        .count();
+      // Get passenger count through orders - UPDATED
+      const orders = await SELECT.from('tourish.management.Order')
+        .columns('ID')
+        .where({ ActiveTourID: tourID });
+      
+      let passengerCount = 0;
+      for (const order of orders) {
+        const passengersInOrderResult = await SELECT.from(Passengers)
+          .columns('count(*) as count')
+          .where({ OrderID: order.ID });
+        passengerCount += passengersInOrderResult[0]?.count || 0;
+      }
       
       // Get service count
-      const serviceCount = await SELECT.from(ActiveTourServices)
-        .where({ ActiveTourID: tourID })
-        .count();
+      const serviceCountResult = await SELECT.from(ActiveTourServices)
+        .columns('count(*) as count')
+        .where({ ActiveTourID: tourID });
+      const serviceCount = serviceCountResult[0]?.count || 0;
       
       // Get estimate
       const estimate = await SELECT.one.from(TourEstimates)
@@ -2161,6 +2269,8 @@ srv.on('getPassengersByOrder', async (req) => {
           EstimatedProfit: estimate.EstimatedProfit
         } : {},
         terms: priceTerms ? {
+            AdultPrice: priceTerms.AdultPrice,
+            ChildrenPrice: priceTerms.ChildrenPrice,
             ServicesIncluded: priceTerms.ServicesIncluded,
             ServicesNotIncluded: priceTerms.ServicesNotIncluded,
             CancellationTerms: priceTerms.CancellationTerms,

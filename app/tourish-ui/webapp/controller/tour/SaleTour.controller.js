@@ -225,10 +225,9 @@ sap.ui.define([
                 var sTourId = oBindingContext.getProperty("ID");
                 
                 // Navigate to tour details
-                MessageToast.show("Navigate to tour details: " + sTourId);
-                // this.getOwnerComponent().getRouter().navTo("activeTourDetail", {
-                //     tourId: sTourId
-                // });
+                this.getOwnerComponent().getRouter().navTo("activeTourDetail", {
+                    tourId: sTourId
+                });
             }
         },
         

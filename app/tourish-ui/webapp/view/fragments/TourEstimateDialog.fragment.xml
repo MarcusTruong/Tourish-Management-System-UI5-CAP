@@ -1,0 +1,36 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+    <Dialog id="_IDGenDialog3" title="Update Tour Estimate" contentWidth="500px">
+        <content>
+            <VBox id="_IDGenVBox80" class="sapUiMediumMargin">
+                <Label id="_IDGenLabel212" text="Estimated Cost:" required="true"/>
+                <Input id="_IDGenInput13" value="{estimate>/estimatedCost}" 
+                    type="Number" 
+                    description="Total estimated cost for the tour"/>
+                
+                <Label id="_IDGenLabel213" text="Estimated Revenue:" required="true" 
+                    class="sapUiMediumMarginTop"/>
+                <Input id="_IDGenInput14" value="{estimate>/estimatedRevenue}" 
+                    type="Number" 
+                    description="Total estimated revenue from bookings"/>
+                
+                <Label id="_IDGenLabel214" text="Estimated Profit:" required="true" 
+                    class="sapUiMediumMarginTop"/>
+                <Input id="_IDGenInput15" value="{estimate>/estimatedProfit}" 
+                    type="Number" 
+                    description="Estimated profit (Revenue - Cost)"/>
+                
+                <Label id="_IDGenLabel215" text="Notes:" class="sapUiMediumMarginTop"/>
+                <TextArea id="_IDGenTextArea3" value="{estimate>/notes}" 
+                    rows="4" 
+                    width="100%"
+                    placeholder="Add any notes about this estimate..."/>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button id="_IDGenButton75" text="Save" type="Emphasized" press=".onSaveEstimate"/>
+        </beginButton>
+        <endButton>
+            <Button id="_IDGenButton76" text="Cancel" press=".onCancelEstimate"/>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

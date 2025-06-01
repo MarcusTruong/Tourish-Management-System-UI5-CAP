@@ -591,10 +591,10 @@ Authorization: {{adminAuth}}
 ### 6.1 Get Active Tour Details
 POST {{baseUrl}}/getActiveTourDetails
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Basic {{base64 username:password}}
 
 {
-  "tourID": "{{activeTourId}}"
+  "tourID": "7f0a34f8-8b8c-440b-8fc3-056ffd94cd72"
 }
 
 ### 6.2 List Active Tours

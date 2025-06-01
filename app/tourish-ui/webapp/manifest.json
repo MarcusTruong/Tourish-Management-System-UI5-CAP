@@ -183,7 +183,12 @@
           "name": "orderDetail",
           "pattern": "orders/detail/{orderId}",
           "target": "orderDetail"
-        }
+        },
+        {
+          "name": "activeTourDetail",
+          "pattern": "activeTour/{tourId}",
+          "target": "activeTourDetail"
+      }
       ],
       "targets": {
         "login": {
@@ -301,6 +306,13 @@
           "controlId": "mainContents",
           "controlAggregation": "pages",
           "parent": "appContent"
+        },
+        "activeTourDetail": {
+        "viewId": "activeTourDetail",
+        "viewName": "tour.ActiveTourDetail",
+        "controlId": "mainContents",
+        "controlAggregation": "pages",
+        "parent": "appContent"
         }
       }
     },

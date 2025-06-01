@@ -1,0 +1,59 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+    <Dialog id="_IDGenDialog2" title="Passenger Details" contentWidth="500px">
+        <content>
+            <f:SimpleForm id="_IDGenSimpleForm16" editable="false" 
+                layout="ResponsiveGridLayout"
+                class="sapUiMediumMargin">
+                <f:content>
+                    <Label id="_IDGenLabel201" text="Full Name:"/>
+                    <Text id="_IDGenText284" text="{passenger>/FullName}"/>
+                    
+                    <Label id="_IDGenLabel202" text="Type:"/>
+                    <Text id="_IDGenText285" text="{= ${passenger>/IsAdult} ? 'Adult' : 'Child'}"/>
+                    
+                    <Label id="_IDGenLabel203" text="Gender:"/>
+                    <Text id="_IDGenText286" text="{passenger>/Gender}"/>
+                    
+                    <Label id="_IDGenLabel204" text="Birth Date:"/>
+                    <Text id="_IDGenText287" text="{
+                        path: 'passenger>/BirthDate',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions: {
+                            pattern: 'dd MMM yyyy'
+                        }
+                    }"/>
+                    
+                    <Label id="_IDGenLabel205" text="ID Number:"/>
+                    <Text id="_IDGenText288" text="{passenger>/IDNumber}"/>
+                    
+                    <Label id="_IDGenLabel206" text="Phone:"/>
+                    <Text id="_IDGenText289" text="{passenger>/Phone}"/>
+                    
+                    <Label id="_IDGenLabel207" text="Email:"/>
+                    <Text id="_IDGenText290" text="{passenger>/Email}"/>
+                    
+                    <Label id="_IDGenLabel208" text="Order ID:"/>
+                    <Text id="_IDGenText291" text="{passenger>/OrderID}"/>
+                    
+                    <Label id="_IDGenLabel209" text="Customer:"/>
+                    <Text id="_IDGenText292" text="{passenger>/CustomerName}"/>
+                    
+                    <Label id="_IDGenLabel210" text="Order Date:"/>
+                    <Text id="_IDGenText293" text="{
+                        path: 'passenger>/OrderDate',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions: {
+                            pattern: 'dd MMM yyyy'
+                        }
+                    }"/>
+                    
+                    <Label id="_IDGenLabel211" text="Special Requirements:"/>
+                    <Text id="_IDGenText294" text="{passenger>/SpecialRequirements}"/>
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        <endButton>
+            <Button id="_IDGenButton74" text="Close" press=".onClosePassengerDetails"/>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

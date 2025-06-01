@@ -584,6 +584,34 @@ action getPassengersByOrder(
   };
   
   // ACTIVE TOUR DETAILS AND LISTING
+
+  // Trong file srv/tour-service.cds, thêm action mới:
+
+@(requires: 'authenticated-user')
+action getOrdersWithPassengers(
+  tourID: UUID
+) returns array of {
+  OrderID: UUID;
+  CustomerID: UUID;
+  CustomerName: String;
+  CustomerType: String;
+  OrderDate: Date;
+  AdultCount: Integer;
+  ChildCount: Integer;
+  Status: String;
+  Passengers: array of {
+    ID: UUID;
+    FullName: String;
+    Gender: String;
+    BirthDate: Date;
+    IDNumber: String;
+    Phone: String;
+    Email: String;
+    SpecialRequirements: String;
+    IsAdult: Boolean;
+    IsPlaceholder: Boolean; // Để phân biệt slot trống
+  };
+};
   
   @(requires: 'authenticated-user')
   action getActiveTourDetails(
@@ -744,3 +772,4 @@ action getPassengersByOrder(
     }
   };
 }
+

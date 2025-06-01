@@ -1,0 +1,408 @@
+<mvc:View controllerName="tourishui.controller.tour.ActiveTourDetail" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form" displayBlock="true">
+
+    <Page id="activeTourDetailPage" title="{activeTourDetail>/tour/TourName}" showNavButton="true" navButtonPress=".onNavBack" busy="{activeTourDetail>/busy}" busyIndicatorDelay="0">
+
+        <headerContent>
+            <ObjectStatus id="_IDGenObjectStatus18" text="{activeTourDetail>/tour/Status}" state="{= ${activeTourDetail>/tour/Status} === 'Open' ? 'Success' : ${activeTourDetail>/tour/Status} === 'Ongoing' ? 'Warning' : ${activeTourDetail>/tour/Status} === 'Completed' ? 'Information' : 'Error'}"/>
+            <Text id="_IDGenText226" text="Capacity: {activeTourDetail>/tour/CurrentBookings}/{activeTourDetail>/tour/MaxCapacity}"/>
+            <Text id="_IDGenText227" text="Occupancy: {
+                            path: 'activeTourDetail>/statistics/occupancyRate',
+                            formatter: '.formatPercentage'
+                        }"/>
+        </headerContent>
+
+        <content>
+            <IconTabBar id="tourDetailTabBar" expanded="true" select=".onTabSelect" class="sapUiResponsiveContentPadding">
+
+                <items>
+                    <!-- Tab 1: General Information -->
+                    <IconTabFilter id="_IDGenIconTabFilter2" text="General Information" key="general" icon="sap-icon://hint">
+                        <VBox id="_IDGenVBox64">
+                            <f:SimpleForm id="_IDGenSimpleForm13" editable="false" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3">
+
+                                <f:content>
+                                    <core:Title id="_IDGenTitle8" text="Tour Information"/>
+
+                                    <Label id="_IDGenLabel177" text="Tour Name"/>
+                                    <Text id="_IDGenText228" text="{activeTourDetail>/tour/TourName}"/>
+
+                                    <Label id="_IDGenLabel178" text="Template"/>
+                                    <Text id="_IDGenText229" text="{activeTourDetail>/template/TemplateName}"/>
+
+                                    <Label id="_IDGenLabel179" text="Tour Type"/>
+                                    <Text id="_IDGenText230" text="{activeTourDetail>/template/TourType}"/>
+
+                                    <Label id="_IDGenLabel180" text="Departure Date"/>
+                                    <Text id="_IDGenText231" text="{
+                                                                                path: 'activeTourDetail>/tour/DepartureDate',
+                                                                                formatter: '.formatDate'
+                                                                            }"/>
+
+                                    <Label id="_IDGenLabel181" text="Return Date"/>
+                                    <Text id="_IDGenText232" text="{
+                                                                                path: 'activeTourDetail>/tour/ReturnDate',
+                                                                                formatter: '.formatDate'
+                                                                            }"/>
+
+                                    <Label id="_IDGenLabel182" text="Duration"/>
+                                    <Text id="_IDGenText233" text="{activeTourDetail>/template/NumberDays} days / {activeTourDetail>/template/NumberNights} nights"/>
+
+                                    <Label id="_IDGenLabel183" text="Sale Period"/>
+                                    <Text id="_IDGenText234" text="{
+                                                                                path: 'activeTourDetail>/tour/SaleStartDate',
+                                                                                formatter: '.formatDate'
+                                                                            } - {
+                                                                                path: 'activeTourDetail>/tour/SaleEndDate',
+                                                                                formatter: '.formatDate'
+                                                                            }"/>
+
+                                    <Label id="_IDGenLabel184" text="Responsible Person"/>
+                                    <Text id="_IDGenText235" text="{activeTourDetail>/tour/ResponsiblePersonName}"/>
+
+                                    <core:Title id="_IDGenTitle10" text="Description"/>
+
+                                    <Label id="_IDGenLabel185" text=""/>
+                                    <Text id="_IDGenText236" text="{activeTourDetail>/template/Description}"/>
+                                </f:content>
+                            </f:SimpleForm>
+
+                            <!-- Images Section -->
+                            <Title id="_IDGenTitle12" text="Tour Images" class="sapUiMediumMarginTop"/>
+                            <Carousel id="tourImagesCarousel" pages="{activeTourDetail>/images}" height="400px">
+                                <pages>
+                                    <VBox id="_IDGenVBox65" alignItems="Center" justifyContent="Center">
+                                        <Image id="_IDGenImage4" src="{activeTourDetail>ImageURL}" height="350px" densityAware="false"/>
+                                        <Text id="_IDGenText237" text="{activeTourDetail>Caption}" class="sapUiSmallMarginTop"/>
+                                    </VBox>
+                                </pages>
+                            </Carousel>
+                        </VBox>
+                    </IconTabFilter>
+
+                    <!-- Tab 2: Schedule -->
+                    <IconTabFilter id="_IDGenIconTabFilter3" text="Schedule" key="schedule" icon="sap-icon://calendar">
+                        <VBox id="_IDGenVBox66">
+                            <List id="_IDGenList1" items="{activeTourDetail>/schedules}">
+                                <items>
+                                    <CustomListItem id="_IDGenCustomListItem">
+                                        <Panel id="_IDGenPanel10" expandable="true" expanded="{= ${activeTourDetail>DayNumber} === 1}" headerText="Day {activeTourDetail>DayNumber}: {activeTourDetail>DayTitle}">
+
+                                            <VBox id="_IDGenVBox67" class="sapUiSmallMargin">
+                                                <Text id="_IDGenText238" text="{activeTourDetail>Overview}" class="sapUiSmallMarginBottom"/>
+
+                                                <HBox id="_IDGenHBox41" class="sapUiSmallMarginBottom">
+                                                    <CheckBox id="_IDGenCheckBox1" text="Breakfast" selected="{activeTourDetail>BreakfastIncluded}" enabled="false"/>
+                                                    <CheckBox id="_IDGenCheckBox2" text="Lunch" selected="{activeTourDetail>LunchIncluded}" enabled="false" class="sapUiSmallMarginBegin"/>
+                                                    <CheckBox id="_IDGenCheckBox3" text="Dinner" selected="{activeTourDetail>DinnerIncluded}" enabled="false" class="sapUiSmallMarginBegin"/>
+                                                </HBox>
+
+                                                <Title id="_IDGenTitle16" text="Activities" level="H4"/>
+                                                <List id="_IDGenList2" items="{activeTourDetail>Activities}">
+                                                    <items>
+                                                        <StandardListItem id="_IDGenStandardListItem" title="{activeTourDetail>Title}" description="{activeTourDetail>Description}" info="{activeTourDetail>StartTime} - {activeTourDetail>EndTime}"/>
+                                                    </items>
+                                                </List>
+                                            </VBox>
+                                        </Panel>
+                                    </CustomListItem>
+                                </items>
+                            </List>
+                        </VBox>
+                    </IconTabFilter>
+
+                    <!-- Tab 3: Price & Terms -->
+                    <IconTabFilter id="_IDGenIconTabFilter4" text="Price - Terms" key="priceTerms" icon="sap-icon://money-bills">
+                        <VBox id="_IDGenVBox68">
+                            <f:SimpleForm id="_IDGenSimpleForm14" editable="false" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3">
+
+                                <f:content>
+                                    <core:Title id="_IDGenTitle24" text="Pricing"/>
+
+                                    <Label id="_IDGenLabel186" text="Adult Price:"/>
+                                    <ObjectNumber id="_IDGenObjectNumber31" number="{
+                                                                                path: 'activeTourDetail>/priceTerms/AdultPrice',
+                                                                                formatter: '.formatCurrency'
+                                                                            }" unit="USD"/>
+
+                                    <Label id="_IDGenLabel187" text="Children Price:"/>
+                                    <ObjectNumber id="_IDGenObjectNumber32" number="{
+                                                                                path: 'activeTourDetail>/priceTerms/ChildrenPrice',
+                                                                                formatter: '.formatCurrency'
+                                                                            }" unit="USD"/>
+
+                                    <core:Title id="_IDGenTitle25" text="Services Included"/>
+                                    <Label id="_IDGenLabel188" text=""/>
+                                    <Text id="_IDGenText239" text="{activeTourDetail>/priceTerms/ServicesIncluded}"/>
+
+                                    <core:Title id="_IDGenTitle26" text="Services Not Included"/>
+                                    <Label id="_IDGenLabel189" text=""/>
+                                    <Text id="_IDGenText240" text="{activeTourDetail>/priceTerms/ServicesNotIncluded}"/>
+
+                                    <core:Title id="_IDGenTitle27" text="Cancellation Terms"/>
+                                    <Label id="_IDGenLabel190" text=""/>
+                                    <Text id="_IDGenText241" text="{activeTourDetail>/priceTerms/CancellationTerms}"/>
+
+                                    <core:Title id="_IDGenTitle28" text="General Terms"/>
+                                    <Label id="_IDGenLabel191" text=""/>
+                                    <Text id="_IDGenText242" text="{activeTourDetail>/priceTerms/GeneralTerms}"/>
+                                </f:content>
+                            </f:SimpleForm>
+                        </VBox>
+                    </IconTabFilter>
+
+                    <!-- Tab 4: Services -->
+                    <IconTabFilter id="_IDGenIconTabFilter5" text="Services" key="services" icon="sap-icon://activity-items" count="{= ${activeTourDetail>/services}.length}">
+                        <VBox id="_IDGenVBox69">
+                            <OverflowToolbar id="_IDGenOverflowToolbar14">
+                                <Title id="_IDGenTitle29" text="Tour Services"/>
+                                <ToolbarSpacer id="_IDGenToolbarSpacer40"/>
+                                <Button id="_IDGenButton33" text="Add Service" icon="sap-icon://add" press=".onAddService" type="Emphasized"/>
+                            </OverflowToolbar>
+
+                            <Table id="_IDGenTable2" items="{activeTourDetail>/services}" mode="None" alternateRowColors="true">
+                                <columns>
+                                    <Column id="_IDGenColumn96">
+                                        <Text id="_IDGenText243" text="Service Name"/>
+                                    </Column>
+                                    <Column id="_IDGenColumn99">
+                                        <Text id="_IDGenText244" text="Service Type"/>
+                                    </Column>
+                                    <Column id="_IDGenColumn100">
+                                        <Text id="_IDGenText245" text="Supplier"/>
+                                    </Column>
+                                    <Column id="_IDGenColumn101" hAlign="End">
+                                        <Text id="_IDGenText246" text="Quantity"/>
+                                    </Column>
+                                    <Column id="_IDGenColumn102" hAlign="End">
+                                        <Text id="_IDGenText247" text="Unit Price"/>
+                                    </Column>
+                                    <Column id="_IDGenColumn103" hAlign="End">
+                                        <Text id="_IDGenText248" text="Total Price"/>
+                                    </Column>
+                                    <Column id="_IDGenColumn104">
+                                        <Text id="_IDGenText249" text="Notes"/>
+                                    </Column>
+                                    <Column id="_IDGenColumn105" hAlign="Center">
+                                        <Text id="_IDGenText250" text="Actions"/>
+                                    </Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem id="_IDGenColumnListItem17">
+                                        <cells>
+                                            <Text id="_IDGenText251" text="{activeTourDetail>ServiceName}"/>
+                                            <Text id="_IDGenText252" text="{activeTourDetail>ServiceType}"/>
+                                            <Text id="_IDGenText253" text="{activeTourDetail>SupplierName}"/>
+                                            <ObjectNumber id="_IDGenObjectNumber34" number="{activeTourDetail>Quantity}"/>
+                                            <ObjectNumber id="_IDGenObjectNumber35" number="{
+                                                                                                path: 'activeTourDetail>UnitPrice',
+                                                                                                formatter: '.formatCurrency'
+                                                                                            }" unit="USD"/>
+                                            <ObjectNumber id="_IDGenObjectNumber36" number="{
+                                                                                                path: 'activeTourDetail>TotalPrice',
+                                                                                                formatter: '.formatCurrency'
+                                                                                            }" unit="USD" emphasized="true"/>
+                                            <Text id="_IDGenText254" text="{activeTourDetail>Notes}"/>
+                                            <HBox id="_IDGenHBox45" justifyContent="End">
+                                                <Button id="_IDGenButton80" icon="sap-icon://edit" press=".onEditService" type="Transparent"/>
+                                                <Button id="_IDGenButton43" icon="sap-icon://delete" press=".onDeleteService" type="Transparent"/>
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </VBox>
+                    </IconTabFilter>
+
+                    <!-- Tab 5: Passengers -->
+                    <IconTabFilter id="_IDGenIconTabFilter8" text="Passengers" key="passengers" icon="sap-icon://group" count="{= ${activeTourDetail>/statistics/totalPassengers}}">
+                        <VBox id="_IDGenVBox70">
+                            <OverflowToolbar id="_IDGenOverflowToolbar15">
+                                <Title id="_IDGenTitle30" text="Tour Passengers"/>
+                                <ToolbarSpacer id="_IDGenToolbarSpacer41"/>
+                                <Text id="_IDGenText255" text="Total Orders: {activeTourDetail>/statistics/totalOrders}"/>
+                                <Text id="_IDGenText256" text="Total Passengers: {activeTourDetail>/statistics/totalPassengers}" class="sapUiSmallMarginBegin"/>
+                            </OverflowToolbar>
+
+                            <!-- Orders with Passengers -->
+                            <VBox id="_IDGenVBox81" items="{activeTourDetail>/ordersWithPassengers}">
+                                <Panel id="_IDGenPanel12" expandable="true" expanded="true" headerText="Order {= ${activeTourDetail>OrderID}.substring(0, 8)} - {activeTourDetail>CustomerName} ({activeTourDetail>AdultCount} Adults, {activeTourDetail>ChildCount} Children)" class="sapUiSmallMarginTop">
+
+                                    <VBox id="_IDGenVBox82">
+                                        <HBox id="_IDGenHBox43" class="sapUiSmallMarginBottom">
+                                            <Label id="_IDGenLabel216" text="Order Date: " design="Bold"/>
+                                            <Text id="_IDGenText257" text="{
+                                                                            path: 'activeTourDetail>OrderDate',
+                                                                            formatter: '.formatDate'
+                                                                        }"/>
+                                            <Label id="_IDGenLabel217" text="Status: " design="Bold" class="sapUiSmallMarginBegin"/>
+                                            <ObjectStatus id="_IDGenObjectStatus19" text="{activeTourDetail>Status}" state="{= ${activeTourDetail>Status} === 'Completed' ? 'Success' : 'Warning'}"/>
+                                        </HBox>
+
+                                        <Table id="_IDGenTable3" items="{activeTourDetail>Passengers}" alternateRowColors="true">
+                                            <columns>
+                                                <Column id="_IDGenColumn106" width="80px">
+                                                    <Text id="_IDGenText258" text="Type"/>
+                                                </Column>
+                                                <Column id="_IDGenColumn107">
+                                                    <Text id="_IDGenText259" text="Full Name"/>
+                                                </Column>
+                                                <Column id="_IDGenColumn108" width="100px">
+                                                    <Text id="_IDGenText260" text="Gender"/>
+                                                </Column>
+                                                <Column id="_IDGenColumn109">
+                                                    <Text id="_IDGenText261" text="Birth Date"/>
+                                                </Column>
+                                                <Column id="_IDGenColumn110">
+                                                    <Text id="_IDGenText262" text="ID Number"/>
+                                                </Column>
+                                                <Column id="_IDGenColumn111">
+                                                    <Text id="_IDGenText263" text="Phone"/>
+                                                </Column>
+                                                <Column id="_IDGenColumn112">
+                                                    <Text id="_IDGenText264" text="Email"/>
+                                                </Column>
+                                                <Column id="_IDGenColumn113">
+                                                    <Text id="_IDGenText265" text="Special Requirements"/>
+                                                </Column>
+                                                <Column id="_IDGenColumn114" width="120px" hAlign="Center">
+                                                    <Text id="_IDGenText266" text="Actions"/>
+                                                </Column>
+                                            </columns>
+                                            <items>
+                                                <ColumnListItem id="_IDGenColumnListItem18">
+                                                    <cells>
+                                                        <ObjectStatus id="_IDGenObjectStatus20" text="{= ${activeTourDetail>IsAdult} ? 'Adult' : 'Child'}" state="{= ${activeTourDetail>IsAdult} ? 'Success' : 'Warning'}"/>
+                                                        <Text id="_IDGenText267" text="{= ${activeTourDetail>IsPlaceholder} ? '(Not filled)' : ${activeTourDetail>FullName}}" class="{= ${activeTourDetail>IsPlaceholder} ? 'sapUiTextItalic' : ''}"/>
+                                                        <Text id="_IDGenText268" text="{activeTourDetail>Gender}"/>
+                                                        <Text id="_IDGenText269" text="{
+                                                                                                    path: 'activeTourDetail>BirthDate',
+                                                                                                    formatter: '.formatDate'
+                                                                                                }"/>
+                                                        <Text id="_IDGenText270" text="{activeTourDetail>IDNumber}"/>
+                                                        <Text id="_IDGenText271" text="{activeTourDetail>Phone}"/>
+                                                        <Text id="_IDGenText272" text="{activeTourDetail>Email}"/>
+                                                        <Text id="_IDGenText273" text="{activeTourDetail>SpecialRequirements}"/>
+                                                        <HBox id="_IDGenHBox44" justifyContent="End">
+                                                            <Button id="_IDGenButton55" icon="{= ${activeTourDetail>IsPlaceholder} ? 'sap-icon://add' : 'sap-icon://edit'}" press=".onEditPassenger" tooltip="{= ${activeTourDetail>IsPlaceholder} ? 'Add Passenger' : 'Edit Passenger'}" type="Transparent"/>
+                                                            <Button id="_IDGenButton73" icon="sap-icon://delete" press=".onDeletePassenger" tooltip="Delete Passenger" type="Transparent" visible="{= !${activeTourDetail>IsPlaceholder}}"/>
+                                                        </HBox>
+                                                    </cells>
+                                                </ColumnListItem>
+                                            </items>
+                                        </Table>
+                                    </VBox>
+                                </Panel>
+                            </VBox>
+                        </VBox>
+                    </IconTabFilter>
+
+                    <!-- Tab 6: Tour Estimate -->
+                    <IconTabFilter id="_IDGenIconTabFilter7" text="Tour Estimate" key="estimate" icon="sap-icon://sales-quote">
+                        <VBox id="_IDGenVBox71" class="sapUiMediumMargin">
+                            <OverflowToolbar id="_IDGenOverflowToolbar16">
+                                <Title id="_IDGenTitle31" text="Financial Estimate"/>
+                                <ToolbarSpacer id="_IDGenToolbarSpacer42"/>
+                                <Button id="_IDGenButton59" text="Update Estimate" icon="sap-icon://edit" press=".onUpdateEstimate"/>
+                            </OverflowToolbar>
+
+                            <Panel id="_IDGenPanel11">
+                                <f:SimpleForm id="_IDGenSimpleForm15" editable="false" layout="ResponsiveGridLayout" labelSpanXL="3" labelSpanL="3" labelSpanM="3">
+
+                                    <f:content>
+                                        <core:Title id="_IDGenTitle32" text="Summary"/>
+
+                                        <Label id="_IDGenLabel192" text="Estimated Cost"/>
+                                        <ObjectNumber id="_IDGenObjectNumber37" number="{
+                                                                                       path: 'activeTourDetail>/estimate/EstimatedCost',
+                                                                                       formatter: '.formatCurrency'
+                                                                                   }" unit="USD" state="Error"/>
+
+                                        <Label id="_IDGenLabel193" text="Estimated Revenue"/>
+                                        <ObjectNumber id="_IDGenObjectNumber38" number="{
+                                                                                       path: 'activeTourDetail>/estimate/EstimatedRevenue',
+                                                                                       formatter: '.formatCurrency'
+                                                                                   }" unit="USD" state="Success"/>
+
+                                        <Label id="_IDGenLabel194" text="Estimated Profit"/>
+                                        <ObjectNumber id="_IDGenObjectNumber39" number="{
+                                                                                       path: 'activeTourDetail>/estimate/EstimatedProfit',
+                                                                                       formatter: '.formatCurrency'
+                                                                                   }" unit="USD" emphasized="true" state="{= ${activeTourDetail>/estimate/EstimatedProfit} > 0 ? 'Success' : 'Error'}"/>
+
+                                        <Label id="_IDGenLabel195" text="Last Updated"/>
+                                        <Text id="_IDGenText275" text="{
+                                                                                       path: 'activeTourDetail>/estimate/LastUpdated',
+                                                                                       formatter: '.formatDate'
+                                                                                   }"/>
+
+                                        <Label id="_IDGenLabel196" text="Notes"/>
+                                        <Text id="_IDGenText276" text="{activeTourDetail>/estimate/Notes}"/>
+                                    </f:content>
+                                </f:SimpleForm>
+                            </Panel>
+
+                            <!-- Cost Items -->
+                            <Title id="_IDGenTitle33" text="Cost Breakdown" class="sapUiMediumMarginTop"/>
+                            <Table id="_IDGenTable4" items="{activeTourDetail>/estimate/CostItems}" visible="{= ${activeTourDetail>/estimate/CostItems}.length > 0}">
+                                <columns>
+                                    <Column id="_IDGenColumn116">
+                                        <Text id="_IDGenText277" text="Item Name"/>
+                                    </Column>
+                                    <Column id="_IDGenColumn117">
+                                        <Text id="_IDGenText278" text="Category"/>
+                                    </Column>
+                                    <Column id="_IDGenColumn118" hAlign="End">
+                                        <Text id="_IDGenText279" text="Cost"/>
+                                    </Column>
+                                    <Column id="_IDGenColumn119">
+                                        <Text id="_IDGenText280" text="Notes"/>
+                                    </Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem id="_IDGenColumnListItem19">
+                                        <cells>
+                                            <Text id="_IDGenText281" text="{activeTourDetail>ItemName}"/>
+                                            <Text id="_IDGenText282" text="{activeTourDetail>Category}"/>
+                                            <ObjectNumber id="_IDGenObjectNumber40" number="{
+                                                                                               path: 'activeTourDetail>Cost',
+                                                                                               formatter: '.formatCurrency'
+                                                                                           }" unit="USD"/>
+                                            <Text id="_IDGenText283" text="{activeTourDetail>Notes}"/>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+
+                            <!-- Statistics -->
+                            <Title id="_IDGenTitle34" text="Tour Statistics" class="sapUiMediumMarginTop"/>
+                            <l:Grid id="_IDGenGrid4" defaultSpan="L3 M6 S12">
+                                <VBox id="_IDGenVBox72" class="sapUiSmallMargin">
+                                    <Title id="_IDGenTitle35" text="Total Passengers" level="H5"/>
+                                    <ObjectNumber id="_IDGenObjectNumber41" number="{activeTourDetail>/statistics/totalPassengers}" state="Information" emphasized="true"/>
+                                </VBox>
+                                <VBox id="_IDGenVBox73" class="sapUiSmallMargin">
+                                    <Title id="_IDGenTitle36" text="Occupancy Rate" level="H5"/>
+                                    <ObjectNumber id="_IDGenObjectNumber42" number="{
+                                                                               path: 'activeTourDetail>/statistics/occupancyRate',
+                                                                               formatter: '.formatPercentage'
+                                                                           }" state="Success" emphasized="true"/>
+                                </VBox>
+                                <VBox id="_IDGenVBox74" class="sapUiSmallMargin">
+                                    <Title id="_IDGenTitle37" text="Total Revenue" level="H5"/>
+                                    <ObjectNumber id="_IDGenObjectNumber43" number="{
+                                                                               path: 'activeTourDetail>/statistics/totalRevenue',
+                                                                               formatter: '.formatCurrency'
+                                                                           }" unit="USD" state="Success" emphasized="true"/>
+                                </VBox>
+                                <VBox id="_IDGenVBox75" class="sapUiSmallMargin">
+                                    <Title id="_IDGenTitle38" text="Profit Margin" level="H5"/>
+                                    <ObjectNumber id="_IDGenObjectNumber44" number="{= ${activeTourDetail>/statistics/estimatedProfit} / ${activeTourDetail>/statistics/totalRevenue} * 100}" unit="%" state="Information" emphasized="true"/>
+                                </VBox>
+                            </l:Grid>
+                        </VBox>
+                    </IconTabFilter>
+                </items>
+            </IconTabBar>
+        </content>
+    </Page>
+</mvc:View>

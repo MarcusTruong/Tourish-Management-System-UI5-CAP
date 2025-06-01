@@ -70,7 +70,7 @@
                                                 path: 'DepartureDate',
                                                 descending: false
                                             }
-                                        }" growing="true" growingThreshold="20" growingScrollToLoad="true" sticky="HeaderToolbar,ColumnHeaders" alternateRowColors="true" mode="SingleSelectMaster" selectionChange=".onTourSelect" busyIndicatorDelay="0">
+                                        }" growing="true" growingThreshold="20" growingScrollToLoad="true" sticky="HeaderToolbar,ColumnHeaders" alternateRowColors="true"  selectionChange=".onTourSelect" busyIndicatorDelay="0">
                     <columns>
                         <Column id="_IDGenColumn31" minScreenWidth="Tablet" demandPopin="true" width="120px">
                             <Text id="_IDGenText53" text="Image"/>

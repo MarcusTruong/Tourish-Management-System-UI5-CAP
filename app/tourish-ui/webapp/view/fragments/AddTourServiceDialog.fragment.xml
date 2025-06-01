@@ -1,0 +1,55 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+    <Dialog id="_IDGenDialog1" title="Add Service to Tour" contentWidth="600px">
+        <content>
+            <VBox id="_IDGenVBox76" class="sapUiMediumMargin">
+                <Label id="_IDGenLabel197" text="Select Service:" required="true"/>
+                <ComboBox id="_IDGenComboBox" items="{serviceDialog>/availableServices}" 
+                    placeholder="Select a service..."
+                    selectionChange=".onServiceSelectionChange"
+                    width="100%">
+                    <core:Item id="_IDGenItem58" key="{serviceDialog>ID}" 
+                        text="{serviceDialog>ServiceName} - {serviceDialog>ServiceType}"/>
+                </ComboBox>
+                
+                <HBox id="_IDGenHBox42" class="sapUiMediumMarginTop">
+                    <VBox id="_IDGenVBox77" class="sapUiSmallMarginEnd">
+                        <Label id="_IDGenLabel198" text="Quantity:" required="true"/>
+                        <StepInput id="_IDGenStepInput" value="{serviceDialog>/quantity}" 
+                            min="1" max="100" width="150px"/>
+                    </VBox>
+                    
+                    <VBox id="_IDGenVBox78">
+                        <Label id="_IDGenLabel199" text="Unit Price:" required="true"/>
+                        <Input id="_IDGenInput12" value="{serviceDialog>/unitPrice}" 
+                            type="Number" width="150px">
+                            <layoutData>
+                                <FlexItemData id="_IDGenFlexItemData" growFactor="1"/>
+                            </layoutData>
+                        </Input>
+                    </VBox>
+                </HBox>
+                
+                <Label id="_IDGenLabel200" text="Notes:" class="sapUiMediumMarginTop"/>
+                <TextArea id="_IDGenTextArea2" value="{serviceDialog>/notes}" 
+                    rows="3" width="100%"/>
+                
+                <VBox id="_IDGenVBox79" visible="{= !!${serviceDialog>/selectedService}}"
+                    class="sapUiMediumMarginTop">
+                    <Title id="_IDGenTitle39" text="Service Details" level="H5"/>
+                    <ObjectAttribute id="_IDGenObjectAttribute5" title="Service Type" 
+                        text="{serviceDialog>/selectedService/ServiceType}"/>
+                    <ObjectAttribute id="_IDGenObjectAttribute6" title="Description" 
+                        text="{serviceDialog>/selectedService/Description}"/>
+                    <ObjectAttribute id="_IDGenObjectAttribute7" title="Default Price" 
+                        text="{serviceDialog>/selectedService/Price} USD"/>
+                </VBox>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button id="_IDGenButton71" text="Add" type="Emphasized" press=".onSaveService"/>
+        </beginButton>
+        <endButton>
+            <Button id="_IDGenButton72" text="Cancel" press=".onCancelAddService"/>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>
