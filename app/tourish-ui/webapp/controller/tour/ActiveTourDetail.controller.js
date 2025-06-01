@@ -380,31 +380,15 @@ sap.ui.define([
         },
 
         _openAddServiceDialog: function() {
+            // Reset dialog to add mode FIRST
+            this._oAddServiceDialog.setTitle("Add Service to Tour");
+            var oBeginButton = this._oAddServiceDialog.getBeginButton();
+            oBeginButton.setText("Add");
+            this._currentEditingService = null;
+            
             // Load available services
             this._loadAvailableServices();
             this._oAddServiceDialog.open();
-        },
-
-        _loadAvailableServices: function() {
-            var oSupplierService = this.getOwnerComponent().getModel("supplierService");
-            var oContext = oSupplierService.bindContext("/getActiveServices(...)");
-            
-            oContext.execute().then(function() {
-                var aServices = oContext.getBoundContext().getObject();
-                
-                var oServiceModel = new JSONModel({
-                    availableServices: aServices.value || [],
-                    selectedService: null,
-                    quantity: 1,
-                    unitPrice: 0,
-                    notes: ""
-                });
-                
-                this._oAddServiceDialog.setModel(oServiceModel, "serviceDialog");
-            }.bind(this)).catch(function(oError) {
-                console.error("Error loading available services:", oError);
-                MessageToast.show("Error loading available services");
-            });
         },
 
         onServiceSelectionChange: function(oEvent) {
@@ -416,46 +400,195 @@ sap.ui.define([
             oDialogModel.setProperty("/unitPrice", oService.Price);
         },
 
+
+        onEditService: function(oEvent) {
+            var oButton = oEvent.getSource();
+            var oService = oButton.getBindingContext("activeTourDetail").getObject();
+            
+            // Store the current service being edited
+            this._currentEditingService = oService;
+            
+            // Open the same dialog used for adding services
+            if (!this._oAddServiceDialog) {
+                Fragment.load({
+                    id: this.getView().getId(),
+                    name: "tourishui.view.fragments.AddTourServiceDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    this.getView().addDependent(oDialog);
+                    this._oAddServiceDialog = oDialog;
+                    this._openEditServiceDialog(oService);
+                }.bind(this));
+            } else {
+                this._openEditServiceDialog(oService);
+            }
+        },
+        
+        _openEditServiceDialog: function(oService) {
+            // Load available services first
+            this._loadAvailableServices();
+            
+            // Update dialog title and button text for edit mode
+            this._oAddServiceDialog.setTitle("Edit Tour Service");
+            var oBeginButton = this._oAddServiceDialog.getBeginButton();
+            oBeginButton.setText("Update");
+            
+            // Set the dialog model with current service data
+            var oDialogModel = new JSONModel({
+                availableServices: [], // Will be populated by _loadAvailableServices
+                selectedService: {
+                    ID: oService.ServiceID,
+                    ServiceName: oService.ServiceName,
+                    ServiceType: oService.ServiceType,
+                    Description: "", // Will be populated when services are loaded
+                    Price: oService.UnitPrice
+                },
+                quantity: oService.Quantity,
+                unitPrice: oService.UnitPrice,
+                notes: oService.Notes || "",
+                isEditMode: true,
+                tourServiceID: oService.ID
+            });
+            
+            this._oAddServiceDialog.setModel(oDialogModel, "serviceDialog");
+            this._oAddServiceDialog.open();
+        },
+        
+        // Override the existing _loadAvailableServices to handle edit mode
+        _loadAvailableServices: function() {
+            var oSupplierService = this.getOwnerComponent().getModel("supplierService");
+            var oContext = oSupplierService.bindContext("/getActiveServices(...)");
+            
+            oContext.execute().then(function() {
+                var aServices = oContext.getBoundContext().getObject();
+                
+                var oDialogModel = this._oAddServiceDialog.getModel("serviceDialog");
+if (!oDialogModel || !this._currentEditingService) {
+    // Create NEW model for add mode OR when not editing
+    oDialogModel = new JSONModel({
+        availableServices: aServices.value || [],
+        selectedService: null,
+        quantity: 1,
+        unitPrice: 0,
+        notes: "",
+        isEditMode: false
+    });
+    this._oAddServiceDialog.setModel(oDialogModel, "serviceDialog");
+                } else {
+                    // Update existing model
+                    oDialogModel.setProperty("/availableServices", aServices.value || []);
+                    
+                    // If in edit mode, find and set the selected service
+                    if (oDialogModel.getProperty("/isEditMode")) {
+                        var sCurrentServiceID = oDialogModel.getProperty("/selectedService/ID");
+                        var oCurrentService = (aServices.value || []).find(function(service) {
+                            return service.ID === sCurrentServiceID;
+                        });
+                        
+                        if (oCurrentService) {
+                            oDialogModel.setProperty("/selectedService", oCurrentService);
+                            
+                            // Pre-select in ComboBox
+                            var oComboBox = this.byId("_IDGenComboBox");
+                            if (oComboBox) {
+                                oComboBox.setSelectedKey(sCurrentServiceID);
+                            }
+                        }
+                    }
+                }
+            }.bind(this)).catch(function(oError) {
+                console.error("Error loading available services:", oError);
+                MessageToast.show("Error loading available services");
+            });
+        },
+        
+        // Override the existing onSaveService to handle both add and edit
         onSaveService: function() {
             var oDialogModel = this._oAddServiceDialog.getModel("serviceDialog");
-            var oSelectedService = oDialogModel.getProperty("/selectedService");
-            var iQuantity = oDialogModel.getProperty("/quantity");
-            var fUnitPrice = oDialogModel.getProperty("/unitPrice");
-            var sNotes = oDialogModel.getProperty("/notes");
+            var oData = oDialogModel.getData();
             
-            if (!oSelectedService) {
+            if (!oData.selectedService) {
                 MessageBox.error("Please select a service");
+                return;
+            }
+            
+            if (!oData.quantity || oData.quantity <= 0) {
+                MessageBox.error("Please enter a valid quantity");
+                return;
+            }
+            
+            if (!oData.unitPrice || oData.unitPrice <= 0) {
+                MessageBox.error("Please enter a valid unit price");
                 return;
             }
             
             var oViewModel = this.getView().getModel("activeTourDetail");
             var sTourId = oViewModel.getProperty("/tourId");
-            
             var oTourService = this.getOwnerComponent().getModel("tourService");
-            var oContext = oTourService.bindContext("/addServiceToActiveTour(...)");
             
-            oContext.setParameter("tourID", sTourId);
-            oContext.setParameter("serviceID", oSelectedService.ID);
-            oContext.setParameter("quantity", iQuantity);
-            oContext.setParameter("unitPrice", fUnitPrice);
-            oContext.setParameter("notes", sNotes);
+            // Set busy state
+            this._oAddServiceDialog.setBusy(true);
+            
+            var oContext;
+            var sSuccessMessage;
+            
+            // Determine if this is add or edit mode
+            if (oData.isEditMode) {
+                // Edit existing service
+                oContext = oTourService.bindContext("/updateActiveTourService(...)");
+                oContext.setParameter("tourServiceID", oData.tourServiceID);
+                oContext.setParameter("quantity", parseInt(oData.quantity));
+                oContext.setParameter("unitPrice", parseFloat(oData.unitPrice));
+                oContext.setParameter("notes", oData.notes);
+                sSuccessMessage = "Service updated successfully";
+            } else {
+                // Add new service
+                oContext = oTourService.bindContext("/addServiceToActiveTour(...)");
+                oContext.setParameter("tourID", sTourId);
+                oContext.setParameter("serviceID", oData.selectedService.ID);
+                oContext.setParameter("quantity", parseInt(oData.quantity));
+                oContext.setParameter("unitPrice", parseFloat(oData.unitPrice));
+                oContext.setParameter("notes", oData.notes);
+                sSuccessMessage = "Service added successfully";
+            }
             
             oContext.execute().then(function() {
-                MessageToast.show("Service added successfully");
-                this._oAddServiceDialog.close();
-                this._loadTourServices();
+                var oResult = oContext.getBoundContext().getObject();
+                
+                // Clear busy state
+                this._oAddServiceDialog.setBusy(false);
+                
+                if ((oData.isEditMode && oResult && oResult.success) || 
+                    (!oData.isEditMode && oResult && oResult.tourServiceID)) {
+                    MessageToast.show(sSuccessMessage);
+                    this._closeAndResetDialog();
+                    this._loadTourServices();
+                } else {
+                    MessageBox.error(oResult && oResult.message ? oResult.message : "Failed to save service");
+                }
             }.bind(this)).catch(function(oError) {
-                console.error("Error adding service:", oError);
-                MessageBox.error("Error adding service");
+                // Clear busy state
+                this._oAddServiceDialog.setBusy(false);
+                console.error("Error saving service:", oError);
+                MessageBox.error("Error saving service");
             });
         },
-
+        
         onCancelAddService: function() {
-            this._oAddServiceDialog.close();
+            this._closeAndResetDialog();
         },
-
-        onEditService: function(oEvent) {
+        
+        // Helper method to close and reset dialog
+        _closeAndResetDialog: function() {
+            this._oAddServiceDialog.close();
             
+            // Reset dialog for next use
+            this._oAddServiceDialog.setTitle("Add Service to Tour");
+            var oBeginButton = this._oAddServiceDialog.getBeginButton();
+            oBeginButton.setText("Add");
+            
+            // Clear editing service reference
+            this._currentEditingService = null;
         },
 
         onDeleteService: function(oEvent) {
