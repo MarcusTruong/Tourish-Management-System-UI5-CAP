@@ -305,27 +305,138 @@ sap.ui.define([
         _loadEstimateDetails: function() {
             var oViewModel = this.getView().getModel("activeTourDetail");
             var sTourId = oViewModel.getProperty("/tourId");
-            
+            // Load estimate and cost items
             var oTourService = this.getOwnerComponent().getModel("tourService");
             var oContext = oTourService.bindContext("/getTourEstimate(...)");
-            
             oContext.setParameter("tourID", sTourId);
-            
             oContext.execute().then(function() {
                 var oEstimate = oContext.getBoundContext().getObject();
-                console.log(oEstimate)
                 oViewModel.setProperty("/estimate", oEstimate || {});
-                
-                // Update statistics
-                if (oEstimate) {
-                    oViewModel.setProperty("/statistics/totalCost", oEstimate.EstimatedCost);
-                    oViewModel.setProperty("/statistics/totalRevenue", oEstimate.EstimatedRevenue);
-                    oViewModel.setProperty("/statistics/estimatedProfit", oEstimate.EstimatedProfit);
-                }
-            }).catch(function(oError) {
+                // Load orders to calculate revenue
+                this._loadOrdersForRevenue();
+            }.bind(this)).catch(function(oError) {
                 console.error("Error loading estimate:", oError);
                 MessageToast.show("Error loading estimate");
+                // Still try to calculate revenue
+                this._loadOrdersForRevenue();
+            }.bind(this));
+        },
+        _loadOrdersForRevenue: function() {
+            var oViewModel = this.getView().getModel("activeTourDetail");
+            var sTourId = oViewModel.getProperty("/tourId");
+            // Get order service
+            var oOrderService = this.getOwnerComponent().getModel("orderService");
+            var oContext = oOrderService.bindContext("/listOrders(...)");
+            oContext.setParameter("tourID", sTourId);
+            oContext.setParameter("skip", 0);
+            oContext.setParameter("limit", 1000); // Get all orders
+            oContext.execute().then(function() {
+                var oResult = oContext.getBoundContext().getObject();
+                var aOrders = oResult.items || [];
+                // Now we need to get detailed info for each order
+                var aOrderDetailsPromises = aOrders.map(function(oOrder) {
+                    return this._getOrderDetails(oOrder.ID);
+                }.bind(this));
+                Promise.all(aOrderDetailsPromises).then(function(aOrderDetails) {
+                    // Store detailed orders
+                    oViewModel.setProperty("/ordersDetailed", aOrderDetails);
+                    // Calculate all financial metrics with detailed data
+                    this._calculateFinancialMetrics();
+                }.bind(this));
+            }.bind(this)).catch(function(oError) {
+                console.error("Error loading orders for revenue:", oError);
+                // Calculate with available data
+                this._calculateFinancialMetrics();
+            }.bind(this));
+        },
+        _getOrderDetails: function(sOrderId) {
+            var oOrderService = this.getOwnerComponent().getModel("orderService");
+            var oContext = oOrderService.bindContext("/getOrderDetails(...)");
+            oContext.setParameter("orderID", sOrderId);
+            return oContext.execute().then(function() {
+                var oResult = oContext.getBoundContext().getObject();
+                return oResult.order;
             });
+        },
+        _calculateFinancialMetrics: function() {
+            var oViewModel = this.getView().getModel("activeTourDetail");
+            var aOrdersDetailed = oViewModel.getProperty("/ordersDetailed") || [];
+            var aServices = oViewModel.getProperty("/services") || [];
+            var oEstimate = oViewModel.getProperty("/estimate") || {};
+            var aCostItems = oEstimate.CostItems || [];
+            var oPriceTerms = oViewModel.getProperty("/priceTerms") || {};
+            // Initialize statistics
+            var oStats = {
+                totalOrders: 0,
+                totalPassengers: 0,
+                totalAdults: 0,
+                totalChildren: 0,
+                totalRevenue: 0,
+                adultRevenue: 0,
+                childRevenue: 0,
+                totalDiscounts: 0,
+                totalCost: 0,
+                totalServiceCost: 0,
+                totalAdditionalCost: 0,
+                netProfit: 0,
+                profitMargin: 0,
+                costItemsCount: 0,
+                serviceCosts: [],
+                breakEvenPassengers: 0,
+                occupancyRate: 0
+            };
+            // Calculate revenue from detailed orders
+            aOrdersDetailed.forEach(function(oOrder) {
+                if (oOrder.Status !== 'Canceled') {
+                    oStats.totalOrders++;
+                    oStats.totalAdults += oOrder.AdultCount || 0;
+                    oStats.totalChildren += oOrder.ChildCount || 0;
+                    oStats.totalRevenue += parseFloat(oOrder.TotalAmount) || 0;
+                }
+            });
+            oStats.totalPassengers = oStats.totalAdults + oStats.totalChildren;
+            // Calculate revenue breakdown
+            var fAdultPrice = parseFloat(oPriceTerms.AdultPrice) || 0;
+            var fChildPrice = parseFloat(oPriceTerms.ChildrenPrice) || 0;
+            oStats.adultRevenue = oStats.totalAdults * fAdultPrice;
+            oStats.childRevenue = oStats.totalChildren * fChildPrice;
+            // Calculate total discounts (difference between full price and actual revenue)
+            var fFullPrice = oStats.adultRevenue + oStats.childRevenue;
+            oStats.totalDiscounts = fFullPrice > oStats.totalRevenue ? fFullPrice - oStats.totalRevenue : 0;
+            // Calculate service costs
+            aServices.forEach(function(oService) {
+                var fServiceCost = parseFloat(oService.TotalPrice) || 0;
+                oStats.totalServiceCost += fServiceCost;
+                oStats.serviceCosts.push({
+                    ServiceName: oService.ServiceName,
+                    SupplierName: oService.SupplierName,
+                    Quantity: oService.Quantity,
+                    UnitPrice: oService.UnitPrice,
+                    TotalPrice: oService.TotalPrice
+                });
+            });
+            // Calculate additional costs
+            aCostItems.forEach(function(oCostItem) {
+                oStats.totalAdditionalCost += parseFloat(oCostItem.Cost) || 0;
+            });
+            oStats.costItemsCount = aCostItems.length;
+            oStats.totalCost = oStats.totalServiceCost + oStats.totalAdditionalCost;
+            // Calculate profit metrics
+            oStats.netProfit = oStats.totalRevenue - oStats.totalCost;
+            oStats.profitMargin = oStats.totalRevenue > 0 ? 
+                Math.round((oStats.netProfit / oStats.totalRevenue) * 100 * 10) / 10 : 0;
+            // Calculate break-even point
+            var fAverageTicketPrice = oStats.totalPassengers > 0 ? 
+                oStats.totalRevenue / oStats.totalPassengers : fAdultPrice;
+            oStats.breakEvenPassengers = fAverageTicketPrice > 0 ? 
+                Math.ceil(oStats.totalCost / fAverageTicketPrice) : 0;
+            // Calculate occupancy rate (already calculated in main statistics)
+            var oTour = oViewModel.getProperty("/tour");
+            if (oTour) {
+                oStats.occupancyRate = Math.round((oTour.CurrentBookings / oTour.MaxCapacity) * 100 * 10) / 10;
+            }
+            // Update view model
+            oViewModel.setProperty("/statistics", oStats);
         },
 
         _calculateStatistics: function() {

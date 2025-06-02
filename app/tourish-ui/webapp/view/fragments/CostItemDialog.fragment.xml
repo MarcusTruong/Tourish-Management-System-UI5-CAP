@@ -1,0 +1,33 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+    <Dialog id="costItemDialog" title="{= ${costItem>/isEdit} ? 'Edit Cost Item' : 'Add Cost Item'}" contentWidth="500px">
+        <content>
+            <f:SimpleForm id="_IDGenSimpleForm15" editable="true" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0" emptySpanM="0" emptySpanS="0" columnsXL="1" columnsL="1" columnsM="1">
+                <f:content>
+                    <Label id="_IDGenLabel192" text="Item Name" required="true"/>
+                    <Input id="_IDGenInput20" value="{costItem>/costItem/ItemName}" placeholder="Enter cost item name" liveChange=".onCostItemLiveChange"/>
+                    
+                    <Label id="_IDGenLabel193" text="Category" required="true"/>
+                    <Select id="_IDGenSelect1" selectedKey="{costItem>/costItem/Category}" items="{costItem>/categories}" forceSelection="true">
+                        <core:Item id="_IDGenItem59" key="{costItem>key}" text="{costItem>text}"/>
+                    </Select>
+                    
+                    <Label id="_IDGenLabel194" text="Cost Amount" required="true"/>
+                    <Input id="_IDGenInput21" value="{costItem>/costItem/Cost}" type="Number" placeholder="0.00" liveChange=".onCostItemLiveChange">
+                        <layoutData>
+                            <l:GridData id="_IDGenGridData" span="XL8 L8 M8 S12"/>
+                        </layoutData>
+                    </Input>
+                    
+                    <Label id="_IDGenLabel195" text="Notes"/>
+                    <TextArea id="_IDGenTextArea6" value="{costItem>/costItem/Notes}" rows="3" placeholder="Additional notes (optional)"/>
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        <beginButton>
+            <Button id="_IDGenButton39" text="Save" type="Emphasized" press=".onSaveCostItem"/>
+        </beginButton>
+        <endButton>
+            <Button id="_IDGenButton40" text="Cancel" press=".onCancelCostItem"/>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

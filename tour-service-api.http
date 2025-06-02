@@ -580,10 +580,19 @@ Authorization: {{adminAuth}}
 ### 5.6 Get Tour Estimate
 POST {{baseUrl}}/getTourEstimate
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Basic {{base64 username:password}}
 
 {
-  "tourID": "{{activeTourId}}"
+  "tourID": "7f0a34f8-8b8c-440b-8fc3-056ffd94cd72"
+}
+
+### 5.6 Get OrdersWithPassengers
+POST {{baseUrl}}/getOrdersWithPassengers
+Content-Type: application/json
+Authorization: Basic {{base64 username:password}}
+
+{
+  "tourID": "7f0a34f8-8b8c-440b-8fc3-056ffd94cd72"
 }
 
 ### 6. ACTIVE TOUR DETAILS AND LISTING

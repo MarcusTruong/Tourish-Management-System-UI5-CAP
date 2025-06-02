@@ -132,8 +132,6 @@
                                 <Text id="_IDGenText65" text="{= ${activeTours>CurrentBookings} + '/' + ${activeTours>MaxCapacity}}"/>
                                 <ObjectStatus id="_IDGenObjectStatus7" text="{activeTours>Status}" state="{= ${activeTours>Status} === 'Open' ? 'Success' : ${activeTours>Status} === 'Ongoing' ? 'Warning' : ${activeTours>Status} === 'Completed' ? 'Information' : 'Error'}"/>
                                 <HBox id="_IDGenHBox16" justifyContent="End">
-                                    <Button id="_IDGenButton39" icon="sap-icon://edit" press=".onEdit" tooltip="Edit Tour" visible="{= ${activeTours>Status} !== 'Completed' &amp;&amp; ${activeTours>Status} !== 'Canceled'}"/>
-                                    <Button id="_IDGenButton40" icon="sap-icon://group" press=".onManagePassengers" tooltip="Manage Passengers" class="sapUiTinyMarginBegin"/>
                                     <Button id="_IDGenButton41" icon="sap-icon://cancel" press=".onCancelTour" tooltip="Cancel Tour" visible="{= ${activeTours>Status} === 'Open' || ${activeTours>Status} === 'Ongoing'}" class="sapUiTinyMarginBegin"/>
                                     <Button id="_IDGenButton42" icon="sap-icon://detail-view" press=".onViewDetails" tooltip="View Details" class="sapUiTinyMarginBegin"/>
                                 </HBox>
