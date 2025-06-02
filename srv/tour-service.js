@@ -2403,25 +2403,29 @@ srv.on('getPassengersByOrder', async (req) => {
     srv.on('getToursDashboardData', async (req) => {
       try {
         // Count active tours
-        const activeToursCount = await SELECT.from(ActiveTours)
-          .where({ Status: 'Open' })
-          .count();
+        const activeToursCountResult = await SELECT.from(ActiveTours)
+          .columns('count(*) as count')
+          .where({ Status: 'Open' });
+        const activeToursCount = activeToursCountResult[0]?.count || 0;
         
-        // Count draft templates
-        const draftTemplatesCount = await SELECT.from(TourTemplates)
-          .where({ Status: 'Draft' })
-          .count();
+        // Count draft templates  
+        const draftTemplatesCountResult = await SELECT.from(TourTemplates)
+          .columns('count(*) as count')
+          .where({ Status: 'Draft' });
+        const draftTemplatesCount = draftTemplatesCountResult[0]?.count || 0;
         
         // Count published templates
-        const publishedTemplatesCount = await SELECT.from(TourTemplates)
-          .where({ Status: 'Published' })
-          .count();
+        const publishedTemplatesCountResult = await SELECT.from(TourTemplates)
+          .columns('count(*) as count')
+          .where({ Status: 'Published' });
+        const publishedTemplatesCount = publishedTemplatesCountResult[0]?.count || 0;
         
         // Get upcoming departures
         const today = new Date();
+        const todayString = today.toISOString().split('T')[0];
         const upcomingDepartures = await SELECT.from(ActiveTours)
           .columns('ID', 'TourName', 'DepartureDate', 'CurrentBookings', 'MaxCapacity')
-          .where(`DepartureDate >= '${today.toISOString().split('T')[0]}'`)
+          .where(`DepartureDate >= '${todayString}'`)
           .orderBy('DepartureDate')
           .limit(5);
         
@@ -2431,83 +2435,146 @@ srv.on('getPassengersByOrder', async (req) => {
           .orderBy({ CreatedAt: 'desc' })
           .limit(5);
         
-        // Get tour type distribution
-        const tourTypes = await SELECT.from(TourTemplates)
-          .columns('TourType')
-          .groupBy('TourType');
+        // Get tour type distribution - Fixed approach
+        const tourTypeDistribution = [];
+        try {
+          const allTemplates = await SELECT.from(TourTemplates)
+            .columns('TourType')
+            .where('TourType IS NOT NULL');
+          
+          // Group by tour type in JavaScript
+          const typeGroups = {};
+          allTemplates.forEach(template => {
+            const type = template.TourType;
+            if (type) {
+              typeGroups[type] = (typeGroups[type] || 0) + 1;
+            }
+          });
+          
+          // Convert to array format
+          Object.keys(typeGroups).forEach(type => {
+            tourTypeDistribution.push({
+              TourType: type,
+              Count: typeGroups[type]
+            });
+          });
+        } catch (typeError) {
+          console.error('Error getting tour type distribution:', typeError);
+          // Continue with empty array
+        }
         
-        const tourTypeDistribution = await Promise.all(tourTypes.map(async type => {
-          const count = await SELECT.from(TourTemplates)
-            .where({ TourType: type.TourType })
-            .count();
-            
-          return {
-            TourType: type.TourType,
-            Count: count
-          };
-        }));
-        
-        // Get monthly stats (6 months)
+        // Get monthly stats (6 months) - Fixed approach
         const monthlyStats = [];
         const currentDate = new Date();
         
-        for (let i = 0; i < 6; i++) {
+        for (let i = 5; i >= 0; i--) { // Start from 5 months ago to current
           const month = new Date(currentDate);
           month.setMonth(currentDate.getMonth() - i);
           const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
           const monthEnd = new Date(month.getFullYear(), month.getMonth() + 1, 0);
           
-          // Count tours departing in this month
-          const toursCount = await SELECT.from(ActiveTours)
-            .where(`DepartureDate >= '${monthStart.toISOString().split('T')[0]}' AND DepartureDate <= '${monthEnd.toISOString().split('T')[0]}'`)
-            .count();
+          const monthStartString = monthStart.toISOString().split('T')[0];
+          const monthEndString = monthEnd.toISOString().split('T')[0];
           
-          // Count total passengers for tours departing in this month
-          let passengersCount = 0;
-          const toursInMonth = await SELECT.from(ActiveTours)
-            .columns('ID')
-            .where(`DepartureDate >= '${monthStart.toISOString().split('T')[0]}' AND DepartureDate <= '${monthEnd.toISOString().split('T')[0]}'`);
+          try {
+            // Count tours departing in this month
+            const toursCountResult = await SELECT.from(ActiveTours)
+              .columns('count(*) as count')
+              .where(`DepartureDate >= '${monthStartString}' AND DepartureDate <= '${monthEndString}'`);
+            const toursCount = toursCountResult[0]?.count || 0;
             
-          for (const tour of toursInMonth) {
-            const count = await SELECT.from(Passengers)
-              .where({ ActiveTourID: tour.ID })
-              .count();
-              
-            passengersCount += count;
-          }
-          
-          // Calculate estimated revenue for tours departing in this month
-          let estimatedRevenue = 0;
-          for (const tour of toursInMonth) {
-            const estimate = await SELECT.one.from(TourEstimates)
-              .columns('EstimatedRevenue')
-              .where({ ActiveTourID: tour.ID });
-              
-            if (estimate) {
-              estimatedRevenue += estimate.EstimatedRevenue;
+            // Get tours in this month for passenger and revenue calculation
+            const toursInMonth = await SELECT.from(ActiveTours)
+              .columns('ID')
+              .where(`DepartureDate >= '${monthStartString}' AND DepartureDate <= '${monthEndString}'`);
+            
+            // Count total passengers for tours departing in this month
+            let passengersCount = 0;
+            if (toursInMonth && toursInMonth.length > 0) {
+              for (const tour of toursInMonth) {
+                try {
+                  // Get orders for this tour first
+                  const ordersForTour = await SELECT.from('tourish.management.Order')
+                    .columns('ID')
+                    .where({ ActiveTourID: tour.ID });
+                  
+                  // Count passengers for each order
+                  for (const order of ordersForTour) {
+                    const passengerCountResult = await SELECT.from(Passengers)
+                      .columns('count(*) as count')
+                      .where({ OrderID: order.ID });
+                    passengersCount += passengerCountResult[0]?.count || 0;
+                  }
+                } catch (passengerError) {
+                  console.error('Error counting passengers for tour:', tour.ID, passengerError);
+                  // Continue with next tour
+                }
+              }
             }
+            
+            // Calculate estimated revenue for tours departing in this month
+            let estimatedRevenue = 0;
+            if (toursInMonth && toursInMonth.length > 0) {
+              for (const tour of toursInMonth) {
+                try {
+                  const estimate = await SELECT.one.from(TourEstimates)
+                    .columns('EstimatedRevenue')
+                    .where({ ActiveTourID: tour.ID });
+                    
+                  if (estimate && estimate.EstimatedRevenue) {
+                    estimatedRevenue += parseFloat(estimate.EstimatedRevenue) || 0;
+                  }
+                } catch (estimateError) {
+                  console.error('Error getting estimate for tour:', tour.ID, estimateError);
+                  // Continue with next tour
+                }
+              }
+            }
+            
+            monthlyStats.push({
+              Month: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`,
+              ToursCount: toursCount,
+              PassengersCount: passengersCount,
+              EstimatedRevenue: estimatedRevenue
+            });
+          } catch (monthError) {
+            console.error('Error processing month data:', monthError);
+            // Add empty data for this month
+            monthlyStats.push({
+              Month: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`,
+              ToursCount: 0,
+              PassengersCount: 0,
+              EstimatedRevenue: 0
+            });
           }
-          
-          monthlyStats.push({
-            Month: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`,
-            ToursCount: toursCount,
-            PassengersCount: passengersCount,
-            EstimatedRevenue: estimatedRevenue
-          });
         }
         
-        return {
-          activeToursCount,
-          draftTemplatesCount,
-          publishedTemplatesCount,
-          upcomingDepartures,
-          recentlyCreatedTemplates,
-          tourTypeDistribution,
-          monthlyStats
+        const result = {
+          activeToursCount: parseInt(activeToursCount),
+          draftTemplatesCount: parseInt(draftTemplatesCount),
+          publishedTemplatesCount: parseInt(publishedTemplatesCount),
+          upcomingDepartures: upcomingDepartures || [],
+          recentlyCreatedTemplates: recentlyCreatedTemplates || [],
+          tourTypeDistribution: tourTypeDistribution || [],
+          monthlyStats: monthlyStats || []
         };
+        
+        console.log('Dashboard data retrieved successfully:', result);
+        return result;
+        
       } catch (error) {
-        console.error(error);
-        return req.error(500, `Error retrieving dashboard data: ${error.message}`);
+        console.error('Error in getToursDashboardData:', error);
+        
+        // Return default data instead of error to prevent frontend crashes
+        return {
+          activeToursCount: 0,
+          draftTemplatesCount: 0,
+          publishedTemplatesCount: 0,
+          upcomingDepartures: [],
+          recentlyCreatedTemplates: [],
+          tourTypeDistribution: [],
+          monthlyStats: []
+        };
       }
     });
     

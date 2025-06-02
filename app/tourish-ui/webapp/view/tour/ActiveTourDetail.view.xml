@@ -145,7 +145,7 @@
                     </IconTabFilter>
 
                     <!-- Tab 4: Services -->
-                    <IconTabFilter id="_IDGenIconTabFilter5" text="Services" key="services" icon="sap-icon://activity-items" count="{= ${activeTourDetail>/services}.length}">
+                    <IconTabFilter id="_IDGenIconTabFilter5" text="Services" key="services" icon="sap-icon://activity-items">
                         <VBox id="_IDGenVBox69">
                             <OverflowToolbar id="_IDGenOverflowToolbar14">
                                 <Title id="_IDGenTitle29" text="Tour Services"/>
@@ -208,7 +208,7 @@
                     </IconTabFilter>
 
                     <!-- Tab 5: Passengers -->
-                    <IconTabFilter id="_IDGenIconTabFilter8" text="Passengers" key="passengers" icon="sap-icon://group" count="{= ${activeTourDetail>/statistics/totalPassengers}}">
+                    <IconTabFilter id="_IDGenIconTabFilter8" text="Passengers" key="passengers" icon="sap-icon://group">
                         <VBox id="_IDGenVBox70">
                             <OverflowToolbar id="_IDGenOverflowToolbar15">
                                 <Title id="_IDGenTitle30" text="Tour Passengers"/>
@@ -331,7 +331,8 @@
                                                                                                         path: 'activeTourDetail>/statistics/totalCost',
                                                                                                         formatter: '.formatCurrency'
                                                                                                     }" unit="{activeTourDetail>/currency}" state="Error" emphasized="true" class="sapMObjectNumberLarge sapUiSmallMarginBegin"/>
-                                                <ProgressIndicator id="_IDGenProgressIndicator1" percentValue="{= ${activeTourDetail>/statistics/totalCost} / ${activeTourDetail>/statistics/totalRevenue} * 100}" showValue="true" displayValue="{= ${activeTourDetail>/statistics/totalCost} / ${activeTourDetail>/statistics/totalRevenue} * 100}%" width="200%" class="sapUiSmallMarginTop"/>
+                                                <ProgressIndicator id="_IDGenProgressIndicator" percentValue="{= Math.round((${activeTourDetail>/statistics/totalCost} / ${activeTourDetail>/statistics/totalRevenue}) * 100 * 10) / 10}" 
+                                                displayValue="{= Math.round((${activeTourDetail>/statistics/totalCost} / ${activeTourDetail>/statistics/totalRevenue}) * 100 * 10) / 10 + '%'}"  width="200%"/>
                                             </VBox>
                                         </fo:content>
                                     </fo:Card>
@@ -363,10 +364,6 @@
                                         <fo:content>
                                             <VBox id="_IDGenVBox75" alignItems="Center" justifyContent="Center" height="120px">
                                                 <microchart:RadialMicroChart id="_IDGenRadialMicroChart1" percentage="{activeTourDetail>/statistics/occupancyRate}" press=".onOccupancyPress" size="S" valueColor="{= ${activeTourDetail>/statistics/occupancyRate} > 80 ? 'Good' : ${activeTourDetail>/statistics/occupancyRate} > 50 ? 'Critical' : 'Error'}" class="sapUiSmallMarginBegin"/>
-                                                <Text id="_IDGenText277" text="{
-                                                                                                        path: 'activeTourDetail>/statistics/occupancyRate',
-                                                                                                        formatter: '.formatPercentage'
-                                                                                                    }" class="sapUiSmallMarginTop"/>
                                             </VBox>
                                         </fo:content>
                                     </fo:Card>
@@ -427,6 +424,17 @@
                                                                                                                 path: 'activeTourDetail>/statistics/totalDiscounts',
                                                                                                                 formatter: '.formatCurrency'
                                                                                                             }" unit="{activeTourDetail>/currency}" state="Error"/>
+                                                </cells>
+                                            </ColumnListItem>
+                                            <ColumnListItem id="_IDGenColumnListItem19">
+                                                <cells>
+                                                    <Text id="_IDGenText324" text="Total "/>
+                                                    <Text id="_IDGenText325" text="-"/>
+                                                    <Text id="_IDGenText326" text="-"/>
+                                                    <ObjectNumber id="_IDGenObjectNumber30" number="{
+                                                                                                                path: 'activeTourDetail>/statistics/totalRevenue',
+                                                                                                                formatter: '.formatCurrency'
+                                                                                                            }" unit="{activeTourDetail>/currency}" state="Success"/>
                                                 </cells>
                                             </ColumnListItem>
                                         </items>

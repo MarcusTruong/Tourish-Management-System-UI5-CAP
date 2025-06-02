@@ -628,7 +628,7 @@ Authorization: Basic {{base64 username:password}}
 ### 7.1 Get Tours Dashboard Data
 POST {{baseUrl}}/getToursDashboardData
 Content-Type: application/json
-Authorization: {{adminAuth}}
+Authorization: Basic {{base64 username:password}}
 
 {}
 

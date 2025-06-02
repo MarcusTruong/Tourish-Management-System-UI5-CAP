@@ -420,7 +420,7 @@ sap.ui.define([
                 oStats.totalAdditionalCost += parseFloat(oCostItem.Cost) || 0;
             });
             oStats.costItemsCount = aCostItems.length;
-            oStats.totalCost = oStats.totalServiceCost + oStats.totalAdditionalCost;
+            oStats.totalCost = Math.round((oStats.totalServiceCost + oStats.totalAdditionalCost) * 10) / 10;
             // Calculate profit metrics
             oStats.netProfit = oStats.totalRevenue - oStats.totalCost;
             oStats.profitMargin = oStats.totalRevenue > 0 ? 

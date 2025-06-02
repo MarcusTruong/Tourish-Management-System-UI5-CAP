@@ -1,1 +1,301 @@
-/* Enter your custom styles here */
+
+/* Dashboard Cards */
+.dashboardCard {
+    transition: all 0.3s ease;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.dashboardCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* KPI Cards Gradient Backgrounds */
+.dashboardCard .sapFCardHeader {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.dashboardCard:nth-child(1) .sapFCardHeader {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.dashboardCard:nth-child(2) .sapFCardHeader {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.dashboardCard:nth-child(3) .sapFCardHeader {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.dashboardCard:nth-child(4) .sapFCardHeader {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+}
+
+.dashboardCard:nth-child(5) .sapFCardHeader {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.dashboardCard:nth-child(6) .sapFCardHeader {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+}
+
+/* Header Content Styling */
+.sapFDynamicPageHeader {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 0 0 20px 20px;
+}
+
+
+
+/* Panel Headers */
+.sapMPanel > .sapMPanelHdr {
+    background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px 8px 0 0;
+    border-bottom: 2px solid #007acc;
+}
+
+.sapMPanelHdrText {
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+}
+
+/* Chart Cards */
+#revenueTrendCard .sapFCardContent,
+#tourTypesCard .sapFCardContent {
+    padding: 16px !important;
+}
+
+/* Activity List Items */
+.sapMSLI {
+    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.sapMSLI:hover {
+    border-left-color: #007acc;
+    background-color: rgba(0, 122, 204, 0.05) !important;
+}
+
+/* Quick Action Buttons */
+#quickActionsCard .sapMBtn {
+    border-radius: 8px !important;
+    transition: all 0.3s ease;
+    margin: 4px !important;
+}
+
+#quickActionsCard .sapMBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+#newTourBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+#newCustomerBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+#suppliersBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+#reportsBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+#paymentsBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+#settingsBtn .sapMBtnInner {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* Object Numbers Styling */
+.sapMObjectNumberLarge {
+    font-size: 2.5rem !important;
+    font-weight: 700 !important;
+}
+
+/* Progress Indicators */
+.sapMPI {
+    border-radius: 10px !important;
+}
+
+.sapMPIBar {
+    border-radius: 10px !important;
+}
+
+/* Micro Charts */
+.sapSuiteUiMicroChartPointer {
+    cursor: pointer;
+}
+
+/* Notification List Items */
+.sapMNLI {
+    border-left: 4px solid #007acc;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 8px !important;
+}
+
+.sapMNLI[data-priority="High"] {
+    border-left-color: #d32f2f;
+    background-color: rgba(211, 47, 47, 0.05) !important;
+}
+
+.sapMNLI[data-priority="Medium"] {
+    border-left-color: #ff9800;
+    background-color: rgba(255, 152, 0, 0.05) !important;
+}
+
+/* List Item Hover Effects */
+.sapMStandardListItem:hover,
+.sapMColumnListItem:hover {
+    background-color: rgba(0, 122, 204, 0.05) !important;
+    transition: background-color 0.2s ease;
+}
+
+/* Welcome Section Styling */
+#welcomeBox {
+    padding: 24px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+/* Card Content Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dashboardCard .sapFCardContent {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Grid Responsive Adjustments */
+@media (max-width: 1024px) {
+    .sapMObjectNumberLarge {
+        font-size: 2rem !important;
+    }
+    
+    .dashboardCard {
+        margin-bottom: 16px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .sapMObjectNumberLarge {
+        font-size: 1.5rem !important;
+    }
+    
+    #welcomeBox {
+        padding: 16px;
+    }
+    
+    .dashboardCard:hover {
+        transform: none;
+    }
+}
+
+/* Dark Mode Support (if needed) */
+@media (prefers-color-scheme: dark) {
+    .dashboardCard {
+        background-color: #c4d9fc !important;
+        color: white !important;
+    }
+    
+    .sapMPanel > .sapMPanelHdr {
+        background: linear-gradient(90deg, #2d3748 0%, #4a5568 100%);
+        color: white !important;
+    }
+}
+
+/* Custom Loading Animation */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.sapMBusyIndicator {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Tooltip Styling */
+.sapMTooltip {
+    background-color: rgba(0, 0, 0, 0.8) !important;
+    color: white !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    font-size: 0.875rem !important;
+}
+
+/* Icon Styling in Cards */
+.sapFCardHeader .sapFCardHeaderImage {
+    filter: brightness(0) invert(1);
+}
+
+/* Number Counter Animation */
+@keyframes countUp {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.sapMObjectNumber {
+    animation: countUp 0.5s ease-out;
+}
+
+/* Glassmorphism Effect for Welcome Box */
+#welcomeBox {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Status Indicators */
+.sapMObjectStatus {
+    border-radius: 12px !important;
+    padding: 4px 12px !important;
+    font-weight: 600 !important;
+}
+
+/* Enhanced Button Interactions */
+.sapMBtn:active {
+    transform: scale(0.98);
+}
+
+/* Grid Gap Adjustments */
+.sapUiLayoutGrid {
+    gap: 16px;
+}
+
+/* Footer Styling */
+.sapMPageFooter {
+    background: linear-gradient(90deg, #f8f9fa 0%, #e9ecef 100%);
+    border-top: 1px solid #dee2e6;
+}
