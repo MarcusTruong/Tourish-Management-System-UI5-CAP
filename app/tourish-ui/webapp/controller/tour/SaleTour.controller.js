@@ -609,6 +609,313 @@ sap.ui.define([
                 return oError.message;
             }
             return "Unknown error";
+        },
+
+        onCloseTour: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oBindingContext = oSource.getBindingContext("activeTours");
+            
+            if (oBindingContext) {
+                var sTourId = oBindingContext.getProperty("ID");
+                var sTourName = oBindingContext.getProperty("TourName");
+                var sStatus = oBindingContext.getProperty("Status");
+                
+                // Check if tour can be closed
+                if (sStatus !== 'Open') {
+                    MessageBox.error("Only open tours can be closed for booking");
+                    return;
+                }
+                
+                // Show reason input dialog
+                this._showStatusChangeDialog(
+                    "Close Tour for Booking",
+                    `Are you sure you want to close '${sTourName}' for booking? No new orders will be accepted.`,
+                    "Reason for closing:",
+                    function(sReason) {
+                        this._executeCloseTour(sTourId, sReason);
+                    }.bind(this)
+                );
+            }
+        },
+        
+        /**
+         * Reopens a closed tour for booking
+         */
+        onReopenTour: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oBindingContext = oSource.getBindingContext("activeTours");
+            
+            if (oBindingContext) {
+                var sTourId = oBindingContext.getProperty("ID");
+                var sTourName = oBindingContext.getProperty("TourName");
+                var sStatus = oBindingContext.getProperty("Status");
+                
+                // Check if tour can be reopened
+                if (sStatus !== 'Closed') {
+                    MessageBox.error("Only closed tours can be reopened");
+                    return;
+                }
+                
+                // Show reason input dialog
+                this._showStatusChangeDialog(
+                    "Reopen Tour for Booking",
+                    `Are you sure you want to reopen '${sTourName}' for booking?`,
+                    "Reason for reopening:",
+                    function(sReason) {
+                        this._executeReopenTour(sTourId, sReason);
+                    }.bind(this)
+                );
+            }
+        },
+        
+        /**
+         * Completes a tour
+         */
+        onCompleteTour: function (oEvent) {
+            var oSource = oEvent.getSource();
+            var oBindingContext = oSource.getBindingContext("activeTours");
+            
+            if (oBindingContext) {
+                var sTourId = oBindingContext.getProperty("ID");
+                var sTourName = oBindingContext.getProperty("TourName");
+                var sStatus = oBindingContext.getProperty("Status");
+                
+                // Check if tour can be completed
+                if (sStatus === 'Canceled' || sStatus === 'Completed') {
+                    MessageBox.error(`Cannot complete a ${sStatus.toLowerCase()} tour`);
+                    return;
+                }
+                
+                // Show completion dialog
+                this._showStatusChangeDialog(
+                    "Complete Tour",
+                    `Are you sure you want to mark '${sTourName}' as completed? This action cannot be undone.`,
+                    "Completion notes (optional):",
+                    function(sNotes) {
+                        this._executeCompleteTour(sTourId, sNotes);
+                    }.bind(this)
+                );
+            }
+        },
+        
+        /**
+         * Shows a generic status change dialog with reason input
+         */
+        _showStatusChangeDialog: function(sTitle, sMessage, sInputLabel, fnCallback) {
+            var oDialog = new sap.m.Dialog({
+                title: sTitle,
+                type: "Message",
+                content: [
+                    new sap.m.Text({ text: sMessage }).addStyleClass("sapUiMediumMarginBottom"),
+                    new sap.m.Label({ text: sInputLabel }).addStyleClass("sapUiSmallMarginTop"),
+                    new sap.m.TextArea({
+                        id: "statusChangeReasonInput",
+                        width: "100%",
+                        rows: 3,
+                        placeholder: "Enter reason or notes..."
+                    })
+                ],
+                beginButton: new sap.m.Button({
+                    text: "Confirm",
+                    type: "Emphasized",
+                    press: function() {
+                        var sReason = sap.ui.getCore().byId("statusChangeReasonInput").getValue();
+                        oDialog.close();
+                        fnCallback(sReason);
+                    }
+                }),
+                endButton: new sap.m.Button({
+                    text: "Cancel",
+                    press: function() {
+                        oDialog.close();
+                    }
+                }),
+                afterClose: function() {
+                    oDialog.destroy();
+                }
+            });
+            
+            oDialog.open();
+        },
+        
+        /**
+         * Executes close tour action
+         */
+        _executeCloseTour: function (sTourId, sReason) {
+            var oView = this.getView();
+            oView.setBusy(true);
+            
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            var oContext = oModel.bindContext("/closeActiveTour(...)");
+            oContext.setParameter("tourID", sTourId);
+            oContext.setParameter("reason", sReason);
+            
+            oContext.execute()
+                .then(function () {
+                    var oResult = oContext.getBoundContext().getObject();
+                    oView.setBusy(false);
+                    
+                    if (oResult && oResult.success) {
+                        MessageToast.show("Tour closed for booking successfully");
+                        this._loadActiveTours();
+                    } else {
+                        MessageBox.error(oResult && oResult.message ? oResult.message : "Failed to close tour");
+                    }
+                }.bind(this))
+                .catch(function (oError) {
+                    oView.setBusy(false);
+                    var sErrorMessage = this._getErrorMessage(oError);
+                    MessageBox.error("Error closing tour: " + sErrorMessage);
+                }.bind(this));
+        },
+        
+        /**
+         * Executes reopen tour action
+         */
+        _executeReopenTour: function (sTourId, sReason) {
+            var oView = this.getView();
+            oView.setBusy(true);
+            
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            var oContext = oModel.bindContext("/reopenActiveTour(...)");
+            oContext.setParameter("tourID", sTourId);
+            oContext.setParameter("reason", sReason);
+            
+            oContext.execute()
+                .then(function () {
+                    var oResult = oContext.getBoundContext().getObject();
+                    oView.setBusy(false);
+                    
+                    if (oResult && oResult.success) {
+                        MessageToast.show("Tour reopened for booking successfully");
+                        this._loadActiveTours();
+                    } else {
+                        MessageBox.error(oResult && oResult.message ? oResult.message : "Failed to reopen tour");
+                    }
+                }.bind(this))
+                .catch(function (oError) {
+                    oView.setBusy(false);
+                    var sErrorMessage = this._getErrorMessage(oError);
+                    MessageBox.error("Error reopening tour: " + sErrorMessage);
+                }.bind(this));
+        },
+        
+        /**
+         * Executes complete tour action
+         */
+        _executeCompleteTour: function (sTourId, sNotes) {
+            var oView = this.getView();
+            oView.setBusy(true);
+            
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            var oContext = oModel.bindContext("/completeActiveTour(...)");
+            oContext.setParameter("tourID", sTourId);
+            oContext.setParameter("completionNotes", sNotes);
+            
+            oContext.execute()
+                .then(function () {
+                    var oResult = oContext.getBoundContext().getObject();
+                    oView.setBusy(false);
+                    
+                    if (oResult && oResult.success) {
+                        MessageToast.show("Tour completed successfully");
+                        this._loadActiveTours();
+                    } else {
+                        MessageBox.error(oResult && oResult.message ? oResult.message : "Failed to complete tour");
+                    }
+                }.bind(this))
+                .catch(function (oError) {
+                    oView.setBusy(false);
+                    var sErrorMessage = this._getErrorMessage(oError);
+                    MessageBox.error("Error completing tour: " + sErrorMessage);
+                }.bind(this));
+        },
+        
+        /**
+         * Runs automated tour status updates
+         */
+        onRunAutomatedUpdates: function() {
+            MessageBox.confirm("Run automated status updates? This will close tours past sale date and complete tours past return date.", {
+                title: "Automated Updates",
+                onClose: function(sAction) {
+                    if (sAction === MessageBox.Action.OK) {
+                        this._runAutomatedUpdates();
+                    }
+                }.bind(this)
+            });
+        },
+        
+        /**
+         * Executes automated tour updates
+         */
+        _runAutomatedUpdates: function() {
+            var oView = this.getView();
+            oView.setBusy(true);
+            
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            
+            // Run auto-close first, then auto-complete
+            var oCloseContext = oModel.bindContext("/autoCloseTours(...)");
+            
+            oCloseContext.execute()
+                .then(function() {
+                    var oCloseResult = oCloseContext.getBoundContext().getObject();
+                    
+                    // Run auto-complete
+                    var oCompleteContext = oModel.bindContext("/autoCompleteTours(...)");
+                    return oCompleteContext.execute().then(function() {
+                        var oCompleteResult = oCompleteContext.getBoundContext().getObject();
+                        
+                        oView.setBusy(false);
+                        
+                        var sMessage = `Automated updates completed:\n`;
+                        sMessage += `- Closed ${oCloseResult.closedCount || 0} tours\n`;
+                        sMessage += `- Completed ${oCompleteResult.completedCount || 0} tours`;
+                        
+                        MessageBox.information(sMessage);
+                        this._loadActiveTours();
+                    }.bind(this));
+                }.bind(this))
+                .catch(function(oError) {
+                    oView.setBusy(false);
+                    var sErrorMessage = this._getErrorMessage(oError);
+                    MessageBox.error("Error running automated updates: " + sErrorMessage);
+                }.bind(this));
+        },
+        
+        /**
+         * Shows tour status statistics
+         */
+        onShowStatusStatistics: function() {
+            var oModel = this.getOwnerComponent().getModel("tourService");
+            var oContext = oModel.bindContext("/getTourStatusStatistics(...)");
+            
+            oContext.execute()
+                .then(function() {
+                    var oStats = oContext.getBoundContext().getObject();
+                    
+                    var sMessage = `Tour Status Summary:\n\n`;
+                    sMessage += `Open: ${oStats.open || 0}\n`;
+                    sMessage += `Closed: ${oStats.closed || 0}\n`;
+                    sMessage += `Completed: ${oStats.completed || 0}\n`;
+                    sMessage += `Canceled: ${oStats.canceled || 0}\n`;
+                    sMessage += `Total: ${oStats.total || 0}\n\n`;
+                    
+                    if (oStats.needsAttention) {
+                        sMessage += `Needs Attention:\n`;
+                        sMessage += `- Tours to close: ${oStats.needsAttention.toClose || 0}\n`;
+                        sMessage += `- Tours to complete: ${oStats.needsAttention.toComplete || 0}`;
+                    }
+                    
+                    MessageBox.information(sMessage, {
+                        title: "Tour Status Statistics",
+                        styleClass: "sapUiSizeCompact"
+                    });
+                })
+                .catch(function(oError) {
+                    var sErrorMessage = this._getErrorMessage(oError);
+                    MessageBox.error("Error loading statistics: " + sErrorMessage);
+                }.bind(this));
         }
     });
 });

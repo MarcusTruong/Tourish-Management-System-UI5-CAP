@@ -202,7 +202,7 @@ oSupplierData.emailStateText = "";
                             MessageToast.show("Supplier deleted successfully");
                             that.onNavBack(); // Navigate back to list
                         }).catch(function (oError) {
-                            var sMessage = "Failed to delete supplier!";
+                            var sMessage = oError;
                             try {
                                 var oResponse = JSON.parse(oError.responseText);
                                 sMessage = oResponse.error.message || sMessage;
@@ -210,7 +210,7 @@ oSupplierData.emailStateText = "";
                                 // Fallback to default message
                             }
                             console.error("Error deleting supplier:", sMessage);
-                            MessageBox.error(sMessage);
+                            MessageBox.error("Failed to delete supplier!" + sMessage);
                         });
                     }
                 }

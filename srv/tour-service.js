@@ -1234,7 +1234,6 @@ module.exports = async (srv) => {
       };
     }
   });
-  
   /**
    * Cancels an active tour with a reason
    */
@@ -1284,6 +1283,480 @@ module.exports = async (srv) => {
       };
     }
   });
+
+/**
+ * Closes an active tour (stops accepting new bookings)
+ */
+srv.on('closeActiveTour', async (req) => {
+  const { tourID, reason } = req.data;
+  const timestamp = new Date();
+  const user = req.user.id || 'system';
+  
+  try {
+    // Get current tour status
+    const tour = await SELECT.one.from(ActiveTours).where({ ID: tourID });
+    
+    if (!tour) {
+      return {
+        success: false,
+        message: 'Active tour not found'
+      };
+    }
+    
+    // Validate current status
+    if (tour.Status === 'Canceled') {
+      return {
+        success: false,
+        message: 'Cannot close a canceled tour'
+      };
+    }
+    
+    if (tour.Status === 'Completed') {
+      return {
+        success: false,
+        message: 'Cannot close a completed tour'
+      };
+    }
+    
+    if (tour.Status === 'Closed') {
+      return {
+        success: false,
+        message: 'Tour is already closed'
+      };
+    }
+    
+    // Update the active tour status
+    const result = await cds.transaction(req).run(
+      UPDATE(ActiveTours)
+        .set({
+          Status: 'Closed',
+          UpdatedAt: timestamp
+        })
+        .where({ ID: tourID })
+    );
+    
+    if (result === 0) {
+      return {
+        success: false,
+        message: 'Failed to close tour'
+      };
+    }
+    
+    // Log the history with reason
+    await cds.transaction(req).run(
+      INSERT.into(ActiveTourHistories).entries({
+        ID: cds.utils.uuid(),
+        ActiveTourID: tourID,
+        ModifiedDate: timestamp,
+        ModifiedBy: user,
+        Changes: `Tour closed for booking. Reason: ${reason || 'No reason provided'}`
+      })
+    );
+    
+    return {
+      success: true,
+      message: 'Tour closed successfully'
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: `Error closing tour: ${error.message}`
+    };
+  }
+});
+
+/**
+ * Reopens a closed tour for booking
+ */
+srv.on('reopenActiveTour', async (req) => {
+  const { tourID, reason } = req.data;
+  const timestamp = new Date();
+  const user = req.user.id || 'system';
+  
+  try {
+    // Get current tour status
+    const tour = await SELECT.one.from(ActiveTours).where({ ID: tourID });
+    
+    if (!tour) {
+      return {
+        success: false,
+        message: 'Active tour not found'
+      };
+    }
+    
+    // Validate current status - only closed tours can be reopened
+    if (tour.Status !== 'Closed') {
+      return {
+        success: false,
+        message: 'Only closed tours can be reopened'
+      };
+    }
+    
+    // Check if tour dates are still valid for reopening
+    const currentDate = new Date();
+    const saleEndDate = new Date(tour.SaleEndDate);
+    
+    if (currentDate > saleEndDate) {
+      return {
+        success: false,
+        message: 'Cannot reopen tour: sale period has ended'
+      };
+    }
+    
+    // Update the active tour status back to Open
+    const result = await cds.transaction(req).run(
+      UPDATE(ActiveTours)
+        .set({
+          Status: 'Open',
+          UpdatedAt: timestamp
+        })
+        .where({ ID: tourID })
+    );
+    
+    if (result === 0) {
+      return {
+        success: false,
+        message: 'Failed to reopen tour'
+      };
+    }
+    
+    // Log the history
+    await cds.transaction(req).run(
+      INSERT.into(ActiveTourHistories).entries({
+        ID: cds.utils.uuid(),
+        ActiveTourID: tourID,
+        ModifiedDate: timestamp,
+        ModifiedBy: user,
+        Changes: `Tour reopened for booking. Reason: ${reason || 'No reason provided'}`
+      })
+    );
+    
+    return {
+      success: true,
+      message: 'Tour reopened successfully'
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: `Error reopening tour: ${error.message}`
+    };
+  }
+});
+
+/**
+ * Completes an active tour (marks as finished)
+ */
+srv.on('completeActiveTour', async (req) => {
+  const { tourID, completionNotes } = req.data;
+  const timestamp = new Date();
+  const user = req.user.id || 'system';
+  
+  try {
+    // Get current tour status and details
+    const tour = await SELECT.one.from(ActiveTours).where({ ID: tourID });
+    
+    if (!tour) {
+      return {
+        success: false,
+        message: 'Active tour not found'
+      };
+    }
+    
+    // Validate current status
+    if (tour.Status === 'Canceled') {
+      return {
+        success: false,
+        message: 'Cannot complete a canceled tour'
+      };
+    }
+    
+    if (tour.Status === 'Completed') {
+      return {
+        success: false,
+        message: 'Tour is already completed'
+      };
+    }
+    
+    // Validate tour dates - tour should have started or ended
+    const currentDate = new Date();
+    const departureDate = new Date(tour.DepartureDate);
+    
+    if (currentDate < departureDate) {
+      return {
+        success: false,
+        message: 'Cannot complete tour before departure date'
+      };
+    }
+    
+    // Check if all orders are properly handled
+    const pendingOrders = await SELECT.from('tourish.management.Order')
+      .where({ 
+        ActiveTourID: tourID, 
+        Status: 'Pending',
+        RemainingAmount: { '>': 0 }
+      });
+    
+    if (pendingOrders.length > 0) {
+      return {
+        success: false,
+        message: `Cannot complete tour: ${pendingOrders.length} orders with outstanding payments. Please settle all payments first.`
+      };
+    }
+    
+    // Start transaction for completion process
+    await cds.transaction(req).run(async tx => {
+      // Update the active tour status
+      await tx.run(
+        UPDATE(ActiveTours)
+          .set({
+            Status: 'Completed',
+            UpdatedAt: timestamp
+          })
+          .where({ ID: tourID })
+      );
+      
+      // Update all remaining pending orders to completed
+      await tx.run(
+        UPDATE('tourish.management.Order')
+          .set({ Status: 'Completed' })
+          .where({ 
+            ActiveTourID: tourID, 
+            Status: 'Pending' 
+          })
+      );
+      
+      // Log the completion
+      await tx.run(
+        INSERT.into(ActiveTourHistories).entries({
+          ID: cds.utils.uuid(),
+          ActiveTourID: tourID,
+          ModifiedDate: timestamp,
+          ModifiedBy: user,
+          Changes: `Tour completed successfully. ${completionNotes ? 'Notes: ' + completionNotes : ''}`
+        })
+      );
+    });
+    
+    return {
+      success: true,
+      message: 'Tour completed successfully'
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      success: false,
+      message: `Error completing tour: ${error.message}`
+    };
+  }
+});
+
+/**
+ * Auto-close tours that have passed their sale end date
+ */
+srv.on('autoCloseTours', async (req) => {
+  const timestamp = new Date();
+  const user = 'system';
+  
+  try {
+    // Find tours that should be auto-closed
+    const currentDate = new Date().toISOString().split('T')[0];
+    const toursToClose = await SELECT.from(ActiveTours)
+      .where({ 
+        Status: 'Open',
+        SaleEndDate: { '<': currentDate }
+      });
+    
+    let closedCount = 0;
+    
+    for (const tour of toursToClose) {
+      try {
+        // Close the tour
+        await cds.transaction(req).run(
+          UPDATE(ActiveTours)
+            .set({
+              Status: 'Closed',
+              UpdatedAt: timestamp
+            })
+            .where({ ID: tour.ID })
+        );
+        
+        // Log the auto-closure
+        await cds.transaction(req).run(
+          INSERT.into(ActiveTourHistories).entries({
+            ID: cds.utils.uuid(),
+            ActiveTourID: tour.ID,
+            ModifiedDate: timestamp,
+            ModifiedBy: user,
+            Changes: 'Tour automatically closed - sale period ended'
+          })
+        );
+        
+        closedCount++;
+      } catch (error) {
+        console.error(`Error auto-closing tour ${tour.ID}:`, error);
+      }
+    }
+    
+    return {
+      success: true,
+      message: `Auto-closed ${closedCount} tours`,
+      closedCount: closedCount
+    };
+  } catch (error) {
+    console.error('Error in auto-close tours:', error);
+    return {
+      success: false,
+      message: `Error in auto-close process: ${error.message}`,
+      closedCount: 0
+    };
+  }
+});
+
+/**
+ * Auto-complete tours that have passed their return date
+ */
+srv.on('autoCompleteTours', async (req) => {
+  const timestamp = new Date();
+  const user = 'system';
+  
+  try {
+    // Find tours that should be auto-completed
+    const currentDate = new Date().toISOString().split('T')[0];
+    const toursToComplete = await SELECT.from(ActiveTours)
+      .where({ 
+        Status: ['Open', 'Closed'],
+        ReturnDate: { '<': currentDate }
+      });
+    
+    let completedCount = 0;
+    
+    for (const tour of toursToComplete) {
+      try {
+        // Check if all orders are settled before auto-completing
+        const pendingOrders = await SELECT.from('tourish.management.Order')
+          .where({ 
+            ActiveTourID: tour.ID, 
+            Status: 'Pending',
+            RemainingAmount: { '>': 0 }
+          });
+        
+        if (pendingOrders.length === 0) {
+          // Complete the tour
+          await cds.transaction(req).run(
+            UPDATE(ActiveTours)
+              .set({
+                Status: 'Completed',
+                UpdatedAt: timestamp
+              })
+              .where({ ID: tour.ID })
+          );
+          
+          // Update all remaining pending orders to completed
+          await cds.transaction(req).run(
+            UPDATE('tourish.management.Order')
+              .set({ Status: 'Completed' })
+              .where({ 
+                ActiveTourID: tour.ID, 
+                Status: 'Pending' 
+              })
+          );
+          
+          // Log the auto-completion
+          await cds.transaction(req).run(
+            INSERT.into(ActiveTourHistories).entries({
+              ID: cds.utils.uuid(),
+              ActiveTourID: tour.ID,
+              ModifiedDate: timestamp,
+              ModifiedBy: user,
+              Changes: 'Tour automatically completed - return date passed'
+            })
+          );
+          
+          completedCount++;
+        }
+      } catch (error) {
+        console.error(`Error auto-completing tour ${tour.ID}:`, error);
+      }
+    }
+    
+    return {
+      success: true,
+      message: `Auto-completed ${completedCount} tours`,
+      completedCount: completedCount
+    };
+  } catch (error) {
+    console.error('Error in auto-complete tours:', error);
+    return {
+      success: false,
+      message: `Error in auto-complete process: ${error.message}`,
+      completedCount: 0
+    };
+  }
+});
+
+/**
+ * Get tour status statistics
+ */
+srv.on('getTourStatusStatistics', async (req) => {
+  try {
+    const statistics = {};
+    
+    // Count tours by status
+    const statusCounts = await SELECT.from(ActiveTours)
+      .columns('Status', 'count(*) as count')
+      .groupBy('Status');
+    
+    // Initialize all statuses
+    statistics.open = 0;
+    statistics.closed = 0;
+    statistics.completed = 0;
+    statistics.canceled = 0;
+    
+    // Populate actual counts
+    statusCounts.forEach(stat => {
+      statistics[stat.Status.toLowerCase()] = stat.count;
+    });
+    
+    // Calculate total
+    statistics.total = statistics.open + statistics.closed + statistics.completed + statistics.canceled;
+    
+    // Get tours that need attention
+    const currentDate = new Date().toISOString().split('T')[0];
+    
+    // Tours that should be auto-closed
+    const toursToClose = await SELECT.from(ActiveTours)
+      .columns('count(*) as count')
+      .where({ 
+        Status: 'Open',
+        SaleEndDate: { '<': currentDate }
+      });
+    
+    // Tours that should be auto-completed
+    const toursToComplete = await SELECT.from(ActiveTours)
+      .columns('count(*) as count')
+      .where({ 
+        Status: ['Open', 'Closed'],
+        ReturnDate: { '<': currentDate }
+      });
+    
+    statistics.needsAttention = {
+      toClose: toursToClose[0]?.count || 0,
+      toComplete: toursToComplete[0]?.count || 0
+    };
+    
+    return statistics;
+  } catch (error) {
+    console.error('Error getting tour status statistics:', error);
+    return {
+      success: false,
+      message: `Error getting statistics: ${error.message}`
+    };
+  }
+});
+
+
   
   /**
    * Logs changes to an active tour
@@ -2425,7 +2898,7 @@ srv.on('getPassengersByOrder', async (req) => {
         const todayString = today.toISOString().split('T')[0];
         const upcomingDepartures = await SELECT.from(ActiveTours)
           .columns('ID', 'TourName', 'DepartureDate', 'CurrentBookings', 'MaxCapacity')
-          .where(`DepartureDate >= '${todayString}'`)
+          .where(`DepartureDate >= '${todayString}' AND Status = 'Open'`)
           .orderBy('DepartureDate')
           .limit(5);
         

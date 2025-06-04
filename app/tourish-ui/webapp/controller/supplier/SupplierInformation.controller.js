@@ -240,15 +240,10 @@ sap.ui.define([
                             MessageToast.show("Supplier deleted successfully");
                             that._loadSuppliers(); // Reload the list
                         }).catch(function (oError) {
-                            var sMessage = "Failed to delete supplier!";
-                            try {
-                                var oResponse = JSON.parse(oError.responseText);
-                                sMessage = oResponse.error.message || sMessage;
-                            } catch (e) {
-                                // Fallback to default message
-                            }
+                            console.log(oError);
+                            var sMessage = oError;
                             console.error("Error deleting supplier:", sMessage);
-                            MessageBox.error(sMessage);
+                            MessageBox.error("Error deleting supplier:" + sMessage);
                         });
                     }
                 }

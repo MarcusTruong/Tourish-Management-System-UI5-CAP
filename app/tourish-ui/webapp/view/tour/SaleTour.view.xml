@@ -13,7 +13,7 @@
 
                         <VBox id="_IDGenVBox23">
                             <Label id="_IDGenLabel54" text="Status:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
-                            <Select id="statusFilter2" width="300px" change=".onFilterChange"  forceSelection="false" selectedKey="" class="sapUiSmallMarginEnd">
+                            <Select id="statusFilter2" width="300px" change=".onFilterChange" forceSelection="false" selectedKey="" class="sapUiSmallMarginEnd">
                                 <core:Item id="_IDGenItem28" key="" text="All Statuses"/>
                                 <core:Item id="_IDGenItem29" key="Open" text="Open"/>
                                 <core:Item id="_IDGenItem30" key="Ongoing" text="Ongoing"/>
@@ -49,9 +49,14 @@
                         <VBox id="_IDGenVBox28">
                             <Label id="_IDGenLabel53" text="To:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
                             <DatePicker id="saleDateToFilter" width="300px" change=".onFilterChange" valueFormat="yyyy-MM-dd" displayFormat="long" class="sapUiSmallMarginEnd"/>
+                            <Button id="clearFiltersBtn2" width="300px" text="Clear Filters" press=".onClearFilters" class="sapUiSmallMarginEnd"/>
                         </VBox>
                     </HBox>
-                    <Button id="clearFiltersBtn2" width="300px" text="Clear Filters" press=".onClearFilters" class="sapUiSmallMarginEnd"/>
+                    <HBox id="statusManagementBox" alignItems="Center" class="sapUiSmallMarginBottom" wrap="Wrap">
+                        <Label id="statusMgmtLabel" text="Status Management:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                        <Button id="autoUpdateBtn" text="Run Auto Updates" icon="sap-icon://refresh" press=".onRunAutomatedUpdates" tooltip="Auto-close and auto-complete tours based on dates" class="sapUiSmallMarginEnd"/>
+                        <Button id="statusStatsBtn" text="Status Statistics" icon="sap-icon://pie-chart" press=".onShowStatusStatistics" tooltip="View tour status statistics" class="sapUiSmallMarginEnd"/>
+                    </HBox>
                 </VBox>
             </FlexBox>
         </f:DynamicPageHeader>
@@ -65,12 +70,12 @@
                     <Button id="_IDGenButton38" icon="sap-icon://action-settings" tooltip="Table Settings" press=".onTableSettings"/>
                 </OverflowToolbar>
                 <Table id="activeToursTable" inset="false" items="{
-                                            path: 'activeTours>/items',
-                                            sorter: {
-                                                path: 'DepartureDate',
-                                                descending: false
-                                            }
-                                        }" growing="true" growingThreshold="20" growingScrollToLoad="true" sticky="HeaderToolbar,ColumnHeaders" alternateRowColors="true"  selectionChange=".onTourSelect" busyIndicatorDelay="0">
+                                                                path: 'activeTours>/items',
+                                                                sorter: {
+                                                                    path: 'DepartureDate',
+                                                                    descending: false
+                                                                }
+                                                            }" growing="true" growingThreshold="20" growingScrollToLoad="true" sticky="HeaderToolbar,ColumnHeaders" alternateRowColors="true" selectionChange=".onTourSelect" busyIndicatorDelay="0">
                     <columns>
                         <Column id="_IDGenColumn31" minScreenWidth="Tablet" demandPopin="true" width="120px">
                             <Text id="_IDGenText53" text="Image"/>
@@ -88,9 +93,9 @@
                             <Text id="_IDGenText57" text="Return Date"/>
                         </Column>
                         <Column id="_IDGenColumn97" minScreenWidth="Desktop" demandPopin="true">
-                            <Text id="_IDGenText207"  text="Sale Start Date"/>
+                            <Text id="_IDGenText207" text="Sale Start Date"/>
                         </Column>
-                        <Column id="_IDGenColumn98"  minScreenWidth="Desktop" demandPopin="true">
+                        <Column id="_IDGenColumn98" minScreenWidth="Desktop" demandPopin="true">
                             <Text id="_IDGenText225" text="Sale End Date"/>
                         </Column>
                         <Column id="_IDGenColumn36" minScreenWidth="Desktop" demandPopin="true">
@@ -113,25 +118,25 @@
                                 </HBox>
                                 <Text id="_IDGenText61" text="{activeTours>TourName}"/>
                                 <Text id="_IDGenText62" text="{activeTours>TemplateName}"/>
-                                <Text id="_IDGenText63" text="{
-                                                                        path: 'activeTours>DepartureDate',
-                                                                        formatter: '.formatDate'
-                                                                    }"/>
-                                <Text id="_IDGenText64" text="{
-                                                                        path: 'activeTours>ReturnDate',
-                                                                        formatter: '.formatDate'
-                                                                    }"/>
-                                <Text id="_IDGenText223" text="{
-                                                                        path: 'activeTours>SaleStartDate',
-                                                                        formatter: '.formatDate'
-                                                                    }"/>
-                                <Text id="_IDGenText224" text="{
-                                                                        path: 'activeTours>SaleEndDate',
-                                                                        formatter: '.formatDate'
-                                                                    }"/>
+                                <Text id="_IDGenText63" text="{path: 'activeTours>DepartureDate',formatter: '.formatDate'}"/>
+                                <Text id="_IDGenText64" text="{ path: 'activeTours>ReturnDate',formatter: '.formatDate'}"/>
+                                <Text id="_IDGenText223" text="{path: 'activeTours>SaleStartDate',formatter: '.formatDate'}"/>
+                                <Text id="_IDGenText224" text="{path: 'activeTours>SaleEndDate',formatter: '.formatDate'}"/>
                                 <Text id="_IDGenText65" text="{= ${activeTours>CurrentBookings} + '/' + ${activeTours>MaxCapacity}}"/>
-                                <ObjectStatus id="_IDGenObjectStatus7" text="{activeTours>Status}" state="{= ${activeTours>Status} === 'Open' ? 'Success' : ${activeTours>Status} === 'Ongoing' ? 'Warning' : ${activeTours>Status} === 'Completed' ? 'Information' : 'Error'}"/>
+                                <VBox id="statusDetailsBox" alignItems="Start">
+                                    <ObjectStatus id="tourStatusMain" text="{activeTours>Status}" state="{= ${activeTours>Status} === 'Open' ? 'Success' : ${activeTours>Status} === 'Closed' ? 'Warning' : ${activeTours>Status} === 'Ongoing' ? 'Information' : ${activeTours>Status} === 'Completed' ? 'Information' : 'Error' }"/>
+                                    <Text id="statusDescription" text="{= ${activeTours>Status} === 'Open' ? 'Accepting bookings' : ${activeTours>Status} === 'Closed' ? 'Booking closed' : ${activeTours>Status} === 'Ongoing' ? 'In progress' : ${activeTours>Status} === 'Completed' ? 'Tour finished' : ${activeTours>Status} === 'Canceled' ? 'Tour canceled' : 'Unknown status' }" class="sapUiSmallText"/>
+                                </VBox>
                                 <HBox id="_IDGenHBox16" justifyContent="End">
+                                    <Button
+                                    id="closeTourBtn" icon="sap-icon://locked" press=".onCloseTour" tooltip="Close for Booking" visible="{= ${activeTours>Status} === 'Open'}" class="sapUiTinyMarginBegin"/>
+
+                                    <!-- Reopen Tour Button - for Closed tours -->
+                                    <Button
+                                    id="reopenTourBtn" icon="sap-icon://unlocked" press=".onReopenTour" tooltip="Reopen for Booking" visible="{= ${activeTours>Status} === 'Closed'}" class="sapUiTinyMarginBegin"/>
+
+                                    <!-- Complete Tour Button - for Open/Closed tours -->
+                                    <Button id="completeTourBtn" icon="sap-icon://accept" press=".onCompleteTour" tooltip="Complete Tour" visible="{= ${activeTours>Status} === 'Open' || ${activeTours>Status} === 'Closed'}" class="sapUiTinyMarginBegin"/>
                                     <Button id="_IDGenButton41" icon="sap-icon://cancel" press=".onCancelTour" tooltip="Cancel Tour" visible="{= ${activeTours>Status} === 'Open' || ${activeTours>Status} === 'Ongoing'}" class="sapUiTinyMarginBegin"/>
                                     <Button id="_IDGenButton42" icon="sap-icon://detail-view" press=".onViewDetails" tooltip="View Details" class="sapUiTinyMarginBegin"/>
                                 </HBox>

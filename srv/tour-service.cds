@@ -376,6 +376,64 @@ service TourService @(path: '/tour-service') {
     success: Boolean;
     message: String
   };
+
+  @(requires: 'authenticated-user')
+  action closeActiveTour(
+    tourID: UUID,
+    reason: String
+  ) returns {
+    success: Boolean;
+    message: String;
+  };
+
+  @(requires: 'authenticated-user')
+action reopenActiveTour(
+  tourID: UUID,
+  reason: String
+) returns {
+  success: Boolean;
+  message: String;
+};
+
+@(requires: 'authenticated-user')
+action completeActiveTour(
+  tourID: UUID,
+  completionNotes: String
+) returns {
+  success: Boolean;
+  message: String;
+};
+
+// AUTOMATED STATUS MANAGEMENT
+
+@(requires: 'authenticated-user')
+action autoCloseTours() returns {
+  success: Boolean;
+  message: String;
+  closedCount: Integer;
+};
+
+@(requires: 'authenticated-user')
+action autoCompleteTours() returns {
+  success: Boolean;
+  message: String;
+  completedCount: Integer;
+};
+
+// TOUR STATUS REPORTING
+
+@(requires: 'authenticated-user')
+action getTourStatusStatistics() returns {
+  open: Integer;
+  closed: Integer;
+  completed: Integer;
+  canceled: Integer;
+  total: Integer;
+  needsAttention: {
+    toClose: Integer;
+    toComplete: Integer;
+  };
+};
   
   // PASSENGER MANAGEMENT
   

@@ -253,7 +253,7 @@ this.on('updateSupplier', async (req) => {
       }
 
       // Check if supplier has related debts
-      const relatedDebts = await tx.run(SELECT.from(SupplierDebts).where({ SupplierID: supplierID }));
+      const relatedDebts = await tx.run(SELECT.from(SupplierDebts).where({ SupplierID: supplierID, Status: 'Pending' }));
       if (relatedDebts.length > 0) {
         req.error(400, `Cannot delete supplier: ${relatedDebts.length} related debts exist. Clear them first.`);
         return;

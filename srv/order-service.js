@@ -62,10 +62,36 @@ module.exports = async (srv) => {
         return { orderID: null, message: 'Customer not found', totalAmount: 0 };
       }
       
-      // Check if active tour exists
+      // Check if active tour exists and validate status
       const tour = await SELECT.one.from(ActiveTour).where({ ID: activeTourID });
       if (!tour) {
         return { orderID: null, message: 'Active tour not found', totalAmount: 0 };
+      }
+      
+      // ENHANCED: Validate tour status for booking
+      if (tour.Status === 'Canceled') {
+        return { orderID: null, message: 'Cannot create order for a canceled tour', totalAmount: 0 };
+      }
+      
+      if (tour.Status === 'Completed') {
+        return { orderID: null, message: 'Cannot create order for a completed tour', totalAmount: 0 };
+      }
+      
+      if (tour.Status === 'Closed') {
+        return { orderID: null, message: 'Tour is closed for booking. No new orders can be created.', totalAmount: 0 };
+      }
+      
+      // ENHANCED: Check sale dates
+      const currentDate = new Date();
+      const saleStartDate = new Date(tour.SaleStartDate);
+      const saleEndDate = new Date(tour.SaleEndDate);
+      
+      if (currentDate < saleStartDate) {
+        return { orderID: null, message: 'Tour booking has not started yet', totalAmount: 0 };
+      }
+      
+      if (currentDate > saleEndDate) {
+        return { orderID: null, message: 'Tour booking period has ended', totalAmount: 0 };
       }
       
       // Check if tour has enough seats
@@ -105,6 +131,28 @@ module.exports = async (srv) => {
           .set({ CurrentBookings: { '+=': adultCount + childCount } })
           .where({ ID: activeTourID })
       );
+      
+      // ENHANCED: Check if tour should be auto-closed due to capacity
+      const updatedTour = await tx.run(SELECT.one.from(ActiveTour).where({ ID: activeTourID }));
+      if (updatedTour.CurrentBookings >= updatedTour.MaxCapacity) {
+        // Auto-close tour when fully booked
+        await tx.run(
+          UPDATE(ActiveTour)
+            .set({ Status: 'Closed' })
+            .where({ ID: activeTourID })
+        );
+        
+        // Log the auto-closure
+        await tx.run(
+          INSERT.into('tourish.management.ActiveTourHistory').entries({
+            ID: cds.utils.uuid(),
+            ActiveTourID: activeTourID,
+            ModifiedDate: new Date(),
+            ModifiedBy: req.user.id || 'system',
+            Changes: 'Tour automatically closed - fully booked'
+          })
+        );
+      }
       
       await tx.commit();
       
@@ -244,6 +292,9 @@ module.exports = async (srv) => {
         return { success: false, message: 'Order is already canceled' };
       }
       
+      // Get tour information
+      const tour = await SELECT.one.from(ActiveTour).where({ ID: order.ActiveTourID });
+      
       // Start a transaction
       const tx = cds.transaction(req);
       
@@ -264,6 +315,39 @@ module.exports = async (srv) => {
             .set({ CurrentBookings: { '-=': order.AdultCount + order.ChildCount } })
             .where({ ID: order.ActiveTourID })
         );
+        
+        // ENHANCED: Check if tour should be reopened if it was closed due to capacity
+        if (tour && tour.Status === 'Closed') {
+          const updatedTour = await tx.run(SELECT.one.from(ActiveTour).where({ ID: order.ActiveTourID }));
+          const availableSeats = updatedTour.MaxCapacity - updatedTour.CurrentBookings;
+          
+          // Check if tour was auto-closed due to capacity and now has space
+          if (availableSeats > 0) {
+            // Check if sale period is still valid
+            const currentDate = new Date();
+            const saleEndDate = new Date(updatedTour.SaleEndDate);
+            
+            if (currentDate <= saleEndDate) {
+              // Reopen tour for booking
+              await tx.run(
+                UPDATE(ActiveTour)
+                  .set({ Status: 'Open' })
+                  .where({ ID: order.ActiveTourID })
+              );
+              
+              // Log the auto-reopening
+              await tx.run(
+                INSERT.into('tourish.management.ActiveTourHistory').entries({
+                  ID: cds.utils.uuid(),
+                  ActiveTourID: order.ActiveTourID,
+                  ModifiedDate: new Date(),
+                  ModifiedBy: req.user.id || 'system',
+                  Changes: `Tour automatically reopened - ${availableSeats} seats available after order cancellation`
+                })
+              );
+            }
+          }
+        }
         
         await tx.commit();
         
@@ -1038,15 +1122,27 @@ module.exports = async (srv) => {
    */
   srv.on('getActiveToursForOrder', async (req) => {
     try {
-      // Get active tours that are open for booking
+      // Get active tours that are open for booking and have available seats
       const tours = await SELECT.from(ActiveTour)
-        .where({ Status: 'Open' })
+        .where({ Status: 'Open' }) // Only open tours
         .orderBy({ DepartureDate: 'asc' });
       
+      // Filter tours by sale dates and available capacity
+      const currentDate = new Date();
+      const availableTours = tours.filter(tour => {
+        const saleStartDate = new Date(tour.SaleStartDate);
+        const saleEndDate = new Date(tour.SaleEndDate);
+        const availableSeats = tour.MaxCapacity - tour.CurrentBookings;
+        
+        return currentDate >= saleStartDate && 
+               currentDate <= saleEndDate &&
+               availableSeats > 0; // Must have available seats
+      });
+      
       // Enhance with price information
-      const enhancedTours = await Promise.all(tours.map(async tour => {
+      const enhancedTours = await Promise.all(availableTours.map(async tour => {
         // Get tour prices
-        const priceTerms = await SELECT.one.from(TourTemplatePriceTerms)
+        const priceTerms = await SELECT.one.from('tourish.management.TourTemplatePriceTerms')
           .columns('AdultPrice', 'ChildrenPrice')
           .where({ TourTemplateID: tour.TemplateID });
         
@@ -1064,7 +1160,9 @@ module.exports = async (srv) => {
           AdultPrice: adultPrice,
           ChildPrice: childPrice,
           AvailableSeats: availableSeats,
-          Status: tour.Status
+          Status: tour.Status,
+          SaleStartDate: tour.SaleStartDate,
+          SaleEndDate: tour.SaleEndDate
         };
       }));
       

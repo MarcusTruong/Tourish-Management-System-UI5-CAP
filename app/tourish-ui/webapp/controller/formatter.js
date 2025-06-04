@@ -84,6 +84,30 @@ sap.ui.define([], function () {
             } else {
                 return sType || "";
             }
+        },
+
+        getSaleStatus: function(saleStart, saleEnd) {
+            if (!saleStart || !saleEnd) return '';
+            
+            const now = new Date();
+            const startDate = new Date(saleStart);
+            const endDate = new Date(saleEnd);
+            
+            if (now < startDate) return 'Not started';
+            if (now > endDate) return 'Ended';
+            return 'Active';
+        },
+        
+        getSaleStatusState: function(saleStart, saleEnd) {
+            if (!saleStart || !saleEnd) return 'None';
+            
+            const now = new Date();
+            const startDate = new Date(saleStart);
+            const endDate = new Date(saleEnd);
+            
+            if (now < startDate) return 'Warning';
+            if (now > endDate) return 'Error';
+            return 'Success';
         }
     };
 });

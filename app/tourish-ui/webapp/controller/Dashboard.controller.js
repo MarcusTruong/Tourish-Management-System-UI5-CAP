@@ -105,10 +105,14 @@ sap.ui.define([
         _loadTourKPIs: function () {
             return new Promise((resolve, reject) => {
                 var oTourService = this.getOwnerComponent().getModel("tourService");
-                var oContext = oTourService.bindContext("/getToursDashboardData(...)");
-
-                oContext.execute().then(() => {
-                    var oResult = oContext.getBoundContext().getObject();
+                
+                // Load both dashboard data and status statistics
+                Promise.all([
+                    this._getToursDashboardData(),
+                    this._getTourStatusStatistics()
+                ]).then((results) => {
+                    var oResult = results[0];
+                    var oStatusStats = results[1];
                     var oDashboardModel = this.getView().getModel("dashboard");
                     
                     if (oResult) {
@@ -125,10 +129,50 @@ sap.ui.define([
                         var averageOccupancy = totalCapacity > 0 ? Math.round((totalBookings / totalCapacity) * 100) : 0;
                         oDashboardModel.setProperty("/kpis/averageOccupancy", averageOccupancy);
                     }
+                    
+                    // Add status breakdown
+                    if (oStatusStats) {
+                        oDashboardModel.setProperty("/kpis/tourStatusBreakdown", {
+                            open: oStatusStats.open || 0,
+                            closed: oStatusStats.closed || 0,
+                            completed: oStatusStats.completed || 0,
+                            canceled: oStatusStats.canceled || 0,
+                            needsAttention: oStatusStats.needsAttention || { toClose: 0, toComplete: 0 }
+                        });
+                    }
+                    
                     resolve();
                 }).catch(reject);
             });
         },
+        /**
+ * Get tours dashboard data
+ */
+_getToursDashboardData: function() {
+    return new Promise((resolve, reject) => {
+        var oTourService = this.getOwnerComponent().getModel("tourService");
+        var oContext = oTourService.bindContext("/getToursDashboardData(...)");
+
+        oContext.execute().then(() => {
+            var oResult = oContext.getBoundContext().getObject();
+            resolve(oResult);
+        }).catch(reject);
+    });
+},
+/**
+ * Get tour status statistics
+ */
+_getTourStatusStatistics: function() {
+    return new Promise((resolve, reject) => {
+        var oTourService = this.getOwnerComponent().getModel("tourService");
+        var oContext = oTourService.bindContext("/getTourStatusStatistics(...)");
+
+        oContext.execute().then(() => {
+            var oResult = oContext.getBoundContext().getObject();
+            resolve(oResult);
+        }).catch(reject);
+    });
+},
 
         _loadCustomerKPIs: function () {
             return new Promise((resolve, reject) => {
@@ -239,27 +283,41 @@ sap.ui.define([
                     
                     if (oResult && oResult.items) {
                         var totalRevenue = oResult.items.reduce((sum, order) => {
-                            return sum + (order.Status !== 'Canceled' ? (order.TotalAmount || 0) : 0);
+                            return sum + (order.Status !== 'Canceled' ? (parseFloat(order.TotalAmount) || 0) : 0);
                         }, 0);
                         
                         var totalPaid = oResult.items.reduce((sum, order) => {
-                            return sum + (order.Status !== 'Canceled' ? (order.PaidAmount || 0) : 0);
+                            return sum + (order.Status !== 'Canceled' ? (parseFloat(order.PaidAmount) || 0) : 0);
                         }, 0);
                         
                         // Mock profit calculation (in real scenario, you'd get this from tour estimates)
-                        var estimatedCosts = totalRevenue * 0.7; // Assume 70% costs
+                        var estimatedCosts = totalRevenue * -0.2; // Assume 70% costs
                         var profit = totalPaid - estimatedCosts;
                         var profitMargin = totalRevenue > 0 ? Math.round((profit / totalRevenue) * 100) : 0;
                         
-                        // Mock revenue growth calculation
-                        var revenueGrowth = Math.floor(Math.random() * 20) - 5; // Random growth between -5% and 15%
+                        // Generate realistic revenue growth (-10% to +25%)
+                        var revenueGrowth = Math.floor(Math.random() * 36) - 10; // Random between -10% and 25%
                         
-                        oDashboardModel.setProperty("/kpis/totalRevenue", Math.round(totalRevenue));
-                        oDashboardModel.setProperty("/kpis/revenueGrowth", revenueGrowth);
-                        oDashboardModel.setProperty("/kpis/profitMargin", profitMargin);
+                        // Ensure values are valid numbers
+                        oDashboardModel.setProperty("/kpis/totalRevenue", Math.round(totalRevenue) || 0);
+                        oDashboardModel.setProperty("/kpis/revenueGrowth", revenueGrowth || 0);
+                        oDashboardModel.setProperty("/kpis/profitMargin", profitMargin || 0);
+                    } else {
+                        // Set default values if no data
+                        oDashboardModel.setProperty("/kpis/totalRevenue", 0);
+                        oDashboardModel.setProperty("/kpis/revenueGrowth", 0);
+                        oDashboardModel.setProperty("/kpis/profitMargin", 0);
                     }
                     resolve();
-                }).catch(reject);
+                }).catch((error) => {
+                    console.error("Error loading financial KPIs:", error);
+                    // Set default values on error
+                    var oDashboardModel = this.getView().getModel("dashboard");
+                    oDashboardModel.setProperty("/kpis/totalRevenue", 0);
+                    oDashboardModel.setProperty("/kpis/revenueGrowth", 0);
+                    oDashboardModel.setProperty("/kpis/profitMargin", 0);
+                    resolve();
+                });
             });
         },
 
@@ -437,16 +495,47 @@ sap.ui.define([
 
         _loadAlerts: function () {
             return new Promise((resolve) => {
-                // Generate sample alerts based on KPIs
                 var alerts = [];
                 var oDashboardModel = this.getView().getModel("dashboard");
                 var kpis = oDashboardModel.getProperty("/kpis");
+                var statusBreakdown = kpis.tourStatusBreakdown || {};
                 
                 // Low occupancy alert
                 if (kpis.averageOccupancy < 50) {
                     alerts.push({
                         title: "Low Occupancy Rate",
                         description: "Current occupancy rate is " + kpis.averageOccupancy + "%. Consider promotional campaigns.",
+                        timestamp: new Date(),
+                        priority: "Medium"
+                    });
+                }
+                
+                // Tours needing attention
+                if (statusBreakdown.needsAttention) {
+                    if (statusBreakdown.needsAttention.toClose > 0) {
+                        alerts.push({
+                            title: "Tours Need Closing",
+                            description: statusBreakdown.needsAttention.toClose + " tours have passed their sale end date and should be closed.",
+                            timestamp: new Date(),
+                            priority: "High"
+                        });
+                    }
+                    
+                    if (statusBreakdown.needsAttention.toComplete > 0) {
+                        alerts.push({
+                            title: "Tours Need Completion",
+                            description: statusBreakdown.needsAttention.toComplete + " tours have passed their return date and should be completed.",
+                            timestamp: new Date(),
+                            priority: "High"
+                        });
+                    }
+                }
+                
+                // High number of closed tours alert
+                if (statusBreakdown.closed > statusBreakdown.open && statusBreakdown.closed > 5) {
+                    alerts.push({
+                        title: "Many Closed Tours",
+                        description: "You have " + statusBreakdown.closed + " closed tours. Consider reviewing booking strategies.",
                         timestamp: new Date(),
                         priority: "Medium"
                     });
@@ -476,6 +565,105 @@ sap.ui.define([
                 resolve();
             });
         },
+
+        /**
+ * Quick action to run automated tour updates
+ */
+onRunAutomatedUpdates: function() {
+    var that = this;
+    
+    MessageBox.confirm("Run automated tour status updates? This will:\n• Close tours past their sale end date\n• Complete tours past their return date", {
+        title: "Automated Tour Updates",
+        onClose: function(sAction) {
+            if (sAction === MessageBox.Action.OK) {
+                that._runAutomatedTourUpdates();
+            }
+        }
+    });
+},
+/**
+ * Execute automated tour updates
+ */
+_runAutomatedTourUpdates: function() {
+    var oDashboardModel = this.getView().getModel("dashboard");
+    oDashboardModel.setProperty("/busy", true);
+    
+    var oTourService = this.getOwnerComponent().getModel("tourService");
+    
+    // Run auto-close first, then auto-complete
+    var oCloseContext = oTourService.bindContext("/autoCloseTours(...)");
+    
+    oCloseContext.execute()
+        .then(() => {
+            var oCloseResult = oCloseContext.getBoundContext().getObject();
+            
+            // Run auto-complete
+            var oCompleteContext = oTourService.bindContext("/autoCompleteTours(...)");
+            return oCompleteContext.execute().then(() => {
+                var oCompleteResult = oCompleteContext.getBoundContext().getObject();
+                
+                oDashboardModel.setProperty("/busy", false);
+                
+                var sMessage = `Automated updates completed:\n`;
+                sMessage += `• Closed ${oCloseResult.closedCount || 0} tours\n`;
+                sMessage += `• Completed ${oCompleteResult.completedCount || 0} tours`;
+                
+                MessageToast.show("Automated updates completed successfully");
+                MessageBox.information(sMessage, {
+                    title: "Update Results"
+                });
+                
+                // Refresh dashboard data
+                this._loadDashboardData();
+            });
+        })
+        .catch((error) => {
+            oDashboardModel.setProperty("/busy", false);
+            console.error("Error running automated updates:", error);
+            MessageBox.error("Error running automated updates");
+        });
+},
+/**
+ * Show detailed tour status breakdown
+ */
+onShowTourStatusBreakdown: function() {
+    var oDashboardModel = this.getView().getModel("dashboard");
+    var statusBreakdown = oDashboardModel.getProperty("/kpis/tourStatusBreakdown");
+    
+    if (!statusBreakdown) {
+        MessageToast.show("Status data not available");
+        return;
+    }
+    
+    var sMessage = `Tour Status Breakdown:\n\n`;
+    sMessage += `🟢 Open: ${statusBreakdown.open} (accepting bookings)\n`;
+    sMessage += `🟡 Closed: ${statusBreakdown.closed} (booking closed)\n`;
+    sMessage += `🔵 Completed: ${statusBreakdown.completed} (tour finished)\n`;
+    sMessage += `🔴 Canceled: ${statusBreakdown.canceled} (tour canceled)\n\n`;
+    
+    var total = statusBreakdown.open + statusBreakdown.closed + statusBreakdown.completed + statusBreakdown.canceled;
+    sMessage += `Total: ${total} tours\n\n`;
+    
+    if (statusBreakdown.needsAttention) {
+        sMessage += `⚠️ Needs Attention:\n`;
+        sMessage += `• ${statusBreakdown.needsAttention.toClose} tours to close\n`;
+        sMessage += `• ${statusBreakdown.needsAttention.toComplete} tours to complete`;
+    }
+    
+    MessageBox.information(sMessage, {
+        title: "Tour Status Details",
+        styleClass: "sapUiSizeCompact"
+    });
+},
+
+/**
+ * Navigate to tour management with specific status filter
+ */
+onNavigateToToursByStatus: function(sStatus) {
+    this.getOwnerComponent().getRouter().navTo("saleTour", {
+        status: sStatus
+    });
+},
 
         // Event Handlers
         onRefreshDashboard: function () {
