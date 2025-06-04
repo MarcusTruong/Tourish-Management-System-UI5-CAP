@@ -107,21 +107,19 @@ sap.ui.define([
                 },
                 // Order notes
                 orderNotes: ""
-            })
+            });
 
             var sOrderId = null;
             var oOrderEditModel = this.getOwnerComponent().getModel("orderEdit");
             if (oOrderEditModel) {
                 sOrderId = oOrderEditModel.getProperty("/orderId");
                 console.log("Order Id : ", sOrderId);
-
                 oOrderEditModel.setProperty("/orderId", null);
             }
+            
             // Load available tours when the route is matched
             this._loadAvailableTours();
-
             this._loadOrderForEdit(sOrderId);
-            
             // Load available customers 
             this._loadCustomers();
         },
@@ -131,7 +129,6 @@ sap.ui.define([
             
             var oView = this.getView();
             var oViewModel = oView.getModel("createOrder");
-            var title;
             oView.setBusy(true);
             
             var oService = this.getOwnerComponent().getModel("orderService");
@@ -174,7 +171,6 @@ sap.ui.define([
                     if (oSelectedTour) {
                         this._updatePriceCalculation();
                     }
-                    
                 }
                 
                 oView.setBusy(false);
@@ -197,10 +193,16 @@ sap.ui.define([
             
             oContext.execute().then(function() {
                 var aResult = oContext.getBoundContext().getObject();
-                console.log(aResult);
+                console.log("Available tours result:", aResult);
+                
                 if (aResult) {
-                    // Set available tours
-                    oViewModel.setProperty("/availableTours", aResult.value);
+                    // Check if result is array or object with value property
+                    var tours = Array.isArray(aResult) ? aResult : (aResult.value || []);
+                    oViewModel.setProperty("/availableTours", tours);
+                    
+                    if (tours.length === 0) {
+                        MessageToast.show("No tours available for booking");
+                    }
                 } else {
                     // No tours available
                     oViewModel.setProperty("/availableTours", []);
@@ -208,11 +210,11 @@ sap.ui.define([
                 }
                 
                 oViewModel.setProperty("/busy", false);
-            }).catch(function(oError) {
+            }.bind(this)).catch(function(oError) {
                 console.error("Error loading available tours:", oError);
                 MessageToast.show("Error loading available tours");
                 oViewModel.setProperty("/busy", false);
-            });
+            }.bind(this));
         },
 
         onTourSelectionChange: function(oEvent) {
@@ -366,11 +368,11 @@ sap.ui.define([
                 }
                 
                 oViewModel.setProperty("/busy", false);
-            }).catch(function(oError) {
+            }.bind(this)).catch(function(oError) {
                 console.error("Error loading customers:", oError);
                 MessageToast.show("Error loading customers");
                 oViewModel.setProperty("/busy", false);
-            });
+            }.bind(this));
         },
 
         onCustomerSelectionChange: function(oEvent) {
@@ -394,7 +396,6 @@ sap.ui.define([
             var oView = this.getView();
             var bIsEditMode = oViewModel.getProperty("/isEditMode");
             
-
             // Validate the form
             if (!this._validateOrderData()) {
                 return;
@@ -406,17 +407,17 @@ sap.ui.define([
                 // Update existing order
                 this._updateOrder();
             } else {
-            // Create new order
-            // Prepare order data
-            var oOrderData = this._prepareOrderData();
-            
-            // First, create customer if needed
-            if (oViewModel.getProperty("/customerSelectionType") === "new") {
-                this._createCustomerAndOrder(oOrderData);
-            } else {
-                this._createOrder(oOrderData);
+                // Create new order
+                // Prepare order data
+                var oOrderData = this._prepareOrderData();
+                
+                // First, create customer if needed
+                if (oViewModel.getProperty("/customerSelectionType") === "new") {
+                    this._createCustomerAndOrder(oOrderData);
+                } else {
+                    this._createOrder(oOrderData);
+                }
             }
-        }
         },
 
         _updateOrder: function() {
@@ -461,7 +462,7 @@ sap.ui.define([
                 console.error("Error updating order:", oError);
                 MessageBox.error("Error updating order: " + (oError.message || "Unknown error"));
                 oView.setBusy(false);
-            });
+            }.bind(this));
         },
 
         _prepareUpdateData: function() {
@@ -606,7 +607,7 @@ sap.ui.define([
                 console.error("Error creating customer:", oError);
                 oView.setBusy(false);
                 MessageBox.error("Error creating customer: " + (oError.message || "Unknown error"));
-            });
+            }.bind(this));
         },
 
         _createOrder: function(oOrderData) {
@@ -650,7 +651,16 @@ sap.ui.define([
                 console.error("Error creating order:", oError);
                 MessageBox.error("Error creating order: " + (oError.message || "Unknown error"));
                 oView.setBusy(false);
-            });
+            }.bind(this));
+        },
+
+        // Helper functions for sale status
+        getSaleStatus: function(saleStart, saleEnd) {
+            return this.formatter.getSaleStatus(saleStart, saleEnd);
+        },
+
+        getSaleStatusState: function(saleStart, saleEnd) {
+            return this.formatter.getSaleStatusState(saleStart, saleEnd);
         }
     });
 });

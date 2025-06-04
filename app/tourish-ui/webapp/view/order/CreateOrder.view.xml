@@ -126,30 +126,31 @@
                 <ObjectStatus id="_IDGenObjectStatus13" 
                     text="{createOrder>Status}"
                     state="{= ${createOrder>Status} === 'Open' ? 'Success' : 'Warning' }" />
-                                                <VBox id="bookingPeriodBox" alignItems="Start">
-                                                    <Text id="saleStartText" 
+                    
+                <VBox id="bookingPeriodBox" alignItems="Start">
+                    <Text id="saleStartText" 
                         text="From: {
                             path: 'createOrder>SaleStartDate',
                             formatter: '.formatter.formatDate'
                         }" 
-                        class="sapUiSmallText"></Text>
-                                                <Text id="saleEndText" 
+                        class="sapUiSmallText"/>
+                    <Text id="saleEndText" 
                         text="Until: {
                             path: 'createOrder>SaleEndDate',
                             formatter: '.formatter.formatDate'
                         }" 
                         class="sapUiSmallText"/>
-                        <ObjectStatus id="saleStatusIndicator" 
-    text="{
-        parts: ['createOrder>SaleStartDate', 'createOrder>SaleEndDate'],
-        formatter: '.getSaleStatus'
-    }"
-    state="{
-        parts: ['createOrder>SaleStartDate', 'createOrder>SaleEndDate'],
-        formatter: '.getSaleStatusState'
-    }"
-    class="sapUiTinyMarginTop"/>
-                                                </VBox>
+                    <ObjectStatus id="saleStatusIndicator" 
+                        text="{
+                            parts: ['createOrder>SaleStartDate', 'createOrder>SaleEndDate'],
+                            formatter: '.getSaleStatus'
+                        }"
+                        state="{
+                            parts: ['createOrder>SaleStartDate', 'createOrder>SaleEndDate'],
+                            formatter: '.getSaleStatusState'
+                        }"
+                        class="sapUiTinyMarginTop"/>
+                </VBox>
                                             </cells>
                                         </ColumnListItem>
                                     </items>

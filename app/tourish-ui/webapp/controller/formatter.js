@@ -86,18 +86,30 @@ sap.ui.define([], function () {
             }
         },
 
+        /**
+         * Gets sale status text
+         * @param {string} saleStart - Sale start date
+         * @param {string} saleEnd - Sale end date
+         * @returns {string} Status text
+         */
         getSaleStatus: function(saleStart, saleEnd) {
-            if (!saleStart || !saleEnd) return '';
+            if (!saleStart || !saleEnd) return 'Unknown';
             
             const now = new Date();
             const startDate = new Date(saleStart);
             const endDate = new Date(saleEnd);
             
-            if (now < startDate) return 'Not started';
+            if (now < startDate) return 'Not Started';
             if (now > endDate) return 'Ended';
             return 'Active';
         },
         
+        /**
+         * Gets sale status state for ObjectStatus
+         * @param {string} saleStart - Sale start date
+         * @param {string} saleEnd - Sale end date
+         * @returns {string} Valid state value
+         */
         getSaleStatusState: function(saleStart, saleEnd) {
             if (!saleStart || !saleEnd) return 'None';
             
@@ -108,6 +120,26 @@ sap.ui.define([], function () {
             if (now < startDate) return 'Warning';
             if (now > endDate) return 'Error';
             return 'Success';
+        },
+
+        /**
+         * Formats currency value
+         * @param {number} value - The value to format
+         * @returns {string} Formatted currency
+         */
+        formatCurrency: function(value) {
+            if (!value && value !== 0) return "0.00";
+            return parseFloat(value).toFixed(2);
+        },
+
+        /**
+         * Formats percentage value
+         * @param {number} value - The value to format
+         * @returns {string} Formatted percentage
+         */
+        formatPercentage: function(value) {
+            if (!value && value !== 0) return "0%";
+            return parseFloat(value).toFixed(1) + "%";
         }
     };
 });
