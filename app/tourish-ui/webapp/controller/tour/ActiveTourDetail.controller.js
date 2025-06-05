@@ -4,8 +4,9 @@ sap.ui.define([
     "sap/ui/core/Fragment",
     "sap/m/MessageBox",
     "sap/m/MessageToast",
-    "sap/ui/core/routing/History"
-], function (Controller, JSONModel, Fragment, MessageBox, MessageToast, History) {
+    "sap/ui/core/routing/History",
+    "../../utils/PDFHelper"
+], function (Controller, JSONModel, Fragment, MessageBox, MessageToast, History, PDFHelper) {
     "use strict";
 
     return Controller.extend("tourishui.controller.tour.ActiveTourDetail", {
@@ -928,7 +929,18 @@ if (!oDialogModel || !this._currentEditingService) {
         },
 
         onDownloadInvoicePDF: function() {
-            MessageBox.information("PDF download functionality would be implemented here. This typically requires a server-side PDF generation service or a client-side library like jsPDF.");
+            // Debug: Check what's available
+            console.log("=== PDF Library Debug ===");
+            console.log("window.jsPDF:", typeof window.jsPDF);
+            console.log("window.jspdf:", typeof window.jspdf);
+            console.log("global jsPDF:", typeof jsPDF);
+            console.log("Available globals with 'pdf':", Object.keys(window).filter(k => k.toLowerCase().includes('pdf')));
+            
+            var oInvoiceModel = this._oInvoiceDialog.getModel("invoice");
+            var oInvoiceData = oInvoiceModel.getData();
+            
+            // Use PDFHelper to generate and download PDF
+            PDFHelper.generateInvoicePDF(oInvoiceData);
         },
 
         onCloseInvoice: function() {
@@ -967,9 +979,9 @@ if (!oDialogModel || !this._currentEditingService) {
             Departure: ${this.formatDate(oData.tour.DepartureDate)}
             Invoice Number: ${oData.invoiceNumber}
             Total Amount: $${this.formatCurrency(oData.totals.Total)}
-                    
+
             Thank you for choosing our services!
-                    
+
             Best regards,
             ${oData.company.Name}`;
             
