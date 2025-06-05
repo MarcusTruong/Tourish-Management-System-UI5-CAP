@@ -176,18 +176,18 @@
                     </Panel>
                     
                     <!-- Inclusions and Exclusions -->
-                    <HBox id="_IDGenHBox62" class="sapUiMediumMarginBottom">
-                        <Panel id="_IDGenPanel22" headerText="Inclusions:" class="sapUiSmallMarginEnd">
+                        <VBox id="_IDGenHBox62" class="sapUiMediumMarginBottom">
+                            <Panel id="_IDGenPanel22" headerText="Inclusions:">
                             <VBox id="_IDGenVBox98" class="sapUiMediumMargin" >
                                 <Text id="_IDGenText366"  text="{invoice>/inclusions}" renderWhitespace="true" width="100%"/>
                             </VBox>
                         </Panel>
-                        <Panel id="_IDGenPanel23" headerText="Exclusions:" class="sapUiSmallMarginBegin" >
+                        <Panel id="_IDGenPanel23" headerText="Exclusions:">
                             <VBox id="_IDGenVBox99" class="sapUiMediumMargin" width="100%">
                                 <Text id="_IDGenText367" text="{invoice>/exclusions}" renderWhitespace="true"/>
                             </VBox>
                         </Panel>
-                    </HBox>
+                        </VBox>
 
                     <!-- Terms and Conditions -->
                     <Panel id="_IDGenPanel25" headerText="Terms - Conditions:" expandable="true" expanded="true" class="sapUiMediumMarginBottom">

@@ -80,13 +80,11 @@ sap.ui.define([
             } else if (typeof jsPDF !== 'undefined') {
                 jsPDFConstructor = jsPDF;
             } else if (window.jspdf) {
-                // Handle the case where it's window.jspdf.jsPDF
                 if (window.jspdf.jsPDF) {
                     jsPDFConstructor = window.jspdf.jsPDF;
                 } else if (typeof window.jspdf === 'function') {
                     jsPDFConstructor = window.jspdf;
                 } else {
-                    // Try to find jsPDF in the jspdf object
                     for (var key in window.jspdf) {
                         if (typeof window.jspdf[key] === 'function' && key.toLowerCase().includes('jspdf')) {
                             jsPDFConstructor = window.jspdf[key];
@@ -96,345 +94,548 @@ sap.ui.define([
                 }
             }
             
-            // Debug logging
-            console.log("=== jsPDF Constructor Debug ===");
-            console.log("window.jspdf:", window.jspdf);
-            console.log("window.jspdf keys:", window.jspdf ? Object.keys(window.jspdf) : 'N/A');
-            console.log("Selected constructor:", jsPDFConstructor);
-            console.log("Constructor type:", typeof jsPDFConstructor);
-            
             if (!jsPDFConstructor) {
                 console.error("jsPDF constructor not found");
                 sap.m.MessageBox.error("PDF library not loaded properly. Please refresh the page and try again.");
                 return;
             }
-
+        
             try {
-                // Create new PDF document - try different approaches
                 var doc;
-                
                 try {
-                    // Method 1: Direct constructor
                     doc = new jsPDFConstructor();
                 } catch (e1) {
-                    console.log("Method 1 failed:", e1.message);
                     try {
-                        // Method 2: Call as function
                         doc = jsPDFConstructor();
                     } catch (e2) {
-                        console.log("Method 2 failed:", e2.message);
                         try {
-                            // Method 3: Using jsPDF property
                             doc = new jsPDFConstructor.jsPDF();
                         } catch (e3) {
-                            console.log("Method 3 failed:", e3.message);
                             throw new Error("Could not create jsPDF instance with any method");
                         }
                     }
                 }
                 
-                console.log("PDF document created successfully:", doc);
+                // Local helper functions to avoid 'this' context issues
+                const formatCurrency = function(value) {
+                    if (!value && value !== 0) return "0.00";
+                    return parseFloat(value).toFixed(2);
+                };
+        
+                const formatDate = function(date) {
+                    if (!date) return '';
+                    try {
+                        const d = new Date(date);
+                        if (isNaN(d.getTime())) return '';
+                        return d.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                    } catch (error) {
+                        console.warn('Error formatting date:', date, error);
+                        return '';
+                    }
+                };
+        
+                const formatDateTime = function(date) {
+                    if (!date) return '';
+                    try {
+                        const d = new Date(date);
+                        if (isNaN(d.getTime())) return '';
+                        return d.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    } catch (error) {
+                        console.warn('Error formatting date time:', date, error);
+                        return '';
+                    }
+                };
                 
-                // Set up variables
+                // Set up variables for A4 page
                 let yPosition = 20;
-                const leftMargin = 20;
-                const rightMargin = 190;
-                const pageWidth = 210; // A4 width in mm
-                const lineHeight = 7;
-
-                // Helper function to add text with word wrap
-                const addText = function(text, x, y, maxWidth, fontSize = 10, style = 'normal') {
+                const leftMargin = 15;
+                const rightMargin = 195;
+                const pageWidth = 210;
+                const pageHeight = 297;
+                const lineHeight = 6;
+                const sectionSpacing = 8;
+        
+                // Helper function to check page break and add new page if needed
+                const checkPageBreak = function(nextSectionHeight) {
+                    if (yPosition + nextSectionHeight > pageHeight - 20) {
+                        doc.addPage();
+                        yPosition = 20;
+                        return true;
+                    }
+                    return false;
+                };
+        
+                // Helper function to add section divider
+                const addSectionDivider = function() {
+                    doc.setLineWidth(0.3);
+                    doc.setDrawColor(200, 200, 200);
+                    doc.line(leftMargin, yPosition, rightMargin, yPosition);
+                    yPosition += 5;
+                };
+        
+                // Helper function to add text with proper styling
+                const addText = function(text, x, y, options = {}) {
+                    const fontSize = options.fontSize || 10;
+                    const fontStyle = options.fontStyle || 'normal';
+                    const maxWidth = options.maxWidth;
+                    const align = options.align || 'left';
+                    
                     doc.setFontSize(fontSize);
-                    doc.setFont('helvetica', style);
+                    doc.setFont('helvetica', fontStyle);
                     
                     if (maxWidth) {
                         const lines = doc.splitTextToSize(text, maxWidth);
-                        doc.text(lines, x, y);
+                        if (align === 'center') {
+                            lines.forEach((line, index) => {
+                                const lineWidth = doc.getTextWidth(line);
+                                doc.text(line, x - lineWidth / 2, y + (index * lineHeight));
+                            });
+                        } else if (align === 'right') {
+                            lines.forEach((line, index) => {
+                                const lineWidth = doc.getTextWidth(line);
+                                doc.text(line, x - lineWidth, y + (index * lineHeight));
+                            });
+                        } else {
+                            doc.text(lines, x, y);
+                        }
                         return y + (lines.length * lineHeight);
                     } else {
-                        doc.text(text, x, y);
+                        if (align === 'center') {
+                            const textWidth = doc.getTextWidth(text);
+                            doc.text(text, x - textWidth / 2, y);
+                        } else if (align === 'right') {
+                            const textWidth = doc.getTextWidth(text);
+                            doc.text(text, x - textWidth, y);
+                        } else {
+                            doc.text(text, x, y);
+                        }
                         return y + lineHeight;
                     }
                 };
-
-                // Helper function to add horizontal line
-                const addLine = function(y) {
-                    doc.setLineWidth(0.5);
-                    doc.line(leftMargin, y, rightMargin, y);
-                    return y + 5;
-                };
-
-                // 1. HEADER SECTION
-                // Company name (centered, large)
-                doc.setFontSize(20);
-                doc.setFont('helvetica', 'bold');
-                const companyName = oInvoiceData.company.Name;
-                const companyNameWidth = doc.getTextWidth(companyName);
-                doc.text(companyName, (pageWidth - companyNameWidth) / 2, yPosition);
-                yPosition += 10;
-
-                // Company details (centered, smaller)
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                const companyDetails = [
-                    oInvoiceData.company.Address,
-                    `Phone: ${oInvoiceData.company.Phone} | Email: ${oInvoiceData.company.Email}`
-                ];
-
-                companyDetails.forEach(detail => {
-                    const detailWidth = doc.getTextWidth(detail);
-                    doc.text(detail, (pageWidth - detailWidth) / 2, yPosition);
-                    yPosition += 6;
+        
+                // 1. COMPANY HEADER (centered)
+                yPosition = addText(oInvoiceData.company.Name, pageWidth / 2, yPosition, {
+                    fontSize: 18,
+                    fontStyle: 'bold',
+                    align: 'center'
                 });
-
-                yPosition += 10;
-
-                // 2. INVOICE HEADER
-                doc.setFontSize(16);
-                doc.setFont('helvetica', 'bold');
-                doc.text('INVOICE', leftMargin, yPosition);
-
-                // Invoice details (right aligned)
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                const invoiceInfo = [
-                    `Invoice Number: ${oInvoiceData.invoiceNumber}`,
-                    `Invoice Date: ${this.formatDate(oInvoiceData.invoiceDate)}`,
-                    `Order ID: ${oInvoiceData.order.ID.substring(0, 8)}`,
-                    `Order Date: ${this.formatDate(oInvoiceData.order.OrderDate)}`
-                ];
-
-                let rightYPosition = yPosition;
-                invoiceInfo.forEach(info => {
-                    const infoWidth = doc.getTextWidth(info);
-                    doc.text(info, rightMargin - infoWidth, rightYPosition);
-                    rightYPosition += 6;
-                });
-
-                yPosition = Math.max(yPosition + 20, rightYPosition + 10);
-
-                // 3. CUSTOMER INFORMATION
-                yPosition = addLine(yPosition);
+                yPosition += 2;
                 
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'bold');
-                yPosition = addText('Bill To:', leftMargin, yPosition, null, 12, 'bold');
-                yPosition += 3;
-
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                yPosition = addText(oInvoiceData.customer.Name, leftMargin, yPosition, rightMargin - leftMargin, 10, 'bold');
-                yPosition = addText(oInvoiceData.customer.Address, leftMargin, yPosition, rightMargin - leftMargin);
+                yPosition = addText(oInvoiceData.company.Address, pageWidth / 2, yPosition, {
+                    fontSize: 10,
+                    align: 'center'
+                });
+                
+                yPosition = addText(`Phone: ${oInvoiceData.company.Phone} | Email: ${oInvoiceData.company.Email}`, 
+                    pageWidth / 2, yPosition, {
+                    fontSize: 10,
+                    align: 'center'
+                });
+                yPosition += sectionSpacing;
+        
+                addSectionDivider();
+        
+                // 2. INVOICE HEADER
+                const invoiceHeaderY = yPosition;
+                
+                // Left side - Invoice title and basic info
+                yPosition = addText('INVOICE', leftMargin, yPosition, {
+                    fontSize: 16,
+                    fontStyle: 'bold'
+                });
+                yPosition += 2;
+                
+                yPosition = addText(`Invoice Number: ${oInvoiceData.invoiceNumber}`, leftMargin, yPosition, {
+                    fontSize: 10,
+                    fontStyle: 'bold'
+                });
+                
+                yPosition = addText(`Invoice Date: ${formatDate(oInvoiceData.invoiceDate)}`, leftMargin, yPosition);
+        
+                // Right side - Order info
+                let rightY = invoiceHeaderY + 15;
+                addText(`Order ID: ${oInvoiceData.order.ID.substring(0, 8)}`, rightMargin, rightY, {
+                    fontSize: 10,
+                    fontStyle: 'bold',
+                    align: 'right'
+                });
+                rightY += lineHeight;
+                
+                addText(`Order Date: ${formatDate(oInvoiceData.order.OrderDate)}`, rightMargin, rightY, {
+                    align: 'right'
+                });
+        
+                yPosition = Math.max(yPosition, rightY) + sectionSpacing;
+                addSectionDivider();
+        
+                // 3. BILL TO SECTION
+                yPosition = addText('Bill To:', leftMargin, yPosition, {
+                    fontSize: 12,
+                    fontStyle: 'bold'
+                });
+                yPosition += 2;
+                
+                yPosition = addText(oInvoiceData.customer.Name, leftMargin, yPosition, {
+                    fontStyle: 'bold',
+                    maxWidth: rightMargin - leftMargin
+                });
+                
+                yPosition = addText(oInvoiceData.customer.Address, leftMargin, yPosition, {
+                    maxWidth: rightMargin - leftMargin
+                });
+                
                 yPosition = addText(`Phone: ${oInvoiceData.customer.Phone}`, leftMargin, yPosition);
                 yPosition = addText(`Email: ${oInvoiceData.customer.Email}`, leftMargin, yPosition);
-                yPosition += 10;
-
-                // 4. TOUR INFORMATION
-                yPosition = addLine(yPosition);
+                yPosition += sectionSpacing;
+        
+                addSectionDivider();
+        
+                // 4. TOUR DETAILS SECTION
+                yPosition = addText('Tour Details:', leftMargin, yPosition, {
+                    fontSize: 12,
+                    fontStyle: 'bold'
+                });
+                yPosition += 2;
                 
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'bold');
-                yPosition = addText('Tour Details:', leftMargin, yPosition, null, 12, 'bold');
-                yPosition += 3;
-
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                yPosition = addText(`Tour: ${oInvoiceData.tour.TourName}`, leftMargin, yPosition, rightMargin - leftMargin, 10, 'bold');
-                yPosition = addText(`Departure: ${this.formatDate(oInvoiceData.tour.DepartureDate)}`, leftMargin, yPosition);
-                yPosition = addText(`Return: ${this.formatDate(oInvoiceData.tour.ReturnDate)}`, leftMargin, yPosition);
+                yPosition = addText(`Tour Name: ${oInvoiceData.tour.TourName}`, leftMargin, yPosition, {
+                    fontStyle: 'bold',
+                    maxWidth: rightMargin - leftMargin
+                });
+                
+                yPosition = addText(`Departure Date: ${formatDate(oInvoiceData.tour.DepartureDate)}`, leftMargin, yPosition);
+                yPosition = addText(`Return Date: ${formatDate(oInvoiceData.tour.ReturnDate)}`, leftMargin, yPosition);
                 yPosition = addText(`Duration: ${oInvoiceData.tour.Duration}`, leftMargin, yPosition);
-                yPosition += 10;
-
-                // 5. PASSENGERS TABLE
-                yPosition = addLine(yPosition);
+                yPosition += sectionSpacing;
+        
+                // 5. TOUR ITINERARY (if has schedules and space allows)
+                if (oInvoiceData.schedules && oInvoiceData.schedules.length > 0) {
+                    checkPageBreak(50);
+                    addSectionDivider();
+                    
+                    yPosition = addText('Tour Itinerary:', leftMargin, yPosition, {
+                        fontSize: 12,
+                        fontStyle: 'bold'
+                    });
+                    yPosition += 2;
+        
+                    // Show abbreviated itinerary to save space
+                    oInvoiceData.schedules.slice(0, 3).forEach((schedule, index) => {
+                        if (checkPageBreak(15)) return;
+                        
+                        yPosition = addText(`Day ${schedule.DayNumber}: ${schedule.DayTitle}`, leftMargin, yPosition, {
+                            fontStyle: 'bold',
+                            maxWidth: rightMargin - leftMargin
+                        });
+                        
+                        // Show meals info
+                        const meals = [];
+                        if (schedule.BreakfastIncluded) meals.push('Breakfast');
+                        if (schedule.LunchIncluded) meals.push('Lunch');
+                        if (schedule.DinnerIncluded) meals.push('Dinner');
+                        
+                        if (meals.length > 0) {
+                            yPosition = addText(`Meals included: ${meals.join(', ')}`, leftMargin + 5, yPosition, {
+                                fontSize: 9
+                            });
+                        }
+                        
+                        yPosition = addText(schedule.Overview, leftMargin + 5, yPosition, {
+                            fontSize: 9,
+                            maxWidth: rightMargin - leftMargin - 10
+                        });
+                        yPosition += 2;
+                    });
+                    
+                    if (oInvoiceData.schedules.length > 3) {
+                        yPosition = addText(`... and ${oInvoiceData.schedules.length - 3} more days`, leftMargin + 5, yPosition, {
+                            fontSize: 9,
+                            fontStyle: 'italic'
+                        });
+                    }
+                    yPosition += sectionSpacing;
+                }
+        
+                // 6. PASSENGERS SECTION
+                checkPageBreak(60);
+                addSectionDivider();
                 
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'bold');
-                yPosition = addText('Passengers:', leftMargin, yPosition, null, 12, 'bold');
+                yPosition = addText('Passengers:', leftMargin, yPosition, {
+                    fontSize: 12,
+                    fontStyle: 'bold'
+                });
                 yPosition += 5;
-
+        
+                // Passenger table headers
+                const passengerCols = [
+                    { title: 'Type', x: leftMargin, width: 25 },
+                    { title: 'Full Name', x: leftMargin + 25, width: 50 },
+                    { title: 'Gender', x: leftMargin + 75, width: 20 },
+                    { title: 'Birth Date', x: leftMargin + 95, width: 30 },
+                    { title: 'ID Number', x: leftMargin + 125, width: 35 }
+                ];
+        
                 // Table headers
                 doc.setFontSize(9);
                 doc.setFont('helvetica', 'bold');
-                const headers = ['Type', 'Full Name', 'Gender', 'Birth Date', 'ID Number'];
-                const colWidths = [25, 50, 25, 30, 40];
-                let xPos = leftMargin;
-
-                headers.forEach((header, index) => {
-                    doc.text(header, xPos, yPosition);
-                    xPos += colWidths[index];
+                passengerCols.forEach(col => {
+                    doc.text(col.title, col.x, yPosition);
                 });
                 yPosition += 3;
-
-                // Table line
+        
+                // Header line
                 doc.setLineWidth(0.3);
-                doc.line(leftMargin, yPosition, rightMargin, yPosition);
-                yPosition += 5;
-
+                doc.line(leftMargin, yPosition, leftMargin + 155, yPosition);
+                yPosition += 3;
+        
                 // Passenger data
                 doc.setFont('helvetica', 'normal');
                 oInvoiceData.passengers.forEach(passenger => {
-                    xPos = leftMargin;
-                    const rowData = [
+                    if (checkPageBreak(8)) {
+                        // Redraw headers on new page
+                        doc.setFont('helvetica', 'bold');
+                        passengerCols.forEach(col => {
+                            doc.text(col.title, col.x, yPosition);
+                        });
+                        yPosition += 3;
+                        doc.line(leftMargin, yPosition, leftMargin + 155, yPosition);
+                        yPosition += 3;
+                        doc.setFont('helvetica', 'normal');
+                    }
+                    
+                    const passengerData = [
                         passenger.IsAdult ? 'Adult' : 'Child',
-                        passenger.FullName || '',
-                        passenger.Gender || '',
-                        this.formatDate(passenger.BirthDate) || '',
-                        passenger.IDNumber || ''
+                        passenger.FullName || 'N/A',
+                        passenger.Gender || 'N/A',
+                        formatDate(passenger.BirthDate) || 'N/A',
+                        passenger.IDNumber || 'N/A'
                     ];
-
-                    rowData.forEach((data, index) => {
-                        doc.text(data, xPos, yPosition);
-                        xPos += colWidths[index];
+        
+                    passengerCols.forEach((col, index) => {
+                        const text = passengerData[index];
+                        if (text.length > 15 && col.width < 40) {
+                            doc.text(text.substring(0, 12) + '...', col.x, yPosition);
+                        } else {
+                            doc.text(text, col.x, yPosition);
+                        }
                     });
                     yPosition += 6;
                 });
-
-                yPosition += 10;
-
-                // 6. SERVICES BREAKDOWN
-                yPosition = addLine(yPosition);
+                yPosition += sectionSpacing;
+        
+                // 7. SERVICE BREAKDOWN
+                checkPageBreak(40);
+                addSectionDivider();
                 
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'bold');
-                yPosition = addText('Service Breakdown:', leftMargin, yPosition, null, 12, 'bold');
+                yPosition = addText('Service Breakdown:', leftMargin, yPosition, {
+                    fontSize: 12,
+                    fontStyle: 'bold'
+                });
                 yPosition += 5;
-
-                // Service table headers
-                doc.setFontSize(9);
+        
+                // Service table
+                const serviceCols = [
+                    { title: 'Description', x: leftMargin, width: 80 },
+                    { title: 'Qty', x: leftMargin + 80, width: 20 },
+                    { title: 'Unit Price', x: leftMargin + 100, width: 30 },
+                    { title: 'Total', x: leftMargin + 130, width: 30 }
+                ];
+        
+                // Service headers
                 doc.setFont('helvetica', 'bold');
-                const serviceHeaders = ['Description', 'Qty', 'Unit Price', 'Total'];
-                const serviceColWidths = [80, 20, 35, 35];
-                xPos = leftMargin;
-
-                serviceHeaders.forEach((header, index) => {
-                    if (index > 0) {
-                        // Right align numeric columns
-                        const headerWidth = doc.getTextWidth(header);
-                        doc.text(header, xPos + serviceColWidths[index] - headerWidth, yPosition);
+                serviceCols.forEach(col => {
+                    if (col.title === 'Qty' || col.title === 'Unit Price' || col.title === 'Total') {
+                        addText(col.title, col.x + col.width, yPosition, { align: 'right' });
                     } else {
-                        doc.text(header, xPos, yPosition);
+                        doc.text(col.title, col.x, yPosition);
                     }
-                    xPos += serviceColWidths[index];
                 });
                 yPosition += 3;
-
-                doc.line(leftMargin, yPosition, rightMargin, yPosition);
-                yPosition += 5;
-
+        
+                doc.line(leftMargin, yPosition, leftMargin + 160, yPosition);
+                yPosition += 3;
+        
                 // Service data
                 doc.setFont('helvetica', 'normal');
                 oInvoiceData.services.forEach(service => {
-                    xPos = leftMargin;
-                    
+                    if (checkPageBreak(8)) {
+                        // Redraw headers
+                        doc.setFont('helvetica', 'bold');
+                        serviceCols.forEach(col => {
+                            if (col.title === 'Qty' || col.title === 'Unit Price' || col.title === 'Total') {
+                                addText(col.title, col.x + col.width, yPosition, { align: 'right' });
+                            } else {
+                                doc.text(col.title, col.x, yPosition);
+                            }
+                        });
+                        yPosition += 3;
+                        doc.line(leftMargin, yPosition, leftMargin + 160, yPosition);
+                        yPosition += 3;
+                        doc.setFont('helvetica', 'normal');
+                    }
+        
                     // Description
-                    doc.text(service.Description, xPos, yPosition);
-                    xPos += serviceColWidths[0];
+                    doc.text(service.Description, serviceCols[0].x, yPosition);
                     
                     // Quantity (right aligned)
-                    const qtyText = (service.Quantity || 0).toString();
-                    const qtyWidth = doc.getTextWidth(qtyText);
-                    doc.text(qtyText, xPos + serviceColWidths[1] - qtyWidth, yPosition);
-                    xPos += serviceColWidths[1];
+                    addText(service.Quantity.toString(), serviceCols[1].x + serviceCols[1].width, yPosition, { align: 'right' });
                     
-                    // Unit Price (right aligned) - Fix toFixed error
-                    const unitPrice = parseFloat(service.UnitPrice) || 0;
-                    const unitPriceText = `${unitPrice.toFixed(2)}`;
-                    const unitPriceWidth = doc.getTextWidth(unitPriceText);
-                    doc.text(unitPriceText, xPos + serviceColWidths[2] - unitPriceWidth, yPosition);
-                    xPos += serviceColWidths[2];
+                    // Unit Price (right aligned)
+                    addText(formatCurrency(service.UnitPrice), serviceCols[2].x + serviceCols[2].width, yPosition, { align: 'right' });
                     
-                    // Total (right aligned) - Fix toFixed error
-                    const total = parseFloat(service.Total) || 0;
-                    const totalText = `${total.toFixed(2)}`;
-                    const totalWidth = doc.getTextWidth(totalText);
-                    doc.text(totalText, xPos + serviceColWidths[3] - totalWidth, yPosition);
+                    // Total (right aligned)
+                    addText(formatCurrency(service.Total), serviceCols[3].x + serviceCols[3].width, yPosition, { align: 'right' });
                     
                     yPosition += 6;
                 });
-
-                yPosition += 10;
-
-                // 7. TOTALS SECTION
-                yPosition = addLine(yPosition);
+                yPosition += sectionSpacing;
+        
+                // 8. INCLUSIONS AND EXCLUSIONS (condensed)
+                if (oInvoiceData.inclusions || oInvoiceData.exclusions) {
+                    checkPageBreak(30);
+                    addSectionDivider();
+                    
+                    if (oInvoiceData.inclusions) {
+                        yPosition = addText('Inclusions:', leftMargin, yPosition, {
+                            fontSize: 11,
+                            fontStyle: 'bold'
+                        });
+                        yPosition = addText(oInvoiceData.inclusions, leftMargin, yPosition, {
+                            fontSize: 9,
+                            maxWidth: rightMargin - leftMargin
+                        });
+                        yPosition += 3;
+                    }
+                    
+                    if (oInvoiceData.exclusions) {
+                        yPosition = addText('Exclusions:', leftMargin, yPosition, {
+                            fontSize: 11,
+                            fontStyle: 'bold'
+                        });
+                        yPosition = addText(oInvoiceData.exclusions, leftMargin, yPosition, {
+                            fontSize: 9,
+                            maxWidth: rightMargin - leftMargin
+                        });
+                        yPosition += sectionSpacing;
+                    }
+                }
+        
+                // 9. PAYMENT SUMMARY
+                checkPageBreak(50);
+                addSectionDivider();
                 
+                yPosition = addText('Payment Summary:', leftMargin, yPosition, {
+                    fontSize: 12,
+                    fontStyle: 'bold'
+                });
+                yPosition += 5;
+        
+                // Payment history table (if any payments exist)
+                if (oInvoiceData.payments && oInvoiceData.payments.length > 0) {
+                    yPosition = addText('Payment History:', leftMargin, yPosition, {
+                        fontSize: 11,
+                        fontStyle: 'bold'
+                    });
+                    yPosition += 3;
+        
+                    // Payment table headers
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Date', leftMargin, yPosition);
+                    doc.text('Method', leftMargin + 30, yPosition);
+                    addText('Amount', leftMargin + 80, yPosition, { align: 'right' });
+                    yPosition += 3;
+        
+                    doc.line(leftMargin, yPosition, leftMargin + 80, yPosition);
+                    yPosition += 3;
+        
+                    // Payment data
+                    doc.setFont('helvetica', 'normal');
+                    oInvoiceData.payments.forEach(payment => {
+                        doc.text(formatDate(payment.PaymentDate), leftMargin, yPosition);
+                        doc.text(payment.PaymentMethod, leftMargin + 30, yPosition);
+                        addText(formatCurrency(payment.Amount), leftMargin + 80, yPosition, { align: 'right' });
+                        yPosition += 5;
+                    });
+                    yPosition += 5;
+                }
+        
+                // Totals section (right aligned)
                 const totalsX = 130;
-                const amountX = 170;
-
+                const amountX = 180;
+        
                 // Subtotal
                 doc.setFont('helvetica', 'normal');
                 doc.text('Subtotal:', totalsX, yPosition);
-                const subtotalValue = parseFloat(oInvoiceData.totals.Subtotal) || 0;
-                const subtotalText = `${subtotalValue.toFixed(2)}`;
-                const subtotalWidth = doc.getTextWidth(subtotalText);
-                doc.text(subtotalText, amountX + 20 - subtotalWidth, yPosition);
-                yPosition += 7;
-
+                addText(formatCurrency(oInvoiceData.totals.Subtotal), amountX, yPosition, { align: 'right' });
+                yPosition += lineHeight;
+        
                 // Discount (if any)
-                const discountValue = parseFloat(oInvoiceData.totals.Discount) || 0;
-                if (discountValue > 0) {
+                if (parseFloat(oInvoiceData.totals.Discount) > 0) {
                     doc.text('Discount:', totalsX, yPosition);
-                    const discountText = `-${discountValue.toFixed(2)}`;
-                    const discountWidth = doc.getTextWidth(discountText);
-                    doc.text(discountText, amountX + 20 - discountWidth, yPosition);
-                    yPosition += 7;
+                    addText(`-${formatCurrency(oInvoiceData.totals.Discount)}`, amountX, yPosition, { align: 'right' });
+                    yPosition += lineHeight;
                 }
-
-                // Total
+        
+                // Total Amount
                 doc.setFont('helvetica', 'bold');
                 doc.text('Total Amount:', totalsX, yPosition);
-                const totalValue = parseFloat(oInvoiceData.totals.Total) || 0;
-                const totalAmountText = `${totalValue.toFixed(2)}`;
-                const totalAmountWidth = doc.getTextWidth(totalAmountText);
-                doc.text(totalAmountText, amountX + 20 - totalAmountWidth, yPosition);
-                yPosition += 7;
-
-                // Paid
+                addText(formatCurrency(oInvoiceData.totals.Total), amountX, yPosition, { 
+                    align: 'right',
+                    fontStyle: 'bold'
+                });
+                yPosition += lineHeight;
+        
+                // Paid Amount
                 doc.setFont('helvetica', 'normal');
                 doc.text('Paid Amount:', totalsX, yPosition);
-                const paidValue = parseFloat(oInvoiceData.totals.Paid) || 0;
-                const paidText = `${paidValue.toFixed(2)}`;
-                const paidWidth = doc.getTextWidth(paidText);
-                doc.text(paidText, amountX + 20 - paidWidth, yPosition);
-                yPosition += 7;
-
-                // Remaining
+                addText(formatCurrency(oInvoiceData.totals.Paid), amountX, yPosition, { align: 'right' });
+                yPosition += lineHeight;
+        
+                // Remaining Amount
                 doc.setFont('helvetica', 'bold');
                 doc.text('Remaining:', totalsX, yPosition);
-                const remainingValue = parseFloat(oInvoiceData.totals.Remaining) || 0;
-                const remainingText = `${remainingValue.toFixed(2)}`;
-                const remainingWidth = doc.getTextWidth(remainingText);
-                doc.text(remainingText, amountX + 20 - remainingWidth, yPosition);
-                yPosition += 15;
-
-                // 8. FOOTER
-                yPosition = addLine(yPosition);
+                addText(formatCurrency(oInvoiceData.totals.Remaining), amountX, yPosition, { 
+                    align: 'right',
+                    fontStyle: 'bold'
+                });
+                yPosition += sectionSpacing * 2;
+        
+                // 10. FOOTER
+                checkPageBreak(20);
+                addSectionDivider();
                 
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'bold');
-                const thankYouText = 'Thank you for choosing our tour services!';
-                const thankYouWidth = doc.getTextWidth(thankYouText);
-                doc.text(thankYouText, (pageWidth - thankYouWidth) / 2, yPosition);
-                yPosition += 8;
-
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                const journeyText = 'Have a wonderful journey!';
-                const journeyWidth = doc.getTextWidth(journeyText);
-                doc.text(journeyText, (pageWidth - journeyWidth) / 2, yPosition);
-                yPosition += 15;
-
-                const generatedText = `Generated on ${this.formatDateTime(new Date())}`;
-                const generatedWidth = doc.getTextWidth(generatedText);
-                doc.text(generatedText, (pageWidth - generatedWidth) / 2, yPosition);
-
+                yPosition = addText('Thank you for choosing our tour services!', pageWidth / 2, yPosition, {
+                    fontSize: 12,
+                    fontStyle: 'bold',
+                    align: 'center'
+                });
+                
+                yPosition = addText('Have a wonderful journey!', pageWidth / 2, yPosition, {
+                    fontSize: 10,
+                    align: 'center'
+                });
+                yPosition += 5;
+                
+                addText(`Generated on ${formatDateTime(new Date())}`, pageWidth / 2, yPosition, {
+                    fontSize: 8,
+                    align: 'center'
+                });
+        
                 // Save the PDF
                 const fileName = `Invoice-${oInvoiceData.invoiceNumber}.pdf`;
                 doc.save(fileName);
-
-                // Show success message
+        
                 sap.m.MessageToast.show("Invoice PDF downloaded successfully");
-
+        
             } catch (error) {
                 console.error("Error generating PDF:", error);
                 sap.m.MessageBox.error("Error generating PDF: " + error.message);
