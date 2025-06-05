@@ -224,4 +224,96 @@ service OrderService @(path: '/order-service') {
       Email: String;
     };
   };
+
+  @(requires: 'authenticated-user')
+action generateInvoiceData(
+  orderID: UUID
+) returns {
+  success: Boolean;
+  invoice: {
+    invoiceNumber: String;
+    invoiceDate: Date;
+    order: {
+      ID: UUID;
+      OrderDate: Date;
+      CustomerType: String;
+      AdultCount: Integer;
+      ChildCount: Integer;
+      TotalAmount: Decimal;
+      PaidAmount: Decimal;
+      RemainingAmount: Decimal;
+      Status: String;
+      Notes: String;
+    };
+    customer: {
+      ID: UUID;
+      Name: String;
+      Phone: String;
+      Email: String;
+      Address: String;
+    };
+    tour: {
+      ID: UUID;
+      TourName: String;
+      DepartureDate: Date;
+      ReturnDate: Date;
+      Duration: String;
+      AdultPrice: Decimal;
+      ChildPrice: Decimal;
+    };
+    schedules: array of {
+      ID: UUID;
+      DayNumber: Integer;
+      DayTitle: String;
+      Overview: String;
+      BreakfastIncluded: Boolean;
+      LunchIncluded: Boolean;
+      DinnerIncluded: Boolean;
+      Activities: array of {
+        ID: UUID;
+        StartTime: String;
+        EndTime: String;
+        Title: String;
+        Description: String
+      }
+    };
+    passengers: array of {
+      ID: UUID;
+      FullName: String;
+      Gender: String;
+      BirthDate: Date;
+      IDNumber: String;
+      Phone: String;
+      Email: String;
+      SpecialRequirements: String;
+      IsAdult: Boolean;
+    };
+    services: array of {
+      Description: String;
+      Quantity: Integer;
+      UnitPrice: Decimal;
+      Total: Decimal;
+    };
+    payments: array of {
+      ID: UUID;
+      PaymentDate: Date;
+      Amount: Decimal;
+      PaymentMethod: String;
+    };
+    totals: {
+      Subtotal: Decimal;
+      Discount: Decimal;
+      Total: Decimal;
+      Paid: Decimal;
+      Remaining: Decimal;
+    };
+    company: {
+      Name: String;
+      Address: String;
+      Phone: String;
+      Email: String;
+    };
+  };
+  message: String;
+};
 }

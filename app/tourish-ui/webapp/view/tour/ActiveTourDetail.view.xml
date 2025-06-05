@@ -214,12 +214,19 @@
                                 <Title id="_IDGenTitle30" text="Tour Passengers"/>
                                 <ToolbarSpacer id="_IDGenToolbarSpacer41"/>
                                 <Text id="_IDGenText255" text="Total Orders: {activeTourDetail>/statistics/totalOrders}"/>
-                                <Text id="_IDGenText256" text="Total Passengers: {activeTourDetail>/statistics/totalPassengers}" class="sapUiSmallMarginBegin"/>
+                                <Text id="_IDGenText256" text="Total Passengers Already Fill Data: {activeTourDetail>/statistics/totalPassengers}" class="sapUiSmallMarginBegin"/>
                             </OverflowToolbar>
 
                             <!-- Orders with Passengers -->
                             <VBox id="_IDGenVBox81" items="{activeTourDetail>/ordersWithPassengers}">
-                                <Panel id="_IDGenPanel12" expandable="true" expanded="true" headerText="Order {= ${activeTourDetail>OrderID}.substring(0, 8)} - {activeTourDetail>CustomerName} ({activeTourDetail>AdultCount} Adults, {activeTourDetail>ChildCount} Children)" class="sapUiSmallMarginTop">
+                                <Panel id="_IDGenPanel12" expandable="true" expanded="true" class="sapUiSmallMarginTop">
+                                <headerToolbar>
+                                        <Toolbar id="_IDGenToolbar17">
+                                            <Title id="_IDGenTitle33" text="Order {= ${activeTourDetail>OrderID}.substring(0, 8)} - {activeTourDetail>CustomerName} ({activeTourDetail>AdultCount} Adults, {activeTourDetail>ChildCount} Children)" level="H4"/>
+                                            <ToolbarSpacer id="_IDGenToolbarSpacer44"/>
+                                            <Button id="_IDGenButton59" text="Generate Invoice" icon="sap-icon://pdf-attachment" tooltip="Generate Invoice for this Order" press=".onGenerateInvoice" type="Emphasized"/>
+                                        </Toolbar>
+                                    </headerToolbar>
                                     <VBox id="_IDGenVBox82">
                                         <HBox id="_IDGenHBox43" class="sapUiSmallMarginBottom">
                                             <Label id="_IDGenLabel216" text="Order Date: " design="Bold"/>
@@ -227,7 +234,7 @@
                                                                                                                             path: 'activeTourDetail>OrderDate',
                                                                                                                             formatter: '.formatDate'
                                                                                                                         }"/>
-                                            <Label id="_IDGenLabel217" text="Status: " design="Bold" class="sapUiSmallMarginBegin"/>
+                                            <Label id="_IDGenLabel217" text="Paid: " design="Bold" class="sapUiSmallMarginBegin"/>
                                             <ObjectStatus id="_IDGenObjectStatus19" text="{activeTourDetail>Status}" state="{= ${activeTourDetail>Status} === 'Completed' ? 'Success' : 'Warning'}"/>
                                         </HBox>
 

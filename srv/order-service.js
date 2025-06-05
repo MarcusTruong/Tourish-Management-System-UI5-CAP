@@ -1236,4 +1236,199 @@ module.exports = async (srv) => {
       return req.error(500, `Error retrieving customers: ${error.message}`);
     }
   });
+
+
+  /**
+ * Generates comprehensive invoice data for an order
+ */
+  srv.on('generateInvoiceData', async (req) => {
+    const { orderID } = req.data;
+    
+    try {
+      // Get detailed order information
+      const order = await SELECT.one.from('tourish.management.Order').where({ ID: orderID });
+      
+      if (!order) {
+        return {
+          success: false,
+          invoice: null,
+          message: 'Order not found'
+        };
+      }
+      
+      // Get customer information
+      let customer = {};
+      if (order.CustomerType === 'Individual') {
+        const individualCustomer = await SELECT.one.from('tourish.management.Customer')
+          .columns('ID', 'FullName as Name', 'Phone', 'Email', 'Address')
+          .where({ ID: order.CustomerID });
+        customer = individualCustomer || {};
+      } else if (order.CustomerType === 'Business') {
+        const businessCustomer = await SELECT.one.from('tourish.management.BusinessCustomer')
+          .columns('ID', 'CompanyName as Name', 'Phone', 'Email', 'Address')
+          .where({ ID: order.BusinessCustomerID });
+        customer = businessCustomer || {};
+      }
+      
+      // Get tour information
+      const tour = await SELECT.one.from('tourish.management.ActiveTour')
+        .where({ ID: order.ActiveTourID });
+      
+      if (!tour) {
+        return {
+          success: false,
+          invoice: null,
+          message: 'Tour not found'
+        };
+      }
+      
+      // Get template and price information
+      const template = await SELECT.one.from('tourish.management.TourTemplate')
+        .where({ ID: tour.TemplateID });
+      
+      const priceTerms = await SELECT.one.from('tourish.management.TourTemplatePriceTerms')
+        .where({ TourTemplateID: tour.TemplateID });
+      
+      // Get tour schedules with activities
+      const schedules = await SELECT.from('tourish.management.TourTemplateSchedule')
+        .where({ TourTemplateID: tour.TemplateID })
+        .orderBy('DayNumber');
+      
+      // For each schedule, get activities
+      for (let schedule of schedules) {
+        const activities = await SELECT.from('tourish.management.TourTemplateActivity')
+          .where({ ScheduleID: schedule.ID })
+          .orderBy('StartTime');
+        schedule.Activities = activities;
+      }
+      
+      // Get passengers
+      const passengers = await SELECT.from('tourish.management.Passenger')
+        .where({ OrderID: orderID });
+      
+      // Get payments
+      const payments = await SELECT.from('tourish.management.Payment')
+        .where({ OrderID: orderID })
+        .orderBy({ PaymentDate: 'desc' });
+      
+      // Get workspace/company information
+      const workspace = await SELECT.one.from('tourish.management.Workspace')
+        .limit(1); // Assuming single workspace
+      
+      // Generate invoice number
+      const invoiceNumber = `INV-${orderID.substring(0, 8).toUpperCase()}-${new Date().getFullYear()}`;
+      
+      // Calculate duration
+      const duration = template ? `${template.NumberDays} days / ${template.NumberNights} nights` : 'N/A';
+      
+      // Prepare service breakdown
+      const services = [
+        {
+          Description: `Adult Tour Package (${order.AdultCount} passengers)`,
+          Quantity: order.AdultCount,
+          UnitPrice: priceTerms ? priceTerms.AdultPrice : 0,
+          Total: (priceTerms ? priceTerms.AdultPrice : 0) * order.AdultCount
+        }
+      ];
+      
+      if (order.ChildCount > 0) {
+        services.push({
+          Description: `Child Tour Package (${order.ChildCount} passengers)`,
+          Quantity: order.ChildCount,
+          UnitPrice: priceTerms ? priceTerms.ChildrenPrice : 0,
+          Total: (priceTerms ? priceTerms.ChildrenPrice : 0) * order.ChildCount
+        });
+      }
+      
+      // Calculate totals
+      const subtotal = services.reduce((sum, service) => sum + service.Total, 0);
+      const discount = 0; // TODO: Calculate actual discount from promotions
+      const total = subtotal - discount;
+      
+      // Prepare invoice data
+      const invoiceData = {
+        invoiceNumber: invoiceNumber,
+        invoiceDate: new Date(),
+        order: {
+          ID: order.ID,
+          OrderDate: order.OrderDate,
+          CustomerType: order.CustomerType,
+          AdultCount: order.AdultCount,
+          ChildCount: order.ChildCount,
+          TotalAmount: order.TotalAmount,
+          PaidAmount: order.PaidAmount,
+          RemainingAmount: order.RemainingAmount,
+          Status: order.Status,
+          Notes: order.Notes
+        },
+        customer: {
+          ID: customer.ID,
+          Name: customer.Name || 'Unknown Customer',
+          Phone: customer.Phone || '',
+          Email: customer.Email || '',
+          Address: customer.Address || 'Address not provided'
+        },
+        tour: {
+          ID: tour.ID,
+          TourName: tour.TourName,
+          DepartureDate: tour.DepartureDate,
+          ReturnDate: tour.ReturnDate,
+          Duration: duration,
+          AdultPrice: priceTerms ? priceTerms.AdultPrice : 0,
+          ChildPrice: priceTerms ? priceTerms.ChildrenPrice : 0
+        },
+        schedules: schedules, // Added schedule data
+        passengers: passengers.map(p => ({
+          ID: p.ID,
+          FullName: p.FullName,
+          Gender: p.Gender,
+          BirthDate: p.BirthDate,
+          IDNumber: p.IDNumber,
+          Phone: p.Phone,
+          Email: p.Email,
+          SpecialRequirements: p.SpecialRequirements,
+          IsAdult: p.IsAdult
+        })),
+        services: services,
+        payments: payments.map(p => ({
+          ID: p.ID,
+          PaymentDate: p.PaymentDate,
+          Amount: p.Amount,
+          PaymentMethod: p.PaymentMethod
+        })),
+        totals: {
+          Subtotal: subtotal,
+          Discount: discount,
+          Total: total,
+          Paid: order.PaidAmount,
+          Remaining: order.RemainingAmount
+        },
+        // Added inclusions, exclusions, and terms
+        inclusions: priceTerms ? priceTerms.ServicesIncluded : 'Not specified',
+        exclusions: priceTerms ? priceTerms.ServicesNotIncluded : 'Not specified',
+        cancellationTerms: priceTerms ? priceTerms.CancellationTerms : 'Standard cancellation terms apply',
+        generalTerms: priceTerms ? priceTerms.GeneralTerms : 'Standard terms and conditions apply',
+        company: {
+          Name: workspace ? workspace.CompanyName : 'Tourism Management Company',
+          Address: workspace ? workspace.Address : '123 Tourism Street, Travel City',
+          Phone: workspace ? workspace.Phone : '+1 (555) 123-4567',
+          Email: workspace ? workspace.Email : 'info@tourismcompany.com'
+        }
+      };
+      
+      return {
+        success: true,
+        invoice: invoiceData,
+        message: 'Invoice data generated successfully'
+      };
+      
+    } catch (error) {
+      console.error('Error generating invoice data:', error);
+      return {
+        success: false,
+        invoice: null,
+        message: `Error generating invoice data: ${error.message}`
+      };
+    }
+  });
 };

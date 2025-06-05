@@ -1,0 +1,303 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    
+    <Dialog id="invoiceDialog"
+        title="Invoice - {invoice>/invoiceNumber}"
+        contentWidth="668px"
+        contentHeight="95%"
+        resizable="true"
+        draggable="true">
+        
+        <content>
+            <ScrollContainer id="_IDGenScrollContainer" height="100%" width="100%" vertical="true" horizontal="false">
+                <VBox id="_IDGenVBox89" class="sapUiMediumMargin" width="100%">
+                    
+                    <!-- Company Header -->
+                    <Panel id="_IDGenPanel11" class="sapUiMediumMarginBottom">
+                        <VBox id="_IDGenVBox90" alignItems="Center" class="sapUiMediumMargin">
+                            <Title id="_IDGenTitle35" text="{invoice>/company/Name}" level="H1" class="sapUiLargeMarginBottom"/>
+                            <Text id="_IDGenText147" text="{invoice>/company/Address}" class="sapUiSmallMarginBottom"/>
+                            <Text id="_IDGenText330" text="Phone: {invoice>/company/Phone} | Email: {invoice>/company/Email}"/>
+                        </VBox>
+                    </Panel>
+                    
+                    <!-- Invoice Header -->
+                    <HBox id="_IDGenHBox55" justifyContent="SpaceBetween" class="sapUiMediumMarginBottom">
+                        <VBox id="_IDGenVBox91">
+                            <Title id="_IDGenTitle36" text="INVOICE" level="H2" class="sapUiMediumMarginBottom"/>
+                            <Label id="_IDGenLabel196" text="Invoice Number:" design="Bold"/>
+                            <Text id="_IDGenText331" text="{invoice>/invoiceNumber}"/>
+                            <Label id="_IDGenLabel227" text="Invoice Date:" design="Bold" class="sapUiSmallMarginTop"/>
+                            <Text id="_IDGenText332" text="{
+                                path: 'invoice>/invoiceDate',
+                                formatter: '.formatDate'
+                            }"/>
+                        </VBox>
+                        <VBox id="_IDGenVBox92" alignItems="Center">
+                            <Label id="_IDGenLabel228" text="Order ID:" design="Bold"/>
+                            <Text id="_IDGenText333" text="{invoice>/order/ID}"/>
+                            <Label id="_IDGenLabel229" text="Order Date:" design="Bold" class="sapUiSmallMarginTop"/>
+                            <Text id="_IDGenText334" text="{
+                                path: 'invoice>/order/OrderDate',
+                                formatter: '.formatDate'
+                            }"/>
+                        </VBox>
+                    </HBox>
+                    
+                    <!-- Customer Information -->
+                    <Panel id="_IDGenPanel17" headerText="Bill To:" class="sapUiMediumMarginBottom">
+                        <VBox id="_IDGenVBox93" class="sapUiMediumMargin">
+                            <Text id="_IDGenText335" text="{invoice>/customer/Name}" class="sapUiBoldText sapUiMediumText"/>
+                            <Text id="_IDGenText336" text="{invoice>/customer/Address}" class="sapUiSmallMarginTop"/>
+                            <Text id="_IDGenText337" text="Phone: {invoice>/customer/Phone}" class="sapUiSmallMarginTop"/>
+                            <Text id="_IDGenText338" text="Email: {invoice>/customer/Email}" class="sapUiSmallMarginTop"/>
+                        </VBox>
+                    </Panel>
+                    
+                    <!-- Tour Information -->
+                    <Panel id="_IDGenPanel18" headerText="Tour Details:" class="sapUiMediumMarginBottom">
+                        <VBox id="_IDGenVBox94" class="sapUiMediumMargin">
+                            <HBox id="_IDGenHBox56">
+                                <Label id="_IDGenLabel230" text="Tour Name:" design="Bold" class="sapUiSmallMarginEnd"/>
+                                <Text id="_IDGenText339" text="{invoice>/tour/TourName}"/>
+                            </HBox>
+                            <HBox id="_IDGenHBox57" class="sapUiSmallMarginTop">
+                                <Label id="_IDGenLabel231" text="Departure Date:" design="Bold" class="sapUiSmallMarginEnd"/>
+                                <Text id="_IDGenText340" text="{
+                                    path: 'invoice>/tour/DepartureDate',
+                                    formatter: '.formatDate'
+                                }"/>
+                            </HBox>
+                            <HBox id="_IDGenHBox58" class="sapUiSmallMarginTop">
+                                <Label id="_IDGenLabel232" text="Return Date:" design="Bold" class="sapUiSmallMarginEnd"/>
+                                <Text id="_IDGenText341" text="{
+                                    path: 'invoice>/tour/ReturnDate',
+                                    formatter: '.formatDate'
+                                }"/>
+                            </HBox>
+                            <HBox id="_IDGenHBox59" class="sapUiSmallMarginTop">
+                                <Label id="_IDGenLabel233" text="Duration:" design="Bold" class="sapUiSmallMarginEnd"/>
+                                <Text id="_IDGenText342" text="{invoice>/tour/Duration}"/>
+                            </HBox>
+                        </VBox>
+                    </Panel>
+                    
+                    <!-- Tour Schedule -->
+                    <Panel id="_IDGenPanel19" headerText="Tour Itinerary:" expandable="true" expanded="true" class="sapUiMediumMarginBottom">
+                        <VBox id="_IDGenVBox95" class="sapUiMediumMargin">
+                            <List id="_IDGenList3" items="{invoice>/schedules}" showSeparators="Inner">
+                                <items>
+                                    <CustomListItem id="_IDGenCustomListItem2">
+                                        <VBox id="_IDGenVBox96" width="100%">
+                                            <HBox id="_IDGenHBox60" justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBottom">
+                                                <Title id="_IDGenTitle37" text="Day {invoice>DayNumber}: {invoice>DayTitle}" level="H4"/>
+                                                <HBox id="_IDGenHBox61">
+                                                    <ObjectStatus id="_IDGenObjectStatus7" text="Breakfast" state="{= ${invoice>BreakfastIncluded} ? 'Success' : 'None'}" class="sapUiTinyMarginEnd"/>
+                                                    <ObjectStatus id="_IDGenObjectStatus23" text="Lunch" state="{= ${invoice>LunchIncluded} ? 'Success' : 'None'}" class="sapUiTinyMarginEnd"/>
+                                                    <ObjectStatus id="_IDGenObjectStatus24" text="Dinner" state="{= ${invoice>DinnerIncluded} ? 'Success' : 'None'}"/>
+                                                </HBox>
+                                            </HBox>
+                                            <Text id="_IDGenText343" text="{invoice>Overview}" class="sapUiSmallMarginBottom"/>
+                                            
+                                            <!-- Activities for this day -->
+                                            <Table id="_IDGenTable4" items="{invoice>Activities}" showSeparators="None" class="sapUiSmallMarginTop" visible="{= ${invoice>Activities}.length &gt; 0}">
+                                                <columns>
+                                                    <Column id="_IDGenColumn117" width="100px"><Text id="_IDGenText344" text="Time"/></Column>
+                                                    <Column id="_IDGenColumn119"><Text id="_IDGenText345" text="Activity"/></Column>
+                                                </columns>
+                                                <items>
+                                                    <ColumnListItem id="_IDGenColumnListItem26">
+                                                        <Text id="_IDGenText346" text="{invoice>StartTime} - {invoice>EndTime}" class="sapUiSmallText"/>
+                                                        <VBox id="_IDGenVBox97">
+                                                            <Text id="_IDGenText347" text="{invoice>Title}" class="sapUiBoldText"/>
+                                                            <Text id="_IDGenText348" text="{invoice>Description}" class="sapUiSmallText"/>
+                                                        </VBox>
+                                                    </ColumnListItem>
+                                                </items>
+                                            </Table>
+                                        </VBox>
+                                    </CustomListItem>
+                                </items>
+                            </List>
+                        </VBox>
+                    </Panel>
+                    
+                    <!-- Passengers List -->
+                    <Panel id="_IDGenPanel20" headerText="Passengers:" class="sapUiMediumMarginBottom" width="100%">
+                        <Table id="_IDGenTable8" items="{invoice>/passengers}" class="sapUiSmallMargin">
+                            <columns>
+                                <Column id="_IDGenColumn134" ><Text id="_IDGenText349" text="Type"/></Column>
+                                <Column id="_IDGenColumn135"><Text id="_IDGenText350" text="Full Name"/></Column>
+                                <Column id="_IDGenColumn136" ><Text id="_IDGenText351" text="Gender"/></Column>
+                                <Column id="_IDGenColumn137" ><Text id="_IDGenText352" text="Birth Date"/></Column>
+                                <Column id="_IDGenColumn138" ><Text id="_IDGenText353" text="ID Number"/></Column>
+                            </columns>
+                            <items>
+                                <ColumnListItem id="_IDGenColumnListItem27">
+                                    <ObjectStatus id="_IDGenObjectStatus25" text="{= ${invoice>IsAdult} ? 'Adult' : 'Child'}" 
+                                        state="{= ${invoice>IsAdult} ? 'Success' : 'Warning'}"/>
+                                    <Text id="_IDGenText355" text="{invoice>FullName}" class="sapUiBoldText"/>
+                                    <Text id="_IDGenText356" text="{invoice>Gender}"/>
+                                    <Text id="_IDGenText357" text="{
+                                        path: 'invoice>BirthDate',
+                                        formatter: '.formatDate'
+                                    }"/>
+                                    <Text id="_IDGenText358" text="{invoice>IDNumber}"/>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+                    </Panel>
+                    
+                    <!-- Service Details -->
+                    <Panel id="_IDGenPanel21" headerText="Service Breakdown:" class="sapUiMediumMarginBottom">
+                        <Table id="_IDGenTable9" items="{invoice>/services}" class="sapUiSmallMargin">
+                            <columns>
+                                <Column id="_IDGenColumn140"><Text id="_IDGenText360" text="Description"/></Column>
+                                <Column id="_IDGenColumn141" hAlign="Center"><Text id="_IDGenText361" text="Quantity"/></Column>
+                                <Column id="_IDGenColumn142" hAlign="End" ><Text id="_IDGenText362" text="Unit Price"/></Column>
+                                <Column id="_IDGenColumn143" hAlign="End"><Text id="_IDGenText363" text="Total"/></Column>
+                            </columns>
+                            <items>
+                                <ColumnListItem id="_IDGenColumnListItem28">
+                                    <Text id="_IDGenText364" text="{invoice>Description}"/>
+                                    <Text id="_IDGenText365" text="{invoice>Quantity}"/>
+                                    <ObjectNumber id="_IDGenObjectNumber38" number="{
+                                        path: 'invoice>UnitPrice',
+                                        formatter: '.formatCurrency'
+                                    }" unit="USD"/>
+                                    <ObjectNumber id="_IDGenObjectNumber40" number="{
+                                        path: 'invoice>Total',
+                                        formatter: '.formatCurrency'
+                                    }" unit="USD" emphasized="true"/>
+                                </ColumnListItem>
+                            </items>
+                        </Table>
+                    </Panel>
+                    
+                    <!-- Inclusions and Exclusions -->
+                    <HBox id="_IDGenHBox62" class="sapUiMediumMarginBottom">
+                        <Panel id="_IDGenPanel22" headerText="Inclusions:" class="sapUiSmallMarginEnd">
+                            <VBox id="_IDGenVBox98" class="sapUiMediumMargin" >
+                                <Text id="_IDGenText366"  text="{invoice>/inclusions}" renderWhitespace="true" width="100%"/>
+                            </VBox>
+                        </Panel>
+                        <Panel id="_IDGenPanel23" headerText="Exclusions:" class="sapUiSmallMarginBegin" >
+                            <VBox id="_IDGenVBox99" class="sapUiMediumMargin" width="100%">
+                                <Text id="_IDGenText367" text="{invoice>/exclusions}" renderWhitespace="true"/>
+                            </VBox>
+                        </Panel>
+                    </HBox>
+
+                    <!-- Terms and Conditions -->
+                    <Panel id="_IDGenPanel25" headerText="Terms - Conditions:" expandable="true" expanded="true" class="sapUiMediumMarginBottom">
+                        <VBox id="_IDGenVBox102" class="sapUiMediumMargin">
+                            <Title id="_IDGenTitle41" text="Cancellation Terms:" level="H5" class="sapUiSmallMarginBottom"/>
+                            <Text id="_IDGenText373" text="{invoice>/cancellationTerms}" renderWhitespace="true" class="sapUiMediumMarginBottom"/>
+                            
+                            <Title id="_IDGenTitle42" text="General Terms:" level="H5" class="sapUiSmallMarginBottom"/>
+                            <Text id="_IDGenText374" text="{invoice>/generalTerms}" renderWhitespace="true"/>
+                        </VBox>
+                    </Panel>
+                    
+                    <!-- Payment Summary -->
+                    <Panel id="_IDGenPanel24" headerText="Payment Summary:" class="sapUiMediumMarginBottom">
+                        <VBox id="_IDGenVBox100" class="sapUiMediumMargin">
+                            <!-- Payment Details Table -->
+                            <Table id="_IDGenTable10" items="{invoice>/payments}" class="sapUiMediumMarginBottom" visible="{= ${invoice>/payments}.length &gt; 0}">
+                                <headerToolbar>
+                                    <Toolbar id="_IDGenToolbar16">
+                                        <Title id="_IDGenTitle38" text="Payment History" level="H4"/>
+                                    </Toolbar>
+                                </headerToolbar>
+                                <columns>
+                                    <Column id="_IDGenColumn144" width="120px"><Text id="_IDGenText368" text="Date"/></Column>
+                                    <Column id="_IDGenColumn145"><Text id="_IDGenText369" text="Method"/></Column>
+                                    <Column id="_IDGenColumn146" hAlign="End" width="120px"><Text id="_IDGenText370" text="Amount"/></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem id="_IDGenColumnListItem29">
+                                        <Text id="_IDGenText371" text="{
+                                            path: 'invoice>PaymentDate',
+                                            formatter: '.formatDate'
+                                        }"/>
+                                        <Text id="_IDGenText372" text="{invoice>PaymentMethod}"/>
+                                        <ObjectNumber id="_IDGenObjectNumber41" number="{
+                                            path: 'invoice>Amount',
+                                            formatter: '.formatCurrency'
+                                        }" unit="USD" state="{= ${invoice>Amount} &lt; 0 ? 'Error' : 'Success'}"/>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                            
+                            <!-- Summary Totals -->
+                            <VBox id="_IDGenVBox101" alignItems="End" class="sapUiMediumMarginTop">
+                                <HBox id="_IDGenHBox63" justifyContent="End" class="sapUiSmallMarginBottom">
+                                    <Label id="_IDGenLabel234" text="Subtotal:" design="Bold" class="sapUiMediumMarginEnd" width="120px"/>
+                                    <ObjectNumber id="_IDGenObjectNumber42" number="{
+                                        path: 'invoice>/totals/Subtotal',
+                                        formatter: '.formatCurrency'
+                                    }" unit="USD" class="sapUiSmallMarginEnd"/>
+                                </HBox>
+                                
+                                <HBox id="_IDGenHBox64" justifyContent="End" class="sapUiSmallMarginBottom" visible="{= ${invoice>/totals/Discount} > 0}">
+                                    <Label id="_IDGenLabel235" text="Discount:" design="Bold" class="sapUiMediumMarginEnd" width="120px"/>
+                                    <ObjectNumber id="_IDGenObjectNumber43" number="-{
+                                        path: 'invoice>/totals/Discount',
+                                        formatter: '.formatCurrency'
+                                    }" unit="USD" state="Error" class="sapUiSmallMarginEnd"/>
+                                </HBox>
+                                
+                                <HBox id="_IDGenHBox65" justifyContent="End" class="sapUiSmallMarginBottom">
+                                    <Label id="_IDGenLabel236" text="Total Amount:" design="Bold" class="sapUiMediumMarginEnd" width="120px"/>
+                                    <ObjectNumber id="_IDGenObjectNumber44" number="{
+                                        path: 'invoice>/totals/Total',
+                                        formatter: '.formatCurrency'
+                                    }" unit="USD" state="Success" emphasized="true" class="sapUiSmallMarginEnd"/>
+                                </HBox>
+                                
+                                <HBox id="_IDGenHBox66" justifyContent="End" class="sapUiSmallMarginBottom">
+                                    <Label id="_IDGenLabel237" text="Paid Amount:" design="Bold" class="sapUiMediumMarginEnd" width="120px"/>
+                                    <ObjectNumber id="_IDGenObjectNumber59" number="{
+                                        path: 'invoice>/totals/Paid',
+                                        formatter: '.formatCurrency'
+                                    }" unit="USD" state="Information" class="sapUiSmallMarginEnd"/>
+                                </HBox>
+                                
+                                <HBox id="_IDGenHBox67" justifyContent="End" class="sapUiMediumMarginTop">
+                                    <Label id="_IDGenLabel238" text="Remaining:" design="Bold" class="sapUiMediumMarginEnd" width="120px"/>
+                                    <ObjectNumber id="_IDGenObjectNumber60" number="{
+                                        path: 'invoice>/totals/Remaining',
+                                        formatter: '.formatCurrency'
+                                    }" unit="USD" 
+                                    state="{= ${invoice>/totals/Remaining} === 0 ? 'Success' : ${invoice>/totals/Remaining} > 0 ? 'Warning' : 'Error'}" 
+                                    emphasized="true" class="sapUiSmallMarginEnd"/>
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </Panel>
+                    
+                    <!-- Footer -->
+                    <Panel id="_IDGenPanel26" class="sapUiMediumMarginTop">
+                        <VBox id="_IDGenVBox103" alignItems="Center" class="sapUiMediumMargin">
+                            <Text id="_IDGenText375" text="Thank you for choosing our tour services!" class="sapUiMediumText sapUiBoldText"/>
+                            <Text id="_IDGenText376" text="Have a wonderful journey!" class="sapUiSmallMarginTop"/>
+                            <Text id="_IDGenText377" text="Generated on {
+                                path: 'invoice>/invoiceDate',
+                                formatter: '.formatDateTime'
+                            }" class="sapUiSmallText sapUiMediumMarginTop"/>
+                        </VBox>
+                    </Panel>
+                    
+                </VBox>
+            </ScrollContainer>
+        </content>
+        
+        <buttons>
+            <Button id="_IDGenButton81" text="Download PDF" icon="sap-icon://pdf-attachment" press=".onDownloadInvoicePDF"/>
+            <Button id="_IDGenButton82" text="Email Invoice" icon="sap-icon://email" press=".onEmailInvoice"/>
+            <Button id="_IDGenButton83" text="Close" press=".onCloseInvoice"/>
+        </buttons>
+        
+    </Dialog>
+</core:FragmentDefinition>

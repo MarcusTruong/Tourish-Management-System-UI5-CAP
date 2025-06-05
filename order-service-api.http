@@ -239,3 +239,14 @@ Authorization: Basic {{base64 username:password}}
   "skip": 0, 
   "limit": 20
 }
+
+
+###  generateInvoiceData
+
+POST {{baseUrl}}/generateInvoiceData
+Content-Type: {{contentType}}
+Authorization: Basic {{base64 username:password}}
+
+{
+  "orderID": "976b3968-0e6f-4683-8308-6163716718e5"
+}

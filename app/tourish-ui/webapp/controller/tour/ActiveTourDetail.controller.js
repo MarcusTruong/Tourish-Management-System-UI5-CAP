@@ -863,6 +863,123 @@ if (!oDialogModel || !this._currentEditingService) {
 
         formatPassengerType: function(bIsAdult) {
             return bIsAdult ? "Adult" : "Child";
-        }
+        },
+
+        // Invoice Generation Methods
+        onGenerateInvoice: function(oEvent) {
+            var oButton = oEvent.getSource();
+            var oContext = oButton.getBindingContext("activeTourDetail");
+            var oOrder = oContext.getObject();
+            
+            // Load detailed order information for invoice
+            this._loadOrderDetailsForInvoice(oOrder.OrderID);
+        },
+
+        _loadOrderDetailsForInvoice: function(sOrderId) {
+            var oView = this.getView();
+            oView.setBusy(true);
+            
+            // Get order service to load detailed order information
+            var oOrderService = this.getOwnerComponent().getModel("orderService");
+            var oContext = oOrderService.bindContext("/generateInvoiceData(...)");
+            
+            oContext.setParameter("orderID", sOrderId);
+            
+            oContext.execute().then(function() {
+                var oResult = oContext.getBoundContext().getObject();
+                
+                if (oResult && oResult.success) {
+                    // Open invoice dialog with the data
+                    this._openInvoiceDialog(oResult.invoice);
+                } else {
+                    MessageBox.error(oResult.message || "Failed to load order details for invoice");
+                }
+                
+                oView.setBusy(false);
+            }.bind(this)).catch(function(oError) {
+                console.error("Error loading order details for invoice:", oError);
+                MessageBox.error("Error loading order details");
+                oView.setBusy(false);
+            }.bind(this));
+        },
+
+        _openInvoiceDialog: function(oInvoiceData) {
+            var oView = this.getView();
+            
+            if (!this._oInvoiceDialog) {
+                Fragment.load({
+                    id: oView.getId(),
+                    name: "tourishui.view.fragments.InvoiceDialog",
+                    controller: this
+                }).then(function(oDialog) {
+                    oView.addDependent(oDialog);
+                    this._oInvoiceDialog = oDialog;
+                    this._showInvoice(oInvoiceData);
+                }.bind(this));
+            } else {
+                this._showInvoice(oInvoiceData);
+            }
+        },
+
+        _showInvoice: function(oInvoiceData) {
+            var oInvoiceModel = new JSONModel(oInvoiceData);
+            this._oInvoiceDialog.setModel(oInvoiceModel, "invoice");
+            this._oInvoiceDialog.open();
+        },
+
+        onDownloadInvoicePDF: function() {
+            MessageBox.information("PDF download functionality would be implemented here. This typically requires a server-side PDF generation service or a client-side library like jsPDF.");
+        },
+
+        onCloseInvoice: function() {
+            this._oInvoiceDialog.close();
+        },
+
+        formatDateTime: function(oDate) {
+            if (!oDate) {
+                return "";
+            }
+            
+            var date = oDate instanceof Date ? oDate : new Date(oDate);
+            
+            if (isNaN(date.getTime())) {
+                return "";
+            }
+            
+            var oDateTimeFormat = sap.ui.core.format.DateFormat.getDateTimeInstance({
+                pattern: "MMM d, yyyy 'at' HH:mm"
+            });
+            
+            return oDateTimeFormat.format(date);
+        },
+
+        onEmailInvoice: function() {
+            var oInvoiceModel = this._oInvoiceDialog.getModel("invoice");
+            var oData = oInvoiceModel.getData();
+            
+            // Create email content
+            var sSubject = `Invoice ${oData.invoiceNumber} - ${oData.tour.TourName}`;
+            var sBody = `Dear ${oData.customer.Name},
+
+            Please find attached your invoice for the tour booking.
+
+            Tour: ${oData.tour.TourName}
+            Departure: ${this.formatDate(oData.tour.DepartureDate)}
+            Invoice Number: ${oData.invoiceNumber}
+            Total Amount: $${this.formatCurrency(oData.totals.Total)}
+                    
+            Thank you for choosing our services!
+                    
+            Best regards,
+            ${oData.company.Name}`;
+            
+            // Create mailto link
+            var sMailtoLink = `mailto:${oData.customer.Email}?subject=${encodeURIComponent(sSubject)}&body=${encodeURIComponent(sBody)}`;
+            
+            // Open email client
+            window.open(sMailtoLink);
+            
+            MessageToast.show("Email client opened. Please attach the invoice if needed.");
+        },
     });
 });
