@@ -31,6 +31,7 @@
                                 <core:Item id="_IDGenItem39"  key="Pending" text="Pending"/>
                                 <core:Item id="_IDGenItem40" key="Completed" text="Completed"/>
                                 <core:Item id="_IDGenItem41"  key="Canceled" text="Canceled"/>
+                                <core:Item id="_IDGenItem60" key="Overpaid" text="Overpaid"/>
                             </Select>
                             
                             <Label id="_IDGenLabel89"  text="Date From:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
@@ -184,9 +185,10 @@
                                     unit="USD"
                                     state="{= ${orders>PaidAmount} >= ${orders>TotalAmount} ? 'Success' : 'Warning' }"/>
                                 <ObjectStatus id="_IDGenObjectStatus11" 
-                                    text="{orders>Status}"
-                                    state="{= ${orders>Status} === 'Completed' ? 'Success' : 
-                                           ${orders>Status} === 'Pending' ? 'Warning' : 'Error' }"/>
+    text="{orders>Status}"
+    state="{= ${orders>Status} === 'Completed' ? 'Success' : 
+           ${orders>Status} === 'Pending' ? 'Warning' : 
+           ${orders>Status} === 'Overpaid' ? 'Information' : 'Error' }"/>
                                 <HBox id="_IDGenHBox26"  justifyContent="End">
                                     <Button id="_IDGenButton52" 
                                         icon="sap-icon://edit"

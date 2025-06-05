@@ -18,6 +18,25 @@ module.exports = async (srv) => {
   } = cds.entities('tourish.management');
 
   /**
+ * Helper function to determine order status based on payment
+ */
+function determineOrderStatus(totalAmount, paidAmount, currentStatus) {
+  if (currentStatus === 'Canceled') {
+    return 'Canceled';
+  }
+  
+  const remainingAmount = totalAmount - paidAmount;
+  
+  if (remainingAmount < 0) {
+    return 'Overpaid'; // Khách hàng trả quá tiền
+  } else if (remainingAmount === 0) {
+    return 'Completed'; // Đã thanh toán đủ
+  } else {
+    return 'Pending'; // Còn nợ
+  }
+}
+
+  /**
    * Creates a new order
    */
   srv.on('createOrder', async (req) => {
@@ -488,7 +507,7 @@ module.exports = async (srv) => {
               PaidAmount: newPaidAmount,
               RemainingAmount: newRemainingAmount,
               // Automatically set to Completed if fully paid
-              Status: newRemainingAmount <= 0 ? 'Completed' : order.Status
+              Status: determineOrderStatus(totalAmount, newPaidAmount, order.Status)
             })
             .where({ ID: orderID })
         );
@@ -617,7 +636,7 @@ module.exports = async (srv) => {
               PaidAmount: newPaidAmount,
               RemainingAmount: newRemainingAmount,
               // Automatically set to Completed if fully paid
-              Status: newRemainingAmount <= 0 ? 'Completed' : order.Status
+              Status: determineOrderStatus(oTA, newPaidAmount, order.Status)
             })
             .where({ ID: order.ID })
         );

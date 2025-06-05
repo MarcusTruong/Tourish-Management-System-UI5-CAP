@@ -140,6 +140,36 @@ sap.ui.define([], function () {
         formatPercentage: function(value) {
             if (!value && value !== 0) return "0%";
             return parseFloat(value).toFixed(1) + "%";
-        }
+        },
+
+        /**
+ * Formats order status for display
+ * @param {string} status - Order status
+ * @returns {string} Formatted status
+ */
+formatOrderStatus: function(status) {
+    switch(status) {
+        case 'Pending': return 'Pending Payment';
+        case 'Completed': return 'Completed';
+        case 'Canceled': return 'Canceled';
+        case 'Overpaid': return 'Overpaid';
+        default: return status || 'Unknown';
+    }
+},
+
+/**
+ * Gets order status state for ObjectStatus
+ * @param {string} status - Order status
+ * @returns {string} Valid state value
+ */
+getOrderStatusState: function(status) {
+    switch(status) {
+        case 'Completed': return 'Success';
+        case 'Pending': return 'Warning';
+        case 'Overpaid': return 'Information';
+        case 'Canceled': return 'Error';
+        default: return 'None';
+    }
+}
     };
 });

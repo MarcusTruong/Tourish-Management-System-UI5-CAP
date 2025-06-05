@@ -74,7 +74,8 @@
                             }"
                                 state="{= ${orderDetail>/RemainingAmount} &lt;= 0 ? 'Success' : 'Warning'}">
                             </ObjectNumber>
-                            <Text id="_IDGenText123" text="{= ${orderDetail>/RemainingAmount} &lt;= 0 ? 'Fully Paid' : 'Outstanding Balance'}" class="sapUiTinyText"/>
+                            <Text id="_IDGenText123" text="{= ${orderDetail>/RemainingAmount} &lt; 0 ? 'Overpaid' : ${orderDetail>/RemainingAmount} === 0 ? 'Fully Paid' : 'Outstanding Balance'}" class="sapUiTinyText"/>
+
                         </VBox>
 
                     </layout:HorizontalLayout>
@@ -174,9 +175,10 @@
 
                                                             <Label id="_IDGenLabel111"  text="Status" />
                                                             <ObjectStatus id="_IDGenObjectStatus12" 
-                                                                text="{orderDetail>/Status}"
-                                                                state="{= ${orderDetail>/Status} === 'Completed' ? 'Success' : 
-                                                                       ${orderDetail>/Status} === 'Pending' ? 'Warning' : 'Error' }" />
+    text="{orderDetail>/Status}"
+    state="{= ${orderDetail>/Status} === 'Completed' ? 'Success' : 
+           ${orderDetail>/Status} === 'Pending' ? 'Warning' : 
+           ${orderDetail>/Status} === 'Overpaid' ? 'Information' : 'Error' }"/>
                                                             
                                                             <Label id="_IDGenLabel112"  text="Notes" />
                                                             <Text id="_IDGenText133"  text="{orderDetail>/Notes}" />
