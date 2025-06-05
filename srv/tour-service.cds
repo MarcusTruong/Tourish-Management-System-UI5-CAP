@@ -17,7 +17,7 @@ service TourService @(path: '/tour-service') {
 
   // TOUR TEMPLATE MANAGEMENT - STEP 1: Basic Information
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action createTourTemplateBasicInfo(
     templateName: String,
     description: String,
@@ -35,7 +35,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action updateTourTemplateBasicInfo(
     templateID: UUID,
     templateName: String,
@@ -48,7 +48,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action addImageToTemplate(
     templateID: UUID,
     imageURL: String,
@@ -59,7 +59,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action removeImageFromTemplate(
     imageID: UUID
   ) returns {
@@ -67,7 +67,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action setMainImage(
     imageID: UUID,
     templateID: UUID
@@ -78,7 +78,7 @@ service TourService @(path: '/tour-service') {
   
   // TOUR TEMPLATE MANAGEMENT - STEP 2: Schedules
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action addTourTemplateSchedules(
     templateID: UUID,
     schedules: array of {
@@ -100,7 +100,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+ @(requires: ['Admin', 'Manager'])
   action updateTourTemplateSchedule(
     scheduleID: UUID,
     dayTitle: String,
@@ -113,7 +113,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action addActivityToSchedule(
     scheduleID: UUID,
     startTime: String,
@@ -125,7 +125,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action updateActivity(
     activityID: UUID,
     startTime: String,
@@ -137,7 +137,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action deleteActivity(
     activityID: UUID
   ) returns {
@@ -145,7 +145,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action reorderActivities(
     scheduleID: UUID,
     activityIDs: array of UUID
@@ -156,7 +156,7 @@ service TourService @(path: '/tour-service') {
   
   // TOUR TEMPLATE MANAGEMENT - STEP 3: Price Terms
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action addTourTemplatePriceTerms(
     templateID: UUID,
     adultPrice: Decimal,
@@ -170,7 +170,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action updateTourTemplatePriceTerms(
     templateID: UUID,
     adultPrice: Decimal,
@@ -186,7 +186,7 @@ service TourService @(path: '/tour-service') {
   
   // TOUR TEMPLATE MANAGEMENT - General Operations
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action completeTourTemplateCreation(
     templateID: UUID
   ) returns {
@@ -195,7 +195,7 @@ service TourService @(path: '/tour-service') {
     status: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action updateTourTemplateStatus(
     templateID: UUID,
     status: String
@@ -204,7 +204,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action logTourTemplateHistory(
     templateID: UUID,
     modifiedBy: String,
@@ -214,7 +214,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action deleteTourTemplate(
     templateID: UUID
   ) returns {
@@ -222,7 +222,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action getTourTemplateDetails(
     templateID: UUID
   ) returns {
@@ -285,7 +285,7 @@ service TourService @(path: '/tour-service') {
     }
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action listTourTemplates(
     searchTerm: String,
     tourType: String,
@@ -313,12 +313,12 @@ service TourService @(path: '/tour-service') {
     }
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action getAvailableTourTypes() returns array of String;
   
   // ACTIVE TOUR MANAGEMENT
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action createActiveTour(
     templateID: UUID,
     tourName: String,
@@ -334,7 +334,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action updateActiveTour(
     tourID: UUID,
     tourName: String,
@@ -349,7 +349,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action updateActiveTourStatus(
     tourID: UUID,
     status: String
@@ -358,7 +358,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action cancelActiveTour(
     tourID: UUID,
     reason: String
@@ -367,7 +367,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action logActiveTourHistory(
     tourID: UUID,
     modifiedBy: String,
@@ -377,7 +377,7 @@ service TourService @(path: '/tour-service') {
     message: String
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action closeActiveTour(
     tourID: UUID,
     reason: String
@@ -386,7 +386,7 @@ service TourService @(path: '/tour-service') {
     message: String;
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
 action reopenActiveTour(
   tourID: UUID,
   reason: String
@@ -395,7 +395,7 @@ action reopenActiveTour(
   message: String;
 };
 
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager'])
 action completeActiveTour(
   tourID: UUID,
   completionNotes: String
@@ -406,14 +406,14 @@ action completeActiveTour(
 
 // AUTOMATED STATUS MANAGEMENT
 
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager'])
 action autoCloseTours() returns {
   success: Boolean;
   message: String;
   closedCount: Integer;
 };
 
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager'])
 action autoCompleteTours() returns {
   success: Boolean;
   message: String;
@@ -422,7 +422,7 @@ action autoCompleteTours() returns {
 
 // TOUR STATUS REPORTING
 
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
 action getTourStatusStatistics() returns {
   open: Integer;
   closed: Integer;
@@ -441,7 +441,7 @@ action getTourStatusStatistics() returns {
 
 // PASSENGER MANAGEMENT
   
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Staff'])
 action addPassenger(
   orderID: UUID,  // Thay đổi từ tourID sang orderID
   fullName: String,
@@ -457,7 +457,7 @@ action addPassenger(
   message: String
 };
 
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Staff'])
 action updatePassenger(
   passengerID: UUID,
   fullName: String,
@@ -473,7 +473,7 @@ action updatePassenger(
   message: String
 };
 
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Staff'])
 action removePassenger(
   passengerID: UUID
 ) returns {
@@ -481,7 +481,7 @@ action removePassenger(
   message: String
 };
 
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
 action getPassengerList(
   tourID: UUID
 ) returns array of {
@@ -500,7 +500,7 @@ action getPassengerList(
 };
 
 // Thêm action mới để lấy passengers theo orderID
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
 action getPassengersByOrder(
   orderID: UUID
 ) returns array of {
@@ -517,7 +517,7 @@ action getPassengersByOrder(
   
   // TOUR SERVICES MANAGEMENT
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action addServiceToActiveTour(
     tourID: UUID,
     serviceID: UUID,
@@ -529,7 +529,7 @@ action getPassengersByOrder(
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action updateActiveTourService(
     tourServiceID: UUID,
     quantity: Integer,
@@ -540,7 +540,7 @@ action getPassengersByOrder(
     message: String
   };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action removeActiveTourService(
     tourServiceID: UUID
   ) returns {
@@ -548,7 +548,7 @@ action getPassengersByOrder(
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action getActiveTourServices(
     tourID: UUID
   ) returns array of {
@@ -566,7 +566,7 @@ action getPassengersByOrder(
   
   // FINANCIAL ESTIMATES
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action createTourEstimate(
     tourID: UUID,
     estimatedCost: Decimal,
@@ -578,7 +578,7 @@ action getPassengersByOrder(
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action updateTourEstimate(
     estimateID: UUID,
     estimatedCost: Decimal,
@@ -590,7 +590,7 @@ action getPassengersByOrder(
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action addCostItem(
     estimateID: UUID,
     itemName: String,
@@ -602,7 +602,7 @@ action getPassengersByOrder(
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action updateCostItem(
     costItemID: UUID,
     itemName: String,
@@ -614,7 +614,7 @@ action getPassengersByOrder(
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action removeCostItem(
     costItemID: UUID
   ) returns {
@@ -622,7 +622,7 @@ action getPassengersByOrder(
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action getTourEstimate(
     tourID: UUID
   ) returns {
@@ -645,7 +645,7 @@ action getPassengersByOrder(
 
   // Trong file srv/tour-service.cds, thêm action mới:
 
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
 action getOrdersWithPassengers(
   tourID: UUID
 ) returns array of {
@@ -671,7 +671,7 @@ action getOrdersWithPassengers(
   };
 };
   
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action getActiveTourDetails(
     tourID: UUID
   ) returns {
@@ -737,7 +737,7 @@ action getOrdersWithPassengers(
     }
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action listActiveTours(
     searchTerm: String,
     status: String,
@@ -773,7 +773,7 @@ action getOrdersWithPassengers(
   
   // DASHBOARD AND REPORTING
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action getToursDashboardData() returns {
     activeToursCount: Integer;
     draftTemplatesCount: Integer;
@@ -803,7 +803,7 @@ action getOrdersWithPassengers(
     }
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action generateTourReport(
     tourID: UUID,
     reportType: String
@@ -812,7 +812,7 @@ action getOrdersWithPassengers(
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action generateToursAnalyticsReport(
     fromDate: Date,
     toDate: Date,

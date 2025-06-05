@@ -6,7 +6,7 @@ service OrderService @(path: '/order-service') {
   entity Payments as projection on tm.Payment;
 
   // Order Management Actions
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Staff'])
   action createOrder(
     customerID: UUID,
     customerType: String,
@@ -21,7 +21,7 @@ service OrderService @(path: '/order-service') {
     totalAmount: Decimal;
   };
 
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Staff'])
   action updateOrder(
     orderID: UUID,
     adultCount: Integer,
@@ -34,7 +34,7 @@ service OrderService @(path: '/order-service') {
     totalAmount: Decimal;
   };
 
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager'])
   action cancelOrder(
     orderID: UUID,
     reason: String
@@ -43,7 +43,7 @@ service OrderService @(path: '/order-service') {
     message: String;
   };
 
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action updateOrderStatus(
     orderID: UUID,
     status: String
@@ -53,7 +53,7 @@ service OrderService @(path: '/order-service') {
   };
 
   // Payment Management Actions
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Accountant'])
   action addPayment(
     orderID: UUID,
     paymentDate: Date,
@@ -66,7 +66,7 @@ service OrderService @(path: '/order-service') {
     remainingAmount: Decimal;
   };
 
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Accountant'])
   action updatePayment(
     paymentID: UUID,
     paymentDate: Date,
@@ -78,7 +78,7 @@ service OrderService @(path: '/order-service') {
     remainingAmount: Decimal;
   };
 
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Accountant'])
   action deletePayment(
     paymentID: UUID
   ) returns {
@@ -87,7 +87,7 @@ service OrderService @(path: '/order-service') {
     remainingAmount: Decimal;
   };
 
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Accountant'])
   action processRefund(
     orderID: UUID,
     amount: Decimal,
@@ -100,7 +100,7 @@ service OrderService @(path: '/order-service') {
   };
 
   // Order Queries
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action getOrderDetails(
     orderID: UUID
   ) returns {
@@ -147,7 +147,7 @@ service OrderService @(path: '/order-service') {
     };
   };
 
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action listOrders(
     searchTerm: String,
     customerID: UUID,
@@ -178,7 +178,7 @@ service OrderService @(path: '/order-service') {
     }
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Staff'])
   action calculateOrderAmount(
     activeTourID: UUID,
     adultCount: Integer,
@@ -193,7 +193,7 @@ service OrderService @(path: '/order-service') {
     totalAmount: Decimal;
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Staff'])
   action getActiveToursForOrder() returns array of {
     ID: UUID;
     TourName: String;
@@ -205,7 +205,7 @@ service OrderService @(path: '/order-service') {
     Status: String;
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Staff'])
   action getCustomersForOrder(
     searchTerm: String,
     customerType: String
@@ -225,7 +225,7 @@ service OrderService @(path: '/order-service') {
     };
   };
 
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
 action generateInvoiceData(
   orderID: UUID
 ) returns {

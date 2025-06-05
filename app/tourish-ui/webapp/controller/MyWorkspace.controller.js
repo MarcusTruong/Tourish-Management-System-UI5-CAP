@@ -617,6 +617,8 @@ sap.ui.define([
             var oRoleSelect = new Select({ id: this.createId("roleSelect") });
             oRoleSelect.addItem(new Item({ key: "Staff", text: "Staff" }));
             oRoleSelect.addItem(new Item({ key: "Admin", text: "Admin" }));
+            oRoleSelect.addItem(new Item({ key: "Manager", text: "Manager" }));
+            oRoleSelect.addItem(new Item({ key: "Accountant", text: "Accountant" }));
             oRoleSelect.setSelectedKey("Staff");
             
             var oDialog = new Dialog({

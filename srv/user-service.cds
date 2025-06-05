@@ -140,7 +140,7 @@ service UserService @(path: '/user-service') {
     message: String;
 };
 
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
 action getUserProfile() returns {
   ID: UUID;
   Username: String(50);
@@ -152,7 +152,7 @@ action getUserProfile() returns {
   WorkspaceID: UUID;
 };
 
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
 action updateUserProfile(
   fullName: String,
   email: String,
@@ -162,7 +162,7 @@ action updateUserProfile(
   message: String;
 };
 
-@(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
 action getWorkspaceInfo() returns {
   ID: UUID;
   CompanyName: String(100);

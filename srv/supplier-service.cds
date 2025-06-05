@@ -7,7 +7,7 @@ service SupplierService @(path: '/supplier-service') {
   entity SupplierDebts as projection on tm.SupplierDebt;
 
   // Các action cho quản lý thông tin nhà cung cấp
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action createSupplier(
     supplierName: String,
     address: String,
@@ -21,7 +21,7 @@ service SupplierService @(path: '/supplier-service') {
     Email: String(100);
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action updateSupplier(
     supplierID: UUID,
     supplierName: String,
@@ -36,13 +36,13 @@ service SupplierService @(path: '/supplier-service') {
     Email: String(100);
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action deleteSupplier(
     supplierID: UUID
   ) returns Boolean;
 
   // Các action cho quản lý dịch vụ nhà cung cấp
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action createService(
     supplierID: UUID,
     serviceName: String,
@@ -58,7 +58,7 @@ service SupplierService @(path: '/supplier-service') {
     Price: Decimal(15,2);
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action updateService(
     serviceID: UUID,
     serviceName: String,
@@ -74,13 +74,13 @@ service SupplierService @(path: '/supplier-service') {
     Price: Decimal(15,2);
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager'])
   action deleteService(
     serviceID: UUID
   ) returns Boolean;
 
   // Các action cho quản lý công nợ nhà cung cấp
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Accountant'])
   action createSupplierDebt(
     supplierID: UUID,
     amount: Decimal,
@@ -94,7 +94,7 @@ service SupplierService @(path: '/supplier-service') {
     Status: String(20);
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Accountant'])
   action markDebtAsPaid(
     debtID: UUID
   ) returns {
@@ -105,7 +105,7 @@ service SupplierService @(path: '/supplier-service') {
     Status: String(20);
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action searchSuppliers(
     searchTerm: String,
     skip: Integer,
@@ -125,7 +125,7 @@ service SupplierService @(path: '/supplier-service') {
     }
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action getSupplierDetails(
     supplierID: UUID
   ) returns {
@@ -160,7 +160,7 @@ service SupplierService @(path: '/supplier-service') {
     }
   };
 
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action getActiveServices(
     serviceType: String,
     limit: Integer
@@ -176,7 +176,7 @@ service SupplierService @(path: '/supplier-service') {
   // Các action mới
   
   // Tìm kiếm dịch vụ nâng cao
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action searchServices(
     supplierID: UUID,
     serviceType: String,
@@ -196,7 +196,7 @@ service SupplierService @(path: '/supplier-service') {
   };
   
   // Báo cáo công nợ nhà cung cấp
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Accountant'])
   action getSupplierDebtReport(
     startDate: Date,
     endDate: Date,
@@ -225,6 +225,6 @@ service SupplierService @(path: '/supplier-service') {
   };
   
   // Lấy danh sách các loại dịch vụ
-  @(requires: 'authenticated-user')
+  @(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   function getServiceTypes() returns array of String(50);
 }

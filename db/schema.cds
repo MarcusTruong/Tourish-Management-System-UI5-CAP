@@ -14,7 +14,12 @@ entity User {
   WorkspaceID : UUID; // Khóa ngoại tham chiếu đến Workspace.ID
   Username : String(50) not null;
   Password : String(100) not null;
-  Role : String(20); // Admin/Staff
+  Role : String(20) enum {
+    Admin;
+    Manager;
+    Accountant;
+    Staff;
+  };
   FullName : String(100);
   Email : String(100);
   Phone : String(20);

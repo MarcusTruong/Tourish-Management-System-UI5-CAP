@@ -9,7 +9,7 @@ service CustomerService @(path: '/customer-service') {
 
   // INDIVIDUAL CUSTOMER MANAGEMENT
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Staff'])
   action createCustomer(
     fullName: String,
     phone: String,
@@ -22,7 +22,7 @@ service CustomerService @(path: '/customer-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Staff'])
   action updateCustomer(
     customerID: UUID,
     fullName: String,
@@ -36,7 +36,7 @@ service CustomerService @(path: '/customer-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager'])
   action deleteCustomer(
     customerID: UUID
   ) returns {
@@ -44,7 +44,7 @@ service CustomerService @(path: '/customer-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action recordCustomerTransaction(
     customerID: UUID,
     amount: Decimal,
@@ -54,7 +54,7 @@ service CustomerService @(path: '/customer-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action getCustomerDetails(
     customerID: UUID
   ) returns {
@@ -90,7 +90,7 @@ service CustomerService @(path: '/customer-service') {
     };
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action listCustomers(
     searchTerm: String,
     skip: Integer,
@@ -113,7 +113,7 @@ service CustomerService @(path: '/customer-service') {
   
   // BUSINESS CUSTOMER MANAGEMENT
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Staff'])
   action createBusinessCustomer(
     companyName: String,
     taxCode: String,
@@ -128,7 +128,7 @@ service CustomerService @(path: '/customer-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Staff'])
   action updateBusinessCustomer(
     customerID: UUID,
     companyName: String,
@@ -144,7 +144,7 @@ service CustomerService @(path: '/customer-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager'])
   action deleteBusinessCustomer(
     customerID: UUID
   ) returns {
@@ -152,7 +152,7 @@ service CustomerService @(path: '/customer-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action recordBusinessCustomerTransaction(
     customerID: UUID,
     amount: Decimal,
@@ -162,7 +162,7 @@ service CustomerService @(path: '/customer-service') {
     message: String
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action getBusinessCustomerDetails(
     customerID: UUID
   ) returns {
@@ -200,7 +200,7 @@ service CustomerService @(path: '/customer-service') {
     };
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action listBusinessCustomers(
     searchTerm: String,
     skip: Integer,
@@ -224,7 +224,7 @@ service CustomerService @(path: '/customer-service') {
   
   // GENERAL CUSTOMER actionS
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action searchAllCustomers(
     searchTerm: String,
     customerType: String, // "Individual", "Business", or "All"
@@ -258,7 +258,7 @@ service CustomerService @(path: '/customer-service') {
     }
   };
   
-  @(requires: 'authenticated-user')
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action getCustomerStatistics() returns {
     totalIndividualCustomers: Integer;
     totalBusinessCustomers: Integer;
