@@ -94,37 +94,37 @@
 
 #newTourBtn .sapMBtnInner {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    color: white !important;
+    /* color: white !important; */
     border: none !important;
 }
 
 #newCustomerBtn .sapMBtnInner {
     background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
-    color: white !important;
+    /* color: white !important; */
     border: none !important;
 }
 
 #suppliersBtn .sapMBtnInner {
     background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
-    color: white !important;
+    /* color: white !important; */
     border: none !important;
 }
 
 #reportsBtn .sapMBtnInner {
     background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important;
-    color: white !important;
+    /* color: white !important; */
     border: none !important;
 }
 
 #paymentsBtn .sapMBtnInner {
     background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%) !important;
-    color: white !important;
+    /* color: white !important; */
     border: none !important;
 }
 
 #settingsBtn .sapMBtnInner {
     background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%) !important;
-    color: white !important;
+    /* color: white !important; */
     border: none !important;
 }
 
@@ -225,12 +225,12 @@
 @media (prefers-color-scheme: dark) {
     .dashboardCard {
         background-color: #c4d9fc !important;
-        color: white !important;
+        /* color: white !important; */
     }
     
     .sapMPanel > .sapMPanelHdr {
         background: linear-gradient(90deg, #2d3748 0%, #4a5568 100%);
-        color: white !important;
+        /* color: white !important; */
     }
 }
 
@@ -248,7 +248,7 @@
 /* Tooltip Styling */
 .sapMTooltip {
     background-color: rgba(0, 0, 0, 0.8) !important;
-    color: white !important;
+    /* color: white !important; */
     border-radius: 6px !important;
     padding: 8px 12px !important;
     font-size: 0.875rem !important;

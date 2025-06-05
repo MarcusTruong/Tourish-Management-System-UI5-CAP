@@ -84,7 +84,7 @@ sap.ui.define([
             
             // Get filter values
             var sSearchTerm = this.byId("tourSearchField")?.getValue() || "";
-            var sStatus = this.byId("statusFilter")?.getSelectedKey() || "";
+            var sStatus = this.byId("statusFilter2")?.getSelectedKey() || "";
             var sResponsiblePerson = this.byId("responsiblePersonFilter")?.getSelectedKey() || "";
             var sDepartureDateFrom = this.byId("departureDateFromFilter")?.getValue() || null;
             var sDepartureDateTo = this.byId("departureDateToFilter")?.getValue() || null;

@@ -28,7 +28,10 @@ sap.ui.define([
                     skip: 0,
                     limit: 20,
                     total: 0
-                }
+                },
+                // New properties for filter data
+                availableTours: [],
+                availableCustomers: []
             });
             this.getView().setModel(oViewModel, "orders");
 
@@ -40,6 +43,104 @@ sap.ui.define([
         _onRouteMatched: function (oEvent) {
             // Load order data when the route is matched
             this._loadOrders();
+            // Load filter data
+            this._loadFilterData();
+        },
+
+        /**
+         * Load data for tour and customer filters
+         */
+        _loadFilterData: function() {
+            this._loadAvailableTours();
+            this._loadAvailableCustomers();
+        },
+
+        /**
+         * Load available tours that have orders
+         */
+        _loadAvailableTours: function() {
+            var oViewModel = this.getView().getModel("orders");
+            var oTourService = this.getOwnerComponent().getModel("tourService");
+            
+            // Get active tours
+            var oContext = oTourService.bindContext("/listActiveTours(...)");
+            oContext.setParameter("searchTerm", "");
+            oContext.setParameter("status", "");
+            oContext.setParameter("skip", 0);
+            oContext.setParameter("limit", 1000); // Get all tours
+            
+            oContext.execute().then(function() {
+                var oResult = oContext.getBoundContext().getObject();
+                
+                if (oResult && oResult.items) {
+                    // Add "All Tours" option at the beginning
+                    var aTours = [{
+                        ID: "",
+                        TourName: "All Tours",
+                        DepartureDate: null
+                    }].concat(oResult.items);
+                    
+                    oViewModel.setProperty("/availableTours", aTours);
+                }
+            }).catch(function(oError) {
+                console.error("Error loading tours for filter:", oError);
+            });
+        },
+
+        /**
+         * Load available customers (both individual and business)
+         */
+        _loadAvailableCustomers: function() {
+            var oViewModel = this.getView().getModel("orders");
+            var oCustomerService = this.getOwnerComponent().getModel("customerService");
+            
+            // Get both individual and business customers
+            var oContext = oCustomerService.bindContext("/searchAllCustomers(...)");
+            oContext.setParameter("searchTerm", "");
+            oContext.setParameter("customerType", "All");
+            oContext.setParameter("skip", 0);
+            oContext.setParameter("limit", 1000);
+            
+            oContext.execute().then(function() {
+                var oResult = oContext.getBoundContext().getObject();
+                
+                if (oResult) {
+                    var aCustomers = [{
+                        ID: "",
+                        Name: "All Customers",
+                        Type: "",
+                        Email: ""
+                    }];
+                    
+                    // Add individual customers
+                    if (oResult.individualCustomers) {
+                        oResult.individualCustomers.forEach(function(customer) {
+                            aCustomers.push({
+                                ID: customer.ID,
+                                Name: customer.Name,
+                                Type: "Individual",
+                                Email: customer.Email || ""
+                            });
+                        });
+                    }
+                    
+                    // Add business customers  
+                    if (oResult.businessCustomers) {
+                        oResult.businessCustomers.forEach(function(customer) {
+                            aCustomers.push({
+                                ID: customer.ID,
+                                Name: customer.Name,
+                                Type: "Business",
+                                Email: customer.Email || ""
+                            });
+                        });
+                    }
+                    
+                    oViewModel.setProperty("/availableCustomers", aCustomers);
+                }
+            }).catch(function(oError) {
+                console.error("Error loading customers for filter:", oError);
+            });
         },
 
         _loadOrders: function() {
@@ -50,6 +151,10 @@ sap.ui.define([
             var sFromDate = this.byId("fromDatePicker").getValue();
             var sToDate = this.byId("toDatePicker").getValue();
             var iPagination = oViewModel.getProperty("/pagination");
+            
+            // NEW: Get tour and customer filter values
+            var sTourId = this.byId("tourFilter") ? this.byId("tourFilter").getSelectedKey() : "";
+            var sCustomerId = this.byId("customerFilter") ? this.byId("customerFilter").getSelectedKey() : "";
             
             // Set view to busy state
             oViewModel.setProperty("/busy", true);
@@ -63,8 +168,8 @@ sap.ui.define([
             
             // Set parameters
             oContext.setParameter("searchTerm", sSearchTerm || "");
-            oContext.setParameter("customerID", null);
-            oContext.setParameter("tourID", null);
+            oContext.setParameter("customerID", sCustomerId || null);
+            oContext.setParameter("tourID", sTourId || null);
             oContext.setParameter("status", sStatus || null);
             oContext.setParameter("fromDate", sFromDate || null);
             oContext.setParameter("toDate", sToDate || null);
@@ -78,7 +183,7 @@ sap.ui.define([
                 
                 if (oResult) {
                     // Update the orders model
-                    oViewModel.setData(oResult);
+                    oViewModel.setData(Object.assign(oViewModel.getData(), oResult));
                 } else {
                     // Handle no result
                     oViewModel.setProperty("/items", []);
@@ -119,10 +224,18 @@ sap.ui.define([
         
         onClearFilters: function() {
             // Clear all filter inputs
-            this.byId("searchField").setValue("");
-            this.byId("statusFilter").setSelectedKey("");
+            this.byId("searchField2").setValue("");
+            this.byId("statusFilter3").setSelectedKey("");
             this.byId("fromDatePicker").setValue("");
             this.byId("toDatePicker").setValue("");
+            
+            // NEW: Clear new filters
+            if (this.byId("tourFilter")) {
+                this.byId("tourFilter").setSelectedKey("");
+            }
+            if (this.byId("customerFilter")) {
+                this.byId("customerFilter").setSelectedKey("");
+            }
             
             // Reset pagination
             var oViewModel = this.getView().getModel("orders");
@@ -719,5 +832,41 @@ sap.ui.define([
                     oSpreadsheet.destroy();
                 });
         },
+
+        /**
+         * Gets sale status text based on current date and sale period
+         * @param {string} saleStart - Sale start date
+         * @param {string} saleEnd - Sale end date
+         * @returns {string} Status text
+         */
+        getSaleStatus: function(saleStart, saleEnd) {
+            if (!saleStart || !saleEnd) return 'Unknown';
+            
+            const now = new Date();
+            const startDate = new Date(saleStart);
+            const endDate = new Date(saleEnd);
+            
+            if (now < startDate) return 'Not Started';
+            if (now > endDate) return 'Ended';
+            return 'Active';
+        },
+        
+        /**
+         * Gets sale status state for ObjectStatus
+         * @param {string} saleStart - Sale start date
+         * @param {string} saleEnd - Sale end date
+         * @returns {string} Valid state value
+         */
+        getSaleStatusState: function(saleStart, saleEnd) {
+            if (!saleStart || !saleEnd) return 'None';
+            
+            const now = new Date();
+            const startDate = new Date(saleStart);
+            const endDate = new Date(saleEnd);
+            
+            if (now < startDate) return 'Warning';
+            if (now > endDate) return 'Error';
+            return 'Success';
+        }
     });
 });

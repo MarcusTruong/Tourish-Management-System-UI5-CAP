@@ -949,6 +949,7 @@ module.exports = async (srv) => {
         whereConditions.push(`(CustomerID = '${customerID}' OR BusinessCustomerID = '${customerID}')`);
       }
       
+      // NEW: Filter by tourID
       if (tourID) {
         whereConditions.push(`ActiveTourID = '${tourID}'`);
       }
@@ -963,6 +964,13 @@ module.exports = async (srv) => {
       
       if (toDate) {
         whereConditions.push(`OrderDate <= '${toDate}'`);
+      }
+      
+      // Search term filter - search in customer names and tour names
+      if (searchTerm && searchTerm.trim() !== '') {
+        // We'll need to join with customer and tour tables for search
+        // For now, we'll do a simple search and then filter in memory
+        // This could be optimized with proper joins
       }
       
       // Apply where conditions if any
@@ -1034,10 +1042,21 @@ module.exports = async (srv) => {
         };
       }));
       
+      // Apply search term filter after enhancement if provided
+      let filteredOrders = enhancedOrders;
+      if (searchTerm && searchTerm.trim() !== '') {
+        const searchLower = searchTerm.toLowerCase();
+        filteredOrders = enhancedOrders.filter(order => 
+          order.CustomerName.toLowerCase().includes(searchLower) ||
+          order.TourName.toLowerCase().includes(searchLower) ||
+          order.ID.toLowerCase().includes(searchLower)
+        );
+      }
+      
       return {
-        items: enhancedOrders,
+        items: filteredOrders,
         pagination: {
-          total: total,
+          total: searchTerm ? filteredOrders.length : total,
           skip: skip || 0,
           limit: limit || 20
         }

@@ -48,9 +48,40 @@
                                 class="sapUiSmallMarginEnd"
                                 change=".onFilterChange"
                                 valueFormat="yyyy-MM-dd"/>
+                        
+                        </HBox>
+
+                        <HBox id="newFiltersRow" alignItems="Center" class="sapUiSmallMarginBottom" wrap="Wrap">
+                            <Label id="tourFilterLabel" text="Tour:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                            <ComboBox 
+                                id="tourFilter" 
+                                width="300px" 
+                                change=".onFilterChange"
+                                placeholder="Select tour..."
+                                items="{orders>/availableTours}"
+                                class="sapUiSmallMarginEnd">
+                                <core:Item id="tourFilterItem" key="{orders>ID}" text="{orders>TourName} - {
+                                    path: 'orders>DepartureDate',
+                                    formatter: '.formatter.formatDate'
+                                }"/>
+                            </ComboBox>
+
+                            <Label id="customerFilterLabel" text="Customer:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
+                            <ComboBox 
+                                id="customerFilter" 
+                                width="300px" 
+                                change=".onFilterChange"
+                                placeholder="Select customer..."
+                                items="{orders>/availableCustomers}"
+                                showSecondaryValues="true"
+                                class="sapUiSmallMarginEnd">
+                                <core:ListItem id="customerFilterItem" 
+                                    key="{orders>ID}" 
+                                    text="{orders>Name}" 
+                                    additionalText="{orders>Type} - {orders>Email}"/>
+                            </ComboBox>
                             
                             <Button id="_IDGenButton49" 
-                                
                                 text="Clear Filters" 
                                 press=".onClearFilters" 
                                 class="sapUiSmallMarginEnd sapUiTinyMarginBegin"/>

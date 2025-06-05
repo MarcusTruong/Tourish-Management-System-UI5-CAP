@@ -16,7 +16,7 @@
                             <Select id="statusFilter2" width="300px" change=".onFilterChange" forceSelection="false" selectedKey="" class="sapUiSmallMarginEnd">
                                 <core:Item id="_IDGenItem28" key="" text="All Statuses"/>
                                 <core:Item id="_IDGenItem29" key="Open" text="Open"/>
-                                <core:Item id="_IDGenItem30" key="Ongoing" text="Ongoing"/>
+                                <core:Item id="_IDGenItem30" key="Closed" text="Closed"/>
                                 <core:Item id="_IDGenItem31" key="Completed" text="Completed"/>
                                 <core:Item id="_IDGenItem33" key="Canceled" text="Canceled"/>
                             </Select>
@@ -49,8 +49,8 @@
                         <VBox id="_IDGenVBox28">
                             <Label id="_IDGenLabel53" text="To:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
                             <DatePicker id="saleDateToFilter" width="300px" change=".onFilterChange" valueFormat="yyyy-MM-dd" displayFormat="long" class="sapUiSmallMarginEnd"/>
-                            <Button id="clearFiltersBtn2" width="300px" text="Clear Filters" press=".onClearFilters" class="sapUiSmallMarginEnd"/>
                         </VBox>
+                        <Button id="clearFiltersBtn2" width="300px" text="Clear Filters" press=".onClearFilters" class="sapUiSmallMarginEnd sapUiMediumMarginTop" />
                     </HBox>
                     <HBox id="statusManagementBox" alignItems="Center" class="sapUiSmallMarginBottom" wrap="Wrap">
                         <Label id="statusMgmtLabel" text="Status Management:" class="sapUiTinyMarginTop sapUiSmallMarginEnd"/>
