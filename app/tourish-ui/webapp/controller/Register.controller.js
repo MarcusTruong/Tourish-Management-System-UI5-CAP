@@ -243,14 +243,14 @@ sap.ui.define([
         const sFullName = oView.byId("fullNameInput").getValue();
         const sEmail = oView.byId("emailInput11").getValue();
         const sPhone = oView.byId("phoneInput11").getValue();
-
+      
         // Validate all fields
         const usernameValidation = this._validateUsername(sUsername);
         const passwordValidation = utils.validatePasswordComplexity(sPassword);
         const fullNameValidation = this._validateFullName(sFullName);
         const emailValidation = this._validateEmail(sEmail);
         const phoneValidation = this._validatePhone(sPhone);
-
+      
         // Collect all validation errors
         const errors = [];
         if (!usernameValidation.valid) errors.push(usernameValidation.message);
@@ -258,12 +258,12 @@ sap.ui.define([
         if (!fullNameValidation.valid) errors.push(fullNameValidation.message);
         if (!emailValidation.valid) errors.push(emailValidation.message);
         if (!phoneValidation.valid) errors.push(phoneValidation.message);
-
+      
         if (errors.length > 0) {
           MessageBox.error("Please fix the following errors:\n\n" + errors.join("\n"));
           return;
         }
-
+      
         const oData = {
           username: sUsername.trim(),
           password: sPassword,
@@ -271,28 +271,41 @@ sap.ui.define([
           email: sEmail.trim().toLowerCase(),
           phone: sPhone.trim()
         };
-
-        // Sử dụng OData model để gọi action createUser
-        const oModel = this.getOwnerComponent().getModel("userService");
-        const oContext = oModel.bindContext("/createUser(...)");
-        oContext.setParameter("username", oData.username);
-        oContext.setParameter("password", oData.password);
-        oContext.setParameter("fullName", oData.fullName);
-        oContext.setParameter("email", oData.email);
-        oContext.setParameter("phone", oData.phone);
-
-        oContext.execute().then(() => {
-          const oResult = oContext.getBoundContext().getObject();
-          if (oResult.ID) {
-            MessageToast.show("Registration successful! Please login.");
-            this.getOwnerComponent().getRouter().navTo("login");
+      
+        // Gọi API trực tiếp thay vì qua OData model
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/user-service/createUser');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+      
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const oResult = JSON.parse(xhr.responseText);
+              console.log("Registration response:", oResult);
+              
+              if (oResult && oResult.ID) {
+                MessageToast.show("Registration successful! Please login.");
+                this.getOwnerComponent().getRouter().navTo("login");
+              } else {
+                MessageBox.error("Register failed: " + (oResult.message || "Unknown error"));
+              }
+            } catch (e) {
+              console.error("Error parsing registration response:", e);
+              MessageBox.error("An error occurred while processing registration response");
+            }
           } else {
-            MessageToast.show("Register failed: Unknown error");
+            console.error("Registration request failed with status:", xhr.status);
+            MessageBox.error("Registration failed: Server error");
           }
-        }).catch(error => {
-          console.error("Error during registration:", error);
-          MessageBox.error("An error occurred while registering: " + error.message);
-        });
+        }.bind(this);
+      
+        xhr.onerror = function() {
+          console.error("Network error during registration");
+          MessageBox.error("Network error occurred during registration");
+        };
+      
+        // Send registration data
+        xhr.send(JSON.stringify(oData));
       }
   });
 });

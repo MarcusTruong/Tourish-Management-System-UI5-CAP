@@ -27,88 +27,67 @@ sap.ui.define([
             this._checkInitialSession();
         },
   
-        /**
-         * Initialize OData models - only call after authentication
-         * @private
-         */
-        _initODataModels: function() {
-            const token = this._oSessionManager.getToken();
-            
-            if (!token) {
-                console.warn("No token available, skipping OData model initialization");
-                return;
-            }
-  
-            const authHeaders = {
-                'Authorization': `Bearer ${token}`
-            };
-  
-            console.log("Initializing OData models with auth headers");
-  
-            // Khởi tạo model cho user-service
-            var oUserModel = new sap.ui.model.odata.v4.ODataModel({
-                serviceUrl: "/user-service/",
-                synchronizationMode: "None",
-                groupId: "$auto",
-                operationMode: "Server",
-                httpHeaders: authHeaders
-            });
-            this.setModel(oUserModel, "userService");
-  
-            // Khởi tạo model cho supplier-service
-            var oSupplierModel = new sap.ui.model.odata.v4.ODataModel({
-                serviceUrl: "/supplier-service/",
-                synchronizationMode: "None",
-                groupId: "$auto",
-                operationMode: "Server",
-                httpHeaders: authHeaders
-            });
-            this.setModel(oSupplierModel, "supplierService");
-  
-            // Khởi tạo model cho tour-service
-            var oTourModel = new sap.ui.model.odata.v4.ODataModel({
-                serviceUrl: "/tour-service/",
-                synchronizationMode: "None",
-                groupId: "$auto",
-                operationMode: "Server",
-                httpHeaders: authHeaders
-            });
-            this.setModel(oTourModel, "tourService");
-  
-            // Khởi tạo model cho customer-service
-            var oCustomerModel = new sap.ui.model.odata.v4.ODataModel({
-                serviceUrl: "/customer-service/",
-                synchronizationMode: "None",
-                groupId: "$auto",
-                operationMode: "Server",
-                httpHeaders: authHeaders
-            });
-            this.setModel(oCustomerModel, "customerService");
-  
-            // Khởi tạo model cho order-service
-            var oOrderModel = new sap.ui.model.odata.v4.ODataModel({
-                serviceUrl: "/order-service/",
-                synchronizationMode: "None",
-                groupId: "$auto",
-                operationMode: "Server",
-                httpHeaders: authHeaders
-            });
-            this.setModel(oOrderModel, "orderService");
-  
-            // Store model references for later header updates
-            this._aModels = [
-                { name: "userService", model: oUserModel },
-                { name: "supplierService", model: oSupplierModel },
-                { name: "tourService", model: oTourModel },
-                { name: "customerService", model: oCustomerModel },
-                { name: "orderService", model: oOrderModel }
-            ];
-  
-            // Đặt userModel làm model mặc định cho các view
-            this.setModel(oUserModel);
-  
-            console.log("OData models initialized successfully");
-        },
+            /**
+ * Initialize OData models - only call after authentication
+ * @private
+ */
+_initODataModels: function() {
+    const token = this._oSessionManager.getToken();
+    
+    if (!token) {
+        console.warn("No token available, skipping OData model initialization");
+        return;
+    }
+
+    console.log("Initializing OData models with token:", token.substring(0, 20) + "...");
+
+    // Function to create model with proper headers
+    const createModelWithAuth = (serviceUrl) => {
+        const model = new sap.ui.model.odata.v4.ODataModel({
+            serviceUrl: serviceUrl,
+            synchronizationMode: "None",
+            groupId: "$auto",
+            operationMode: "Server"
+        });
+        
+        // Set headers immediately after creation
+        model.changeHttpHeaders({
+            'Authorization': `Bearer ${token}`
+        });
+        
+        return model;
+    };
+
+    // Create all models
+    const oUserModel = createModelWithAuth("/user-service/");
+    const oSupplierModel = createModelWithAuth("/supplier-service/");
+    const oTourModel = createModelWithAuth("/tour-service/");
+    const oCustomerModel = createModelWithAuth("/customer-service/");
+    const oOrderModel = createModelWithAuth("/order-service/");
+
+    // Set models to component
+    this.setModel(oUserModel, "userService");
+    this.setModel(oSupplierModel, "supplierService");
+    this.setModel(oTourModel, "tourService");
+    this.setModel(oCustomerModel, "customerService");
+    this.setModel(oOrderModel, "orderService");
+
+    // Store model references for later header updates
+    this._aModels = [
+        { name: "userService", model: oUserModel },
+        { name: "supplierService", model: oSupplierModel },
+        { name: "tourService", model: oTourModel },
+        { name: "customerService", model: oCustomerModel },
+        { name: "orderService", model: oOrderModel }
+    ];
+
+    // Set userModel as default
+    this.setModel(oUserModel);
+
+    console.log("OData models initialized successfully with authentication headers");
+},
+
+
   
         /**
          * Refresh authentication headers for all models

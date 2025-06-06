@@ -3,7 +3,7 @@ const JWT_SECRET = 'your-secret-key-12345'; // Same as in user-service.js
 
 module.exports = (req, res, next) => {
   // Skip auth for public endpoints
-  const publicEndpoints = ['/authenticate', '/createUser'];
+  const publicEndpoints = ['/authenticate', '/createUser', '/$metadata'];
   const isPublicEndpoint = publicEndpoints.some(endpoint => 
     req.path.includes(endpoint)
   );

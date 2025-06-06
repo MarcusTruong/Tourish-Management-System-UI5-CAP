@@ -7,7 +7,6 @@ modules:
   type: nodejs
   path: gen/srv
   requires:
-  - name: TourishManagementSystem-auth
   - name: TourishManagementSystem-db
   provides:
   - name: srv-api
@@ -35,7 +34,6 @@ modules:
       forwardAuthToken: true
       name: srv-api
       url: ~{srv-url}
-  - name: TourishManagementSystem-auth
   - name: TourishManagementSystem-destination-service
     group: destinations
     properties:
@@ -91,14 +89,14 @@ modules:
     supported-platforms: []
 resources:
 - name: TourishManagementSystem-auth
-  type: org.cloudfoundry.managed-service
-  parameters:
-    config:
-      tenant-mode: dedicated
-      xsappname: TourishManagementSystem-${org}-${space}
-    path: ./xs-security.json
-    service: xsuaa
-    service-plan: application
+  # type: org.cloudfoundry.managed-service
+  # parameters:
+  #   config:
+  #     tenant-mode: dedicated
+  #     xsappname: TourishManagementSystem-${org}-${space}
+  #   path: ./xs-security.json
+  #   service: xsuaa
+  #   service-plan: application
 - name: TourishManagementSystem-db
   type: com.sap.xs.hdi-container
   parameters:
@@ -125,7 +123,7 @@ resources:
             URL: https://ui5.sap.com
           - Authentication: NoAuthentication
             HTML5.DynamicDestination: true
-            HTML5.ForwardAuthToken: true
+            HTML5.ForwardAuthToken: false
             Name: TourishManagementSystem-srv-api
             ProxyType: Internet
             Type: HTTP
