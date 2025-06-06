@@ -1,12 +1,16 @@
-// srv/server.js
 const cds = require('@sap/cds');
-require('dotenv').config(); // Nạp biến môi trường từ file .env
+const authMiddleware = require('./auth-middleware');
+require('dotenv').config();
 
-// Middleware để phục vụ nội dung tĩnh
 cds.on('bootstrap', app => {
-  // Log để xác nhận server đã khởi động
-  console.log('CDS server bootstrapped with Cloudinary integration');
+  console.log('CDS server bootstrapped with custom authentication');
+  
+  // Apply custom auth middleware to all routes
+  app.use('/user-service', authMiddleware);
+  app.use('/customer-service', authMiddleware);
+  app.use('/order-service', authMiddleware);
+  app.use('/tour-service', authMiddleware);
+  app.use('/supplier-service', authMiddleware);
 });
 
-// Khởi động server
 module.exports = cds.server;

@@ -25,48 +25,60 @@ sap.ui.define([
         return;
       }
 
-      // Sử dụng OData model để gọi action authenticate
-      const oModel = this.getOwnerComponent().getModel("userService");
-      
-      // Bind đến action authenticate
-      const oContext = oModel.bindContext("/authenticate(...)");
-      
-      // Đặt tham số cho action
-      oContext.setParameter("username", sUsername);
-      oContext.setParameter("password", sPassword);
-      
-      // Thực thi action
-      oContext.execute().then(function() {
-        // Lấy kết quả từ context
-        const oResult = oContext.getBoundContext().getObject();
-        console.log(oResult);
-        if (oResult && oResult.success) {
-          // Lưu session qua SessionManager
-          const oSessionManager = this.getOwnerComponent().getSessionManager();
-          oSessionManager.saveSession({
-            token: oResult.token,
-            user: oResult.user
-          });
+      // Tạo một XMLHttpRequest thông thường cho login (không cần token)
+      this._performLogin(sUsername, sPassword);
+    },
 
-          MessageToast.show("Login successful!");
-          this.getOwnerComponent().getRouter().navTo("dashboard");
-        } else {
-          MessageBox.error("Login failed: Incorrect username or password!");
-        }
-      }.bind(this)).catch(function(oError) {
-        console.error("Error during login:", oError);
-        
-        if (oError.response) {
+    /**
+     * Perform login without authentication token
+     * @private
+     */
+    _performLogin: function(sUsername, sPassword) {
+      const oComponent = this.getOwnerComponent();
+      
+      // Tạo request thông thường cho authenticate endpoint
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/user-service/authenticate');
+      xhr.setRequestHeader('Content-Type', 'application/json');
+
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
           try {
-            const oResponseData = JSON.parse(oError.response.body);
-            MessageBox.error(oResponseData.error.message || "Login failed");
+            const oResult = JSON.parse(xhr.responseText);
+            console.log("Login response:", oResult);
+            
+            if (oResult && oResult.success) {
+              // Use setUserSession instead of saveSession
+              oComponent.setUserSession({
+                token: oResult.token,
+                user: oResult.user
+              });
+
+              MessageToast.show("Login successful!");
+              oComponent.getRouter().navTo("dashboard");
+            } else {
+              MessageBox.error("Login failed: " + (oResult.message || "Incorrect username or password!"));
+            }
           } catch (e) {
-            MessageBox.error("Login failed: " + oError.message);
+            console.error("Error parsing login response:", e);
+            MessageBox.error("An error occurred while processing login response");
           }
         } else {
-          MessageBox.error("An error occurred while logging in: " + oError.message);
+          console.error("Login request failed with status:", xhr.status);
+          MessageBox.error("Login failed: Server error");
         }
-      }.bind(this));
+      }.bind(this);
+
+      xhr.onerror = function() {
+        console.error("Network error during login");
+        MessageBox.error("Network error occurred while logging in");
+      };
+
+      // Send login data
+      xhr.send(JSON.stringify({
+        username: sUsername,
+        password: sPassword
+      }));
     },
 
     onRegisterPress: function () {

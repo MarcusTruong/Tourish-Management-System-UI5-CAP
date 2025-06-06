@@ -587,16 +587,17 @@ this.on('createWorkspace', async (req) => {
             try { // Lấy thông tin user từ yêu cầu
                 const user = req.user;
                 console.log('>>> Current user:', user);
-                if (! user || ! user.id) {
+
+                if (! user || ! user.username) {
                     req.error(401, `Unauthorized: User information not found in request`);
                     return;
                 }
 
                 // Kiểm tra user tồn tại
-                const currentUser = await tx.run(SELECT.one.from(Users).where({Username: user.id}).columns('ID', 'Username', 'Role', 'FullName', 'Email', 'Phone', 'Status', 'WorkspaceID'));
+                const currentUser = await tx.run(SELECT.one.from(Users).where({Username: user.username}).columns('ID', 'Username', 'Role', 'FullName', 'Email', 'Phone', 'Status', 'WorkspaceID'));
                 if (! currentUser) {
-                    req.error(404, `User with ID ${
-                        user.id
+                    req.error(404, `User with username ${
+                        user.username
                     } not found`);
                     return;
                 }
@@ -652,50 +653,44 @@ this.on('createWorkspace', async (req) => {
 
         // Handler cho getWorkspaceInfo
         this.on('getWorkspaceInfo', async (req) => {
-            console.log(req);
             console.log('>>> getWorkspaceInfo handler called');
-            const tx = cds.transaction(req);
-
-            try { // Lấy thông tin user từ yêu cầu
+            
+            try {
                 const user = req.user;
                 console.log('>>> Current user:', user);
-                if (! user || ! user.id) {
-                    req.error(401, `Unauthorized: User information not found in request`);
+                
+                if (!user || !user.username) {
+                    req.error(401, `Unauthorized: User information not found`);
                     return;
                 }
-
-                // Kiểm tra user tồn tại và có role Admin
-                const adminUser = await tx.run(SELECT.one.from(Users).where({Username: user.id}));
-                if (! adminUser) {
-                    req.error(404, `Admin user with ID ${
-                        user.id
-                    } not found`);
+        
+                // Get user's workspace
+                const adminUser = await SELECT.one.from(Users).where({ Username: user.username });
+                if (!adminUser) {
+                    req.error(404, `User with username ${user.username} not found`);
                     return;
                 }
-
-                // Lấy workspaceID từ Admin
+        
                 const workspaceID = adminUser.WorkspaceID;
-                if (! workspaceID) {
-                    req.error(403, `User ${
-                        user.id
-                    } does not belong to any workspace`);
+                if (!workspaceID) {
+                    req.error(403, `User ${user.username} does not belong to any workspace`);
                     return;
                 }
-
-                // Truy vấn thông tin workspace
-                const workspace = await tx.run(SELECT.one.from(Workspaces).where({ID: workspaceID}).columns('ID', 'CompanyName', 'Address', 'Phone', 'Email'));
-                if (! workspace) {
+        
+                const workspace = await SELECT.one.from(Workspaces)
+                    .where({ ID: workspaceID })
+                    .columns('ID', 'CompanyName', 'Address', 'Phone', 'Email');
+                
+                if (!workspace) {
                     req.error(404, `Workspace with ID ${workspaceID} not found`);
                     return;
                 }
-
+        
                 console.log('>>> Workspace info retrieved successfully:', workspace);
                 return workspace;
             } catch (error) {
                 console.error('>>> Error in getWorkspaceInfo:', error);
-                req.error(500, `Failed to retrieve workspace info: ${
-                    error.message
-                }`);
+                req.error(500, `Failed to retrieve workspace info: ${error.message}`);
             }
         });
 
