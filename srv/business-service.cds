@@ -8,7 +8,7 @@ service BusinessService @(path: '/business-service') {
   entity Promotions as projection on tm.Promotion;
 
   // Các action cho quản lý khách hàng
-  @(requires: 'authenticated-user')
+  //@(requires: 'authenticated-user')
   action createCustomer(
     fullName: String,
     phone: String,
@@ -27,7 +27,7 @@ service BusinessService @(path: '/business-service') {
     TotalTransactions: Decimal(15,2);
   };
 
-  @(requires: 'authenticated-user')
+  //@(requires: 'authenticated-user')
   action updateCustomer(
     customerID: UUID,
     fullName: String,
@@ -48,7 +48,7 @@ service BusinessService @(path: '/business-service') {
   };
 
   // Các action cho quản lý hợp đồng
-  @(requires: 'authenticated-user')
+  //@(requires: 'authenticated-user')
   action createContract(
     customerID: UUID,
     tourID: UUID,
@@ -65,7 +65,7 @@ service BusinessService @(path: '/business-service') {
     PromotionID: UUID;
   };
 
-  @(requires: 'authenticated-user')
+  //@(requires: 'authenticated-user')
   action updateContractStatus(
     contractID: UUID,
     status: String
@@ -80,7 +80,7 @@ service BusinessService @(path: '/business-service') {
   };
 
   // Các action cho quản lý chương trình ưu đãi
-  @(requires: 'authenticated-user')
+  //@(requires: 'authenticated-user')
   action createPromotion(
     promotionName: String,
     description: String,
@@ -97,7 +97,7 @@ service BusinessService @(path: '/business-service') {
   };
 
   // Các function tìm kiếm
-  @(requires: 'authenticated-user')
+  //@(requires: 'authenticated-user')
   function searchCustomers(
     searchTerm: String
   ) returns array of {
@@ -110,7 +110,7 @@ service BusinessService @(path: '/business-service') {
     TotalTransactions: Decimal(15,2);
   };
 
-  @(requires: 'authenticated-user')
+  //@(requires: 'authenticated-user')
   function getCustomerDetails(
     customerID: UUID
   ) returns {
@@ -150,7 +150,7 @@ service BusinessService @(path: '/business-service') {
     };
   };
 
-  @(requires: 'authenticated-user')
+  //@(requires: 'authenticated-user')
   function getActivePromotions() returns array of {
     ID: UUID;
     PromotionName: String(100);

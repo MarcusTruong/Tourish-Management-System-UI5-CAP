@@ -88,7 +88,7 @@ modules:
     - npm run build:cf
     supported-platforms: []
 resources:
-- name: TourishManagementSystem-auth
+# - name: TourishManagementSystem-auth
   # type: org.cloudfoundry.managed-service
   # parameters:
   #   config:

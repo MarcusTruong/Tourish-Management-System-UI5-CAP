@@ -400,14 +400,16 @@ sap.ui.define([
         
                         oViewModel.setProperty("/busy", true);
                         
-                        // Call createWorkspace action
-                        var oContext = oODataModel.bindContext("/createWorkspace(...)");
-                        oContext.setParameter("companyName", oWorkspaceData.companyName);
-                        oContext.setParameter("address", oWorkspaceData.address);
-                        oContext.setParameter("phone", oWorkspaceData.phone);
-                        oContext.setParameter("email", oWorkspaceData.email);
-        
-                        oContext.execute().then(function () {
+                        this.getOwnerComponent().executeAuthenticatedAction(
+                            oODataModel,
+                            "/createWorkspace(...)",
+                            {
+                                companyName: oWorkspaceData.companyName,
+                                address: oWorkspaceData.address,
+                                phone: oWorkspaceData.phone,
+                                email: oWorkspaceData.email
+                            }
+                        ).then(function(oContext) {
                             var oResult = oContext.getBoundContext().getObject();
                             console.log("Workspace created:", oResult);
                             oViewModel.setProperty("/busy", false);
@@ -691,6 +693,7 @@ sap.ui.define([
                                 MessageBox.error("Failed to add user: " + (oResult.message || "Unknown error"));
                             }
                         }.bind(this)).catch(function (oError) {
+                            console.log(oError);
                             oViewModel.setProperty("/busy", false);
                             var sMessage = "Failed to add user!";
                             try {
@@ -698,8 +701,8 @@ sap.ui.define([
                                 sMessage = oResponse.error.message || sMessage;
                             } catch (e) {
                                 // Fallback to default message
+                                MessageBox.error("Failed to add user: " + oError.message);
                             }
-                            MessageBox.error(sMessage);
                         });
                     }.bind(this)
                 }),

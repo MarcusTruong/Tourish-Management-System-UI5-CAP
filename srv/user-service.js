@@ -1,6 +1,7 @@
 const cds = require('@sap/cds');
 const {message} = require('@sap/cds/lib/log/cds-error');
 const bcrypt = require('bcrypt');
+const e = require('express');
 const jwt = require('jsonwebtoken');
 
 // Khóa bí mật để ký JWT (nên lưu trong biến môi trường trong thực tế)
@@ -273,6 +274,12 @@ this.on('createWorkspace', async (req) => {
                 const existingUser = await tx.run(SELECT.one.from(Users).where({Username: username}));
                 if (existingUser) {
                     req.error(409, `Username ${username} already exists`);
+                    return;
+                }
+
+                const existingEmail = await tx.run(SELECT.one.from(Users).where({Email: email}));
+                if(existingEmail) {
+                    req.error(409, `User with email ${email} already exists`);
                     return;
                 }
 
@@ -560,8 +567,8 @@ this.on('createWorkspace', async (req) => {
                     return {success: false, message: `Admin cannot remove themselves from the workspace`};
                 }
 
-                // Xóa user khỏi workspace (đặt WorkspaceID về null)
-                await tx.run(UPDATE(Users).set({WorkspaceID: null}).where({ID: userID}));
+                // Xóa user 
+                await tx.run(DELETE.from(Users).where({ID: userID}));
                 await tx.commit();
                 console.log(`>>> User ${userID} removed from workspace ${
                     adminUser.WorkspaceID

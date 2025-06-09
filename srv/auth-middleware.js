@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = 'your-secret-key-12345'; // Same as in user-service.js
+const cds = require('@sap/cds')
 
 module.exports = (req, res, next) => {
   // Skip auth for public endpoints
@@ -13,7 +14,7 @@ module.exports = (req, res, next) => {
   }
 
   // Extract token from Authorization header
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers.customauthorization;
   let token = null;
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -31,12 +32,17 @@ module.exports = (req, res, next) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     
     // Set user info for CDS
-    req.user = {
-      id: decoded.username, // Use username as id for CDS compatibility
-      username: decoded.username,
+    req.user = new cds.User({
+      id: decoded.username,      // CDS expects 'id'
+      username: decoded.username, // Keep username for reference
       role: decoded.role,
-      userId: decoded.id
-    };
+      roles: Array.isArray(decoded.role) ? decoded.role : [decoded.role],
+      userId: decoded.id,        // Original user ID
+      attr: {                    // Additional attributes
+          username: decoded.username,
+          role: decoded.role
+      }
+  });
 
     next();
   } catch (error) {

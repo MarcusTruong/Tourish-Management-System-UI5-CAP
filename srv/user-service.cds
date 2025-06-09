@@ -77,7 +77,7 @@ service UserService @(path: '/user-service') {
   };
 
   // Action để đổi mật khẩu
-  @(requires: 'authenticated-user')
+  //@(requires: 'authenticated-user')
   action changePassword(
     currentPassword: String,
     newPassword: String
@@ -105,7 +105,7 @@ service UserService @(path: '/user-service') {
     token: String;
   };
 
-  @(requires: 'authenticated-user')
+  //@(requires: 'authenticated-user')
   action logout() returns {
     success: Boolean;
     message: String;

@@ -40,7 +40,9 @@
       "[hybrid]": {
         "db": "hana"
       },
-      "auth": {}
+      "auth": {
+        "impl": "srv/auth-middleware.js"
+      }
     }
   }
 }
