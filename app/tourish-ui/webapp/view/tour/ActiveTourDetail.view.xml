@@ -215,6 +215,7 @@
                                 <ToolbarSpacer id="_IDGenToolbarSpacer41"/>
                                 <Text id="_IDGenText255" text="Total Orders: {activeTourDetail>/statistics/totalOrders}"/>
                                 <Text id="_IDGenText256" text="Total Passengers Already Fill Data: {activeTourDetail>/statistics/totalPassengers}" class="sapUiSmallMarginBegin"/>
+                                <Button id="_IDGenButton77" text="Create Order" icon="sap-icon://cart" tooltip="Create New Order" press=".onCreateOrder" type="Emphasized"></Button>
                             </OverflowToolbar>
 
                             <!-- Orders with Passengers -->

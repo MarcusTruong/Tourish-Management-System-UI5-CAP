@@ -529,17 +529,21 @@ sap.ui.define([
             // Get the template ID from the button's binding context
             var oSource = oEvent.getSource();
             var oBindingContext = oSource.getBindingContext("templates");
+            console.log(oBindingContext);
             
             if (oBindingContext) {
                 var sTemplateId = oBindingContext.getProperty("ID");
                 var sTemplateName = oBindingContext.getProperty("TemplateName");
                 var sTemplateStatus = oBindingContext.getProperty("Status");
+                var sDays = oBindingContext.getProperty("NumberDays");
+                var sImgUrl = oBindingContext.getProperty("MainImageURL");
+
                 if (sTemplateStatus == "Published") {
                                     // Store template ID for later use
                     this._sSelectedTemplateId = sTemplateId;
                 
                 // Open the Create Active Tour dialog
-                    this._openCreateActiveTourDialog(sTemplateId, sTemplateName);
+                    this._openCreateActiveTourDialog(sTemplateId, sTemplateName, sDays, sImgUrl);
                 } else {
                     MessageBox.error("Tour Template is not published yet");
                                }
@@ -547,7 +551,7 @@ sap.ui.define([
             }
         },
         
-        _openCreateActiveTourDialog: function(sTemplateId, sTemplateName) {
+        _openCreateActiveTourDialog: function(sTemplateId, sTemplateName, sDays, sImgUrl) {
             var oView = this.getView();
             
             // Create dialog lazily
@@ -561,16 +565,16 @@ sap.ui.define([
                     // Connect dialog to the root view of this component
                     oView.addDependent(oDialog);
                     this._oActiveTourDialog = oDialog;
-                    this._prepareActiveTourDialog(sTemplateId, sTemplateName);
+                    this._prepareActiveTourDialog(sTemplateId, sTemplateName, sDays, sImgUrl);
                     oDialog.open();
                 }.bind(this));
             } else {
-                this._prepareActiveTourDialog(sTemplateId, sTemplateName);
+                this._prepareActiveTourDialog(sTemplateId, sTemplateName, sDays, sImgUrl);
                 this._oActiveTourDialog.open();
             }
         },
         
-        _prepareActiveTourDialog: function(sTemplateId, sTemplateName) {
+        _prepareActiveTourDialog: function(sTemplateId, sTemplateName, sDays, sImgUrl) {
             // Load and set responsible persons (e.g., users who can manage the tour)
             this._loadResponsiblePersons();
             
@@ -580,7 +584,7 @@ sap.ui.define([
             oNextWeek.setDate(oDate.getDate() + 7);
             
             var oNextMonth = new Date(oDate);
-            oNextMonth.setDate(oDate.getDate() + 30);
+            oNextMonth.setDate(oDate.getDate() + 7 + sDays);
             
             var oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern: "yyyy-MM-dd"});
             
@@ -593,6 +597,7 @@ sap.ui.define([
                 saleStartDate: oDateFormat.format(oDate), // Default sale start: today
                 saleEndDate: oDateFormat.format(oNextWeek), // Default sale end: next week
                 maxCapacity: 20, // Default capacity
+                imgUrl: sImgUrl,
                 responsiblePersonID: "", // Will be selected by user
                 formValid: false, // Initial validation state
                 Members: this._aResponsiblePersons || []
@@ -672,6 +677,7 @@ sap.ui.define([
                 oContext.setParameter("saleEndDate", oData.saleEndDate);
                 oContext.setParameter("maxCapacity", parseInt(oData.maxCapacity, 10));
                 oContext.setParameter("responsiblePersonID", oData.responsiblePersonID);
+                oContext.setParameter("imageURL", oData.imgUrl);
                 
                 // Execute the action
                 oContext.execute().then(function() {

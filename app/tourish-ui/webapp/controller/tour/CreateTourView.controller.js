@@ -522,19 +522,20 @@ sap.ui.define([
             var oTourModel = this.getView().getModel("tour");
             var sTemplateId = oTourModel.getProperty("/templateID");
             var sTemplateName = oTourModel.getProperty("/templateName");
+            var sDays = oTourModel.getProperty("/days");
             var sTemplateStatus = oTourModel.getProperty("/status");
             
             // Kiểm tra xem template đã được publish chưa
             if (sTemplateStatus === "Published") {
                 // Mở dialog để tạo Active Tour
-                this._openCreateActiveTourDialog(sTemplateId, sTemplateName);
+                this._openCreateActiveTourDialog(sTemplateId, sTemplateName, sDays);
             } else {
                 // Thông báo lỗi nếu template chưa được publish
                 MessageBox.error("Tour Template must be published before creating an Active Tour. Please complete and publish the template first.");
             }
         },
         
-        _openCreateActiveTourDialog: function(sTemplateId, sTemplateName) {
+        _openCreateActiveTourDialog: function(sTemplateId, sTemplateName, sDays) {
             var oView = this.getView();
             
             // Tạo dialog lần đầu nếu chưa tồn tại
@@ -548,16 +549,16 @@ sap.ui.define([
                     // Kết nối dialog với view gốc
                     oView.addDependent(oDialog);
                     this._oActiveTourDialog = oDialog;
-                    this._prepareActiveTourDialog(sTemplateId, sTemplateName);
+                    this._prepareActiveTourDialog(sTemplateId, sTemplateName, sDays);
                     oDialog.open();
                 }.bind(this));
             } else {
-                this._prepareActiveTourDialog(sTemplateId, sTemplateName);
+                this._prepareActiveTourDialog(sTemplateId, sTemplateName, sDays);
                 this._oActiveTourDialog.open();
             }
         },
         
-        _prepareActiveTourDialog: function(sTemplateId, sTemplateName) {
+        _prepareActiveTourDialog: function(sTemplateId, sTemplateName, sDays) {
             // Load danh sách người chịu trách nhiệm
             this._loadResponsiblePersons();
             
@@ -567,7 +568,7 @@ sap.ui.define([
             oNextWeek.setDate(oDate.getDate() + 7);
             
             var oNextMonth = new Date(oDate);
-            oNextMonth.setDate(oDate.getDate() + 30);
+            oNextMonth.setDate(oDate.getDate() + 7 + sDays);
             
             var oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({pattern: "yyyy-MM-dd"});
             
@@ -1276,23 +1277,8 @@ sap.ui.define([
                 oView.setBusy(false);
                 MessageBox.error("Error preparing completion request: " + oError.message);
             }
-        }, onPreview: function () {
-            // Validate at least the basic fields
-            var oTourModel = this.getView().getModel("tour");
-            var sTemplateName = oTourModel.getProperty("/templateName");
-            
-            if (!sTemplateName) {
-                MessageBox.error("Template name is required for preview.");
-                return;
-            }
-            
-            // Show a preview dialog (simplified)
-            MessageBox.information(
-                "Preview functionality will be implemented in the future.", {
-                    title: "Preview"
-                }
-            );
-        }, onNavBack: function () {
+        }, 
+        onNavBack: function () {
             var oHistory = History.getInstance();
             var sPreviousHash = oHistory.getPreviousHash();
             

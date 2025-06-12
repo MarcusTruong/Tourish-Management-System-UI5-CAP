@@ -1,9 +1,0 @@
-POST localhost:4004/user-service/updateUserProfile
-Content-Type: application/json
-Authorization: truong 22082002
-
-{
-    "fullName": "Truong",
-    "email": "Tg@cm.com",
-    "phone": "09632432433"
-}

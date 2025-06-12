@@ -1,5 +1,0 @@
-POST http://localhost:4004/user-service/logout
-Content-Type: application/json
-Authorization: Basic admin admin
-
-

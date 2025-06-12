@@ -2840,7 +2840,8 @@ srv.on('getPassengersByOrder', async (req) => {
             .where({ TourTemplateID: tour.TemplateID, IsMain: true })
             .columns('ImageURL');
           
-          tour.MainImageURL = mainImage && mainImage.length > 0 ? mainImage[0].ImageURL : null;
+          tour.MainImageURL = mainImage ? mainImage.ImageURL : null;
+          console.log(tour.MainImageURL);
         }
         
         // Count total records (without pagination)
@@ -2853,6 +2854,7 @@ srv.on('getPassengersByOrder', async (req) => {
         let countResult = await countQuery;
         let total = countResult[0].total;
         
+        console.log(tours);
         // Return the formatted result
         return {
           items: tours,

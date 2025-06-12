@@ -40,27 +40,11 @@
             ]
         },
         {
-            "titleI18nKey": "Bussiness Management",
-            "icon": "sap-icon://business-by-design",
+            "titleI18nKey": "Customer Management",
+            "icon": "sap-icon://group",
             "expanded": true,
-            "key": "",
-            "items": [
-                {
-                    "titleI18nKey": "Customer Management",
-                    "key": "customer",
-                    "icon": "sap-icon://group"
-                },
-                {
-                    "titleI18nKey": "Contract Management",
-                    "key": "contract",
-                    "icon": "sap-icon://customer-order-entry"
-                },
-                {
-                    "titleI18nKey": "Promotion Management",
-                    "key": "promotion",
-                    "icon": "sap-icon://capital-projects"
-                }
-            ]
+            "key": "customer",
+            "items": []
         },
         {
             "titleI18nKey": "Order Management",
@@ -93,19 +77,9 @@
             "key": "",
             "items": [
                 {
-                    "titleI18nKey": "Bank Account Management",
-                    "key": "bank",
-                    "icon": "sap-icon://wallet"
-                },
-                {
                     "titleI18nKey": "Financial Report",
                     "key": "report",
                     "icon": "sap-icon://manager-insight"
-                },
-                {
-                    "titleI18nKey": "Receipt",
-                    "key": "receipt",
-                    "icon": "sap-icon://receipt"
                 },
                 {
                     "titleI18nKey": "Công nợ",
@@ -113,33 +87,6 @@
                     "icon": "sap-icon://sales-quote"
                 }
             ]
-        }
-    ],
-    "masterSettings": [
-        {
-            "titleI18nKey": "sideContentSystemSettings",
-            "key": "systemSettings",
-            "selected": true
-        },
-        {
-            "titleI18nKey": "sideContentOrderSettings",
-            "key": "orderSettings",
-            "selected": false
-        },
-        {
-            "titleI18nKey": "sideContentSupplierSettings",
-            "key": "supplierSettings",
-            "selected": false
-        },
-        {
-            "titleI18nKey": "sideContentCampaignSettings",
-            "key": "campaignSettings",
-            "selected": false
-        },
-        {
-            "titleI18nKey": "sideContentShippingSettings",
-            "key": "shippingSettings",
-            "selected": false
         }
     ]
 }

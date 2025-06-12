@@ -3,9 +3,7 @@ using tourish.management as tm from '../db/schema';
 service FinanceService @(path: '/finance-service') {
   // Các thực thể cho phép truy cập qua service này
   entity FinancialReports as projection on tm.FinancialReport;
-  entity BankAccounts as projection on tm.BankAccount;
   entity SupplierDebts as projection on tm.SupplierDebt;
-  entity Receipts as projection on tm.Receipt;
 
   // Action để tạo báo cáo tài chính
   @(requires: ['admin', 'staff'])

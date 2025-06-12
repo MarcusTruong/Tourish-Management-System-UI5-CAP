@@ -770,6 +770,7 @@ function determineOrderStatus(totalAmount, paidAmount, currentStatus) {
       const am = parseFloat(amount) || 0;
       const newPaidAmount = order.PaidAmount - am;
       const newRemainingAmount = order.TotalAmount - newPaidAmount;
+
       
       // Generate payment ID for the refund
       const paymentID = cds.utils.uuid();
@@ -795,6 +796,7 @@ function determineOrderStatus(totalAmount, paidAmount, currentStatus) {
             .set({
               PaidAmount: newPaidAmount,
               RemainingAmount: newRemainingAmount,
+              Status: determineOrderStatus(order.TotalAmount, newPaidAmount, order.Status),
               Notes: order.Notes ? `${order.Notes}\nRefund processed: ${notes}` : `Refund processed: ${notes}`
             })
             .where({ ID: orderID })

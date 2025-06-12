@@ -194,7 +194,7 @@
                                         icon="sap-icon://edit"
                                         press=".onEditOrder"
                                         tooltip="Edit Order"
-                                        visible="{= ${orders>Status} !== 'Canceled' }"/>
+                                        visible="{= ${orders>Status} === 'Pending' || ${orders>Status} === 'Overpaid' }"/>
                                     <Button id="_IDGenButton53" 
                                         icon="sap-icon://payment-approval"
                                         press=".onManagePayments"

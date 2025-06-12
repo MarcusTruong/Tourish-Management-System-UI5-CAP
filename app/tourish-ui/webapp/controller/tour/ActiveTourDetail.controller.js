@@ -993,5 +993,9 @@ if (!oDialogModel || !this._currentEditingService) {
             
             MessageToast.show("Email client opened. Please attach the invoice if needed.");
         },
+
+        onCreateOrder: function() {
+            this.getOwnerComponent().getRouter().navTo("createOrder");
+        }
     });
 });

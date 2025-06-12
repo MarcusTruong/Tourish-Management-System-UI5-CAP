@@ -268,7 +268,7 @@ entity Order {
   TotalAmount : Decimal(15,2);
   PaidAmount : Decimal(15,2) default 0.00;
   RemainingAmount : Decimal(15,2);
-  Status : String(20) default 'Pending'; // Pending/Completed/Canceled
+  Status : String(20) default 'Pending'; // Pending/Completed/Canceled/overpaid
   PromotionID : UUID; // Reference to Promotion.ID
   Notes : String(500);
   Payments : Association to many Payment on Payments.OrderID = $self.ID;

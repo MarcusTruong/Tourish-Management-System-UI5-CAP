@@ -65,7 +65,7 @@ sap.ui.define([
             // Get active tours
             var oContext = oTourService.bindContext("/listActiveTours(...)");
             oContext.setParameter("searchTerm", "");
-            oContext.setParameter("status", "");
+            oContext.setParameter("status", "Open");
             oContext.setParameter("skip", 0);
             oContext.setParameter("limit", 1000); // Get all tours
             

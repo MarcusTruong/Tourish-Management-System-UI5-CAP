@@ -138,7 +138,6 @@
                                     <!-- Complete Tour Button - for Open/Closed tours -->
                                     <Button id="completeTourBtn" icon="sap-icon://accept" press=".onCompleteTour" tooltip="Complete Tour" visible="{= ${activeTours>Status} === 'Open' || ${activeTours>Status} === 'Closed'}" class="sapUiTinyMarginBegin"/>
                                     <Button id="_IDGenButton41" icon="sap-icon://cancel" press=".onCancelTour" tooltip="Cancel Tour" visible="{= ${activeTours>Status} === 'Open' || ${activeTours>Status} === 'Ongoing'}" class="sapUiTinyMarginBegin"/>
-                                    <Button id="_IDGenButton42" icon="sap-icon://detail-view" press=".onViewDetails" tooltip="View Details" class="sapUiTinyMarginBegin"/>
                                 </HBox>
                             </cells>
                         </ColumnListItem>

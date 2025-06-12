@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 
 // Khóa bí mật để ký JWT (nên lưu trong biến môi trường trong thực tế)
 const JWT_SECRET = 'your-secret-key-12345'; // Thay bằng giá trị an toàn trong thực tế
-const TOKEN_EXPIRY = '1h';
+const TOKEN_EXPIRY = '48h';
 // Thời gian hết hạn của token (1 giờ)
 
 // Hàm mã hóa mật khẩu

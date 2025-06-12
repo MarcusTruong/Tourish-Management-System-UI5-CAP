@@ -115,12 +115,6 @@
                     <ObjectNumber id="availableSeatsNumber" 
                         number="{createOrder>AvailableSeats}" 
                         state="{= ${createOrder>AvailableSeats} &gt; 10 ? 'Success' : ${createOrder>AvailableSeats} &gt; 0 ? 'Warning' : 'Error' }"/>
-                    <ProgressIndicator id="capacityIndicator" 
-                        percentValue="{= 100 - (${createOrder>AvailableSeats} / (${createOrder>AvailableSeats} + ${createOrder>CurrentBookings}) * 100) }"
-                        width="60px" 
-                        height="4px"
-                        state="{= ${createOrder>AvailableSeats} &gt; 10 ? 'Success' : ${createOrder>AvailableSeats} &gt; 0 ? 'Warning' : 'Error' }"
-                        class="sapUiTinyMarginTop"/>
                 </VBox>
                 
                 <ObjectStatus id="_IDGenObjectStatus13" 
