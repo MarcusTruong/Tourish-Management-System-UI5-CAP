@@ -1,15 +1,26 @@
+// srv/server.js
 const cds = require('@sap/cds');
 const authMiddleware = require('./auth-middleware');
+const cloudinaryService = require('./cloudinary-service');
 require('dotenv').config();
 
 cds.on('bootstrap', app => {
   console.log('CDS server bootstrapped with custom authentication');
-  // Apply custom auth middleware to all routes
-  // app.use('/user-service', authMiddleware);
-  // app.use('/customer-service', authMiddleware);
-  // app.use('/order-service', authMiddleware);
-  // app.use('/tour-service', authMiddleware);
-  // app.use('/supplier-service', authMiddleware);
+  
+  // QUAN TRỌNG: Đăng ký Cloudinary service
+  cloudinaryService(cds);
+  console.log('Cloudinary service registered in bootstrap');
+});
+
+// THÊM LOGGING ĐỂ DEBUG
+cds.on('served', () => {
+  console.log('=== CDS SERVED EVENT ===');
+  console.log('Server is ready');
+  if (cds.app) {
+    console.log('cds.app is available');
+  } else {
+    console.log('ERROR: cds.app is NOT available');
+  }
 });
 
 module.exports = cds.server;

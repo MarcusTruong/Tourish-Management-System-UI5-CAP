@@ -37,7 +37,19 @@
                                 </f:SimpleForm>
                             </VBox>
                             <VBox id="_IDGenVBox11" class="sapUiMediumMargin" width="40%">
-                                <upload:UploadSet id="templateImageUpload" instantUpload="true" multiple="true" maxFileSize="5" mediaTypes="image/jpeg,image/png,image/gif" items="{tour>/images}" uploadUrl="/api/cloudinary/upload" uploadEnabled="true" uploadCompleted=".onImageUploadComplete" beforeUploadStarts=".onBeforeUploadStarts" afterItemRemoved=".onFileDeleted">
+                                <upload:UploadSet 
+                                        id="templateImageUpload" 
+                                    instantUpload="true" 
+                                    multiple="true" 
+                                    maxFileSize="5" 
+                                    mediaTypes="image/jpeg,image/png,image/gif,image/webp" 
+                                    items="{tour>/images}" 
+                                    uploadUrl="/api/cloudinary/upload" 
+                                    uploadEnabled="true" 
+                                    uploadCompleted=".onImageUploadComplete" 
+                                    beforeUploadStarts=".onBeforeUploadStarts" 
+                                    afterItemRemoved=".onFileDeleted"
+                                    fileTypes="jpg,jpeg,png,gif,webp">  
                                     <upload:toolbar>
                                         <OverflowToolbar id="_IDGenOverflowToolbar4">
                                             <Title id="_IDGenTitle4" text="Tour Images" level="H4"/>

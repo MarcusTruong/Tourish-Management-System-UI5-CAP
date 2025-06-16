@@ -121,18 +121,35 @@ sap.ui.define([
             this._initializeSchedule(iDays);
         },
 
-        onBeforeUploadStarts: function(oEvent) {
-            // Không cần thêm CSRF token nếu endpoint không yêu cầu
-            // Có thể thêm các header khác nếu cần
-            
-            // Thêm header Cache-Control để tránh cache
-            var oUploadSetItem = oEvent.getParameter("item");
-            var oCacheHeader = new sap.ui.core.Item({
-                key: "Cache-Control",
-                text: "no-cache"
-            });
-            oUploadSetItem.addHeaderField(oCacheHeader);
-        },
+        // app/tourish-ui/webapp/controller/tour/CreateTourView.controller.js
+
+        // app/tourish-ui/webapp/controller/tour/CreateTourView.controller.js
+
+onBeforeUploadStarts: function(oEvent) {
+    console.log("Upload starting...");
+    
+    var oUploadSetItem = oEvent.getParameter("item");
+    var oFile = oUploadSetItem.getFileObject();
+    
+    console.log("File info:", {
+        name: oFile.name,
+        type: oFile.type,
+        size: oFile.size
+    });
+    
+    // Validation
+    if (oFile.size > 5 * 1024 * 1024) {
+        oEvent.preventDefault();
+        sap.m.MessageBox.error("File quá lớn");
+        return;
+    }
+    
+    // Thêm filename vào URL để server biết
+    var sUploadUrl = "/api/cloudinary/upload?filename=" + encodeURIComponent(oFile.name);
+    oUploadSetItem.setUploadUrl(sUploadUrl);
+    
+    console.log("Upload URL updated:", sUploadUrl);
+},
 
         _formatFileSize: function (iBytes) {
             if (iBytes < 1024) {
@@ -1480,16 +1497,28 @@ sap.ui.define([
 
 // Phương thức xử lý sau khi upload hoàn tất
 onImageUploadComplete: function(oEvent) {
-    // Lấy các model và item cần thiết
+    console.log("Upload completed event triggered");
+    
     var oUploadSet = this.byId("templateImageUpload");
     var oTourModel = this.getView().getModel("tour");
     var aImages = oTourModel.getProperty("/images") || [];
     var oUploadSetItem = oEvent.getParameter("item");
     var sResponseText = oEvent.getParameter("response");
     
+    console.log("Response text:", sResponseText);
+    
+    // Kiểm tra nếu response rỗng hoặc không hợp lệ
+    if (!sResponseText) {
+        console.error("Empty response from server");
+        oUploadSetItem.setUploadState("Error");
+        sap.m.MessageBox.error("Không nhận được phản hồi từ server");
+        return;
+    }
+    
     try {
         // Parse response từ server
         var oResponse = JSON.parse(sResponseText);
+        console.log("Parsed response:", oResponse);
         
         // Kiểm tra phản hồi từ server
         if (oResponse && oResponse.success) {
@@ -1511,13 +1540,15 @@ onImageUploadComplete: function(oEvent) {
                 }]
             };
             
+            console.log("New image object:", oNewImage);
+            
             // Thêm ảnh đã upload vào model
             aImages.push(oNewImage);
             oTourModel.setProperty("/images", aImages);
             
             // Cập nhật trạng thái upload thành công
             oUploadSetItem.setUploadState("Complete");
-            MessageToast.show("Ảnh đã được tải lên thành công");
+            sap.m.MessageToast.show("Ảnh đã được tải lên thành công");
             
             // Lưu ảnh vào database nếu đã có template ID
             var sTemplateId = oTourModel.getProperty("/templateID");
@@ -1526,14 +1557,22 @@ onImageUploadComplete: function(oEvent) {
             }
         } else {
             // Xử lý lỗi
+            console.error("Upload failed:", oResponse);
             oUploadSetItem.setUploadState("Error");
-            MessageBox.error("Upload không thành công: " + (oResponse.message || "Lỗi không xác định"));
+            sap.m.MessageBox.error("Upload không thành công: " + (oResponse.message || "Lỗi không xác định"));
         }
     } catch (oError) {
         // Xử lý lỗi khi parse JSON hoặc xử lý phản hồi
-        console.error("Lỗi khi xử lý phản hồi từ server:", oError, sResponseText);
+        console.error("Error processing server response:", oError, "Response text:", sResponseText);
         oUploadSetItem.setUploadState("Error");
-        MessageBox.error("Lỗi khi xử lý phản hồi từ server: " + oError.message);
+        
+        // Thử hiển thị response text nếu không parse được JSON
+        var sErrorMessage = "Lỗi khi xử lý phản hồi từ server";
+        if (sResponseText.includes("error") || sResponseText.includes("Error")) {
+            sErrorMessage += ": " + sResponseText;
+        }
+        
+        sap.m.MessageBox.error(sErrorMessage);
     }
 },
 
