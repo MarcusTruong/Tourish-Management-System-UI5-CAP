@@ -7,7 +7,7 @@ service SupplierService @(path: '/supplier-service') {
   entity SupplierDebts as projection on tm.SupplierDebt;
 
   // Các action cho quản lý thông tin nhà cung cấp
-  @(requires: ['Admin', 'Manager'])
+  @(requires: ['Admin', 'Manager', 'Staff'])
   action createSupplier(
     supplierName: String,
     address: String,
@@ -21,7 +21,7 @@ service SupplierService @(path: '/supplier-service') {
     Email: String(100);
   };
 
-  @(requires: ['Admin', 'Manager'])
+  @(requires: ['Admin', 'Manager', 'Staff'])
   action updateSupplier(
     supplierID: UUID,
     supplierName: String,
@@ -36,13 +36,13 @@ service SupplierService @(path: '/supplier-service') {
     Email: String(100);
   };
 
-  @(requires: ['Admin', 'Manager'])
+  @(requires: ['Admin', 'Manager', 'Staff'])
   action deleteSupplier(
     supplierID: UUID
   ) returns Boolean;
 
   // Các action cho quản lý dịch vụ nhà cung cấp
-  @(requires: ['Admin', 'Manager'])
+  @(requires: ['Admin', 'Manager', 'Staff'])
   action createService(
     supplierID: UUID,
     serviceName: String,
@@ -58,7 +58,7 @@ service SupplierService @(path: '/supplier-service') {
     Price: Decimal(15,2);
   };
 
-  @(requires: ['Admin', 'Manager'])
+  @(requires: ['Admin', 'Manager', 'Staff'])
   action updateService(
     serviceID: UUID,
     serviceName: String,
@@ -74,7 +74,7 @@ service SupplierService @(path: '/supplier-service') {
     Price: Decimal(15,2);
   };
 
-  @(requires: ['Admin', 'Manager'])
+  @(requires: ['Admin', 'Manager', 'Staff'])
   action deleteService(
     serviceID: UUID
   ) returns Boolean;

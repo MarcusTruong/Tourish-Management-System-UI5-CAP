@@ -317,36 +317,6 @@
 
                         <!-- Activity and Quick Actions Section -->
                         <l:Grid id="activityGrid" defaultSpan="XL4 L6 M12 S12" hSpacing="1" vSpacing="1" containerQuery="true">
-                            
-                            <!-- Recent Activities -->
-                            <f:Card id="activitiesCard" class="sapUiTinyMargin">
-                                <f:header>
-                                    <card:Header id="activitiesHeader" 
-                                        title="Recent Activities" 
-                                        subtitle="Latest System Events"
-                                        iconSrc="sap-icon://activity-2"/>
-                                </f:header>
-                                <f:content>
-                                    <VBox id="activitiesContent" height="300px">
-                                        <List id="activitiesList2" 
-                                            items="{dashboard>/recentActivities}" 
-                                            noDataText="No recent activities"
-                                            class="sapUiSmallMargin">
-                                            <StandardListItem id="activityItem"
-                                                title="{dashboard>title}"
-                                                description="{dashboard>description}"
-                                                info="{
-                                                    path: 'dashboard>timestamp',
-                                                    formatter: '.formatRelativeTime'
-                                                }"
-                                                icon="{dashboard>icon}"
-                                                iconInset="false"
-                                                type="Inactive"/>
-                                        </List>
-                                    </VBox>
-                                </f:content>
-                            </f:Card>
-
                             <!-- Upcoming Departures -->
                             <f:Card id="departuresCard" class="sapUiTinyMargin">
                                 <f:header>

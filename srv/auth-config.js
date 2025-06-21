@@ -15,9 +15,9 @@ const rolePermissions = {
       tour: ['create', 'read', 'update', 'delete'],
       customer: ['create', 'read', 'update', 'delete'],
       order: ['create', 'read', 'update', 'delete'],
-      payment: ['read'],
+      payment: ['create', 'read', 'update', 'delete'],
       supplier: ['create', 'read', 'update', 'delete'],
-      finance: ['read']
+      finance: ['create', 'read', 'update', 'delete']
     },
     Accountant: {
       workspace: [],
@@ -34,9 +34,9 @@ const rolePermissions = {
       user: ['read'],
       tour: ['read'],
       customer: ['read'],
-      order: ['create', 'read', 'update'],
+      order: ['create', 'read', 'update', 'delete'],
       payment: [],
-      supplier: ['read'],
+      supplier: ['create', 'read', 'update', 'delete'],
       finance: ['read'] // chỉ basic reports
     }
   };
