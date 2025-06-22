@@ -1,12 +1,13 @@
+<!-- app/tourish-ui/webapp/view/AppContent.view.xml -->
 <mvc:View
     controllerName="tourishui.controller.AppContent"
     xmlns="sap.m"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns:tnt="sap.tnt">
+    
     <tnt:ToolPage id="toolPage">
         <tnt:header>
             <tnt:ToolHeader id="_IDGenToolHeader1">
-                <!-- Your header content from App.view.xml -->
                 <Button
                     id="sideNavigationToggleButton"
                     icon="sap-icon://menu2"
@@ -21,54 +22,84 @@
                 <Title 
                     text="{i18n>appTitle}"
                     level="H2"
-                    id="header"
-                ></Title>
+                    id="header"/>
                 <ToolbarSpacer id="_IDGenToolbarSpacer3"/>
+                
+                <!-- User Menu Button -->
                 <MenuButton
                     id="userButton"
-                    text="{auth>/user/FullName}"
-                    type="Transparent">
+                    text="{auth>/user/Fullname}"
+                    type="Transparent"
+                    icon="sap-icon://person-placeholder">
                     <menu>
                         <Menu id="_IDGenMenu">
                             <items>
-                                <MenuItem id="_IDGenMenuItem" text="{i18n>myWorkspace}" icon="sap-icon://business-objects-experience" press=".onMenuItemPress" key="myWorkspace"/>
-                                <MenuItem id="_IDGenMenuItem4" text="{i18n>myProfile}" icon="sap-icon://employee" press=".onMenuItemPress" key="myProfile"/>
-                                <MenuItem id="_IDGenMenuItem5" text="{i18n>logout}" icon="sap-icon://log" press=".onMenuItemPress" key="logout"/>
+                                <!-- My Workspace - Only for Admin -->
+                                <MenuItem 
+                                    id="_IDGenMenuItem" 
+                                    text="{i18n>myWorkspace}" 
+                                    icon="sap-icon://business-objects-experience" 
+                                    press=".onMenuItemPress" 
+                                    key="myWorkspace"/>
+                                    
+                                <!-- My Profile - For all users -->
+                                <MenuItem 
+                                    id="_IDGenMenuItem4" 
+                                    text="{i18n>myProfile}" 
+                                    icon="sap-icon://employee" 
+                                    press=".onMenuItemPress" 
+                                    key="myProfile"/>
+                                    
+                                <!-- Logout - For all users -->
+                                <MenuItem 
+                                    id="_IDGenMenuItem5" 
+                                    text="{i18n>logout}" 
+                                    icon="sap-icon://log" 
+                                    press=".onMenuItemPress" 
+                                    key="logout"/>
                             </items>
                         </Menu>
                     </menu>
                 </MenuButton>
             </tnt:ToolHeader>
         </tnt:header>
+        
         <tnt:sideContent>
-            <tnt:SideNavigation id="_IDGenSideNavigation"
+            <tnt:SideNavigation 
+                id="_IDGenSideNavigation"
                 expanded="true"
                 selectedKey="{side>/selectedKey}">
-                <tnt:NavigationList id="_IDGenNavigationList2" 
+                
+                <tnt:NavigationList 
+                    id="_IDGenNavigationList2" 
                     items="{
                         path: 'side>/navigation',
                         templateShareable: false
-                    }">
-                    <tnt:NavigationListItem id="_IDGenNavigationListItem"
+                    }"
+                    itemSelect=".onItemSelect">
+                    
+                    <tnt:NavigationListItem 
+                        id="_IDGenNavigationListItem"
                         text="{side>titleI18nKey}"
                         icon="{side>icon}"
                         expanded="{side>expanded}"
+                        key="{side>key}"
                         items="{
                             path: 'side>items',
                             templateShareable: false
-                        }"
-                        key="{side>key}"
-                        href="#/{side>key}">
-                        <tnt:NavigationListItem id="_IDGenNavigationListItem3"
+                        }">
+                        
+                        <!-- Sub-items -->
+                        <tnt:NavigationListItem 
+                            id="_IDGenNavigationListItem3"
                             text="{side>titleI18nKey}"
                             key="{side>key}"
-                            icon="{side>icon}"
-                            href="#/{side>key}">
-                        </tnt:NavigationListItem>
+                            icon="{side>icon}"/>
                     </tnt:NavigationListItem>
                 </tnt:NavigationList>
             </tnt:SideNavigation>
         </tnt:sideContent>
+        
         <tnt:mainContents>
             <App id="mainContents"/>
         </tnt:mainContents>

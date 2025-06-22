@@ -46,7 +46,7 @@ sap.ui.define([], function () {
         getCurrentUserRole: function() {
             try {
                 // Get from localStorage
-                const session = localStorage.getItem('tourishUserSession');
+                const session = localStorage.getItem('auth');
                 if (session) {
                     const sessionData = JSON.parse(session);
                     return sessionData.user?.Role || null;
@@ -357,7 +357,7 @@ sap.ui.define([], function () {
             // Try to get user name from session
             let userName = 'User';
             try {
-                const session = localStorage.getItem('tourishUserSession');
+                const session = localStorage.getItem('auth');
                 if (session) {
                     const sessionData = JSON.parse(session);
                     userName = sessionData.user?.FullName || sessionData.user?.Username || 'User';
@@ -397,6 +397,137 @@ sap.ui.define([], function () {
             capabilities.forEach(cap => {
                 console.log(`  ${cap}: ${this.canDo(cap) ? '✅' : '❌'}`);
             });
+        },
+
+
+/**
+ * Filter navigation items based on user role
+ * @param {Array} navigationItems - Array of navigation items
+ * @param {string} userRole - Current user role
+ * @returns {Array} Filtered navigation items
+ */
+filterNavigationByRole: function(navigationItems, userRole) {
+    if (!Array.isArray(navigationItems) || !userRole) {
+        return navigationItems || [];
+    }
+    
+    return navigationItems.filter(item => {
+        // Check if user has permission for this item
+        if (item.allowedRoles && !item.allowedRoles.includes(userRole)) {
+            return false; // Hide this item
         }
+        
+        // Filter sub-items if they exist
+        if (item.items && Array.isArray(item.items)) {
+            item.items = this.filterNavigationByRole(item.items, userRole);
+            
+            // Hide parent if no visible children
+            if (item.items.length === 0 && item.allowedRoles && item.allowedRoles.length > 0) {
+                return item.allowedRoles.includes(userRole);
+            }
+        }
+        
+        return true; // Show this item
+    });
+},
+
+/**
+ * Check if user can access specific navigation item
+ * @param {Object} navigationItem - Navigation item object
+ * @param {string} userRole - Current user role
+ * @returns {boolean} True if user can access
+ */
+canAccessNavigationItem: function(navigationItem, userRole) {
+    if (!navigationItem || !userRole) return false;
+    
+    // If no allowedRoles specified, allow access
+    if (!navigationItem.allowedRoles) return true;
+    
+    return navigationItem.allowedRoles.includes(userRole);
+},
+
+// Thêm vào app/tourish-ui/webapp/utils/PermissionHelper.js
+
+/**
+ * Apply role-based visibility to page controls
+ * @param {sap.ui.core.mvc.View} oView - View containing controls
+ * @param {Object} oControlConfig - Control configuration object
+ * Example: {
+ *   "addButton": { roles: ["Admin", "Manager"] },
+ *   "deleteButton": { roles: ["Admin"] },
+ *   "editButton": { roles: ["Admin", "Manager", "Staff"] }
+ * }
+ */
+applyPageControlPermissions: function(oView, oControlConfig) {
+    if (!oView || !oControlConfig) return;
+    
+    const sUserRole = this.getCurrentUserRole();
+    
+    Object.keys(oControlConfig).forEach(sControlId => {
+        const oControl = oView.byId(sControlId);
+        const oConfig = oControlConfig[sControlId];
+        
+        if (oControl && oConfig) {
+            if (oConfig.roles) {
+                this.showForRoles(oControl, oConfig.roles);
+            }
+            
+            if (oConfig.enabled) {
+                this.enableForRoles(oControl, oConfig.enabled);
+            }
+        }
+    });
+    
+    console.log(`🔧 Applied permissions to page controls for role: ${sUserRole}`);
+},
+
+/**
+ * Enable/disable control based on roles
+ * @param {sap.ui.core.Control} control - UI control
+ * @param {Array|string} allowedRoles - Allowed roles
+ */
+enableForRoles: function(control, allowedRoles) {
+    if (!control) return;
+
+    const currentRole = this.getCurrentUserRole();
+    const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+    const isEnabled = roles.includes(currentRole);
+
+    control.setEnabled(isEnabled);
+    console.log(`🔧 ${control.getId ? control.getId() : 'Control'} enabled for [${roles.join(', ')}]: ${isEnabled} (user: ${currentRole})`);
+},
+
+/**
+ * Quick permission check for common scenarios
+ */
+permissions: {
+    canManageUsers: function() {
+        return PermissionHelper.getCurrentUserRole() === 'Admin';
+    },
+    
+    canManageTours: function() {
+        return ['Admin', 'Manager'].includes(PermissionHelper.getCurrentUserRole());
+    },
+    
+    canManageCustomers: function() {
+        return ['Admin', 'Manager', 'Staff'].includes(PermissionHelper.getCurrentUserRole());
+    },
+    
+    canManageOrders: function() {
+        return ['Admin', 'Manager', 'Staff'].includes(PermissionHelper.getCurrentUserRole());
+    },
+    
+    canManageSuppliers: function() {
+        return ['Admin', 'Manager', 'Staff'].includes(PermissionHelper.getCurrentUserRole());
+    },
+    
+    canManageFinance: function() {
+        return ['Admin', 'Accountant'].includes(PermissionHelper.getCurrentUserRole());
+    },
+    
+    canViewReports: function() {
+        return ['Admin', 'Manager', 'Accountant'].includes(PermissionHelper.getCurrentUserRole());
+    }
+}
     };
 });

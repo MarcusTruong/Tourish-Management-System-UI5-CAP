@@ -3,40 +3,118 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
     xmlns:form="sap.ui.layout.form"
+    xmlns:layout="sap.ui.layout"
     displayBlock="true">
     <Page id="_IDGenPage10" showHeader="false">
         <content>
-            <VBox id="_IDGenVBox10" class="sapUiMediumMargin">
-                <Title id="_IDGenTitle1" text="My Profile" level="H2" class="sapUiSmallMarginBottom"/>
-                <form:SimpleForm
-                    id="profileForm"
-                    editable="true"
-                    layout="ResponsiveGridLayout"
-                    labelSpanXL="4"
-                    labelSpanL="4"
-                    labelSpanM="4"
-                    labelSpanS="12"
-                    adjustLabelSpan="false"
-                    emptySpanXL="0"
-                    emptySpanL="0"
-                    emptySpanM="0"
-                    emptySpanS="0"
-                    columnsXL="1"
-                    columnsL="1"
-                    columnsM="1">
-                    <form:content>
-                        <Label id="_IDGenLabel10" text="Full Name" required="true"/>
-                        <Input id="fullNameInput0" value="{auth>/user/FullName}" placeholder="Enter Full Name..."/>
-                        <Label id="_IDGenLabel20" text="Email" required="true"/>
-                        <Input id="emailInput0" value="{auth>/user/Email}" type="Email" placeholder="Enter Email..."/>
-                        <Label id="_IDGenLabel30" text="Phone" required="true"/>
-                        <Input id="phoneInput0" value="{auth>/user/Phone}" type="Tel" placeholder="Enter Phone Number..."/>
-                    </form:content>
-                </form:SimpleForm>
-                <HBox id="_IDGenHBox10" class="sapUiSmallMarginTop">
-                    <Button id="updateButton" text="Update Profile" press=".onUpdateProfilePress" type="Emphasized"/>
-                    <Button id="changePasswordButton" text="Change Password" press=".onChangePasswordPress" class="sapUiSmallMarginBegin"/>
-                </HBox>
+            <VBox id="_IDGenVBox10">
+                <layout:Grid id="profileGrid" 
+                    defaultSpan="XL6 L6 M12 S12" 
+                    class="sapUiResponsiveMargin" 
+                    containerQuery="true">
+                    
+                    <!-- Left Column - User Information -->
+                    <VBox id="userInfoSection" class="sapUiMediumMargin">
+                        <Title id="userInfoTitle" text="User Information" level="H3" class="sapUiSmallMarginBottom"/>
+                        
+                        <form:SimpleForm
+                            id="profileForm"
+                            editable="true"
+                            layout="ResponsiveGridLayout"
+                            labelSpanXL="4"
+                            labelSpanL="4"
+                            labelSpanM="4"
+                            labelSpanS="12"
+                            adjustLabelSpan="false"
+                            emptySpanXL="0"
+                            emptySpanL="0"
+                            emptySpanM="0"
+                            emptySpanS="0"
+                            columnsXL="1"
+                            columnsL="1"
+                            columnsM="1"
+                            width="100%">
+                            <form:content>
+                                <Label id="_IDGenLabel10" text="Username" width="100%"/>
+                                <Text id="usernameText" text="{auth>/user/Username}" width="100%"/>
+                                
+                                <Label id="_IDGenLabel2"  text="Role" width="100%"/>
+                                <Text id="roleText" text="{auth>/user/Role}" width="100%"/>
+                                
+                                <Label id="_IDGenLabel3"  text="Full Name" required="true" width="100%"/>
+                                <Input id="fullNameInput0" value="{auth>/user/FullName}" placeholder="Enter Full Name..." width="100%"/>
+                                
+                                <Label id="_IDGenLabel20" text="Email" required="true" width="100%"/>
+                                <Input id="emailInput0" value="{auth>/user/Email}" type="Email" placeholder="Enter Email..." width="100%"/>
+                                
+                                <Label id="_IDGenLabel30" text="Phone" required="true" width="100%"/>
+                                <Input id="phoneInput0" value="{auth>/user/Phone}" type="Tel" placeholder="Enter Phone Number..." width="100%"/>
+                                
+                                <Label id="_IDGenLabel4"  text="Status" width="100%"/>
+                                <Text id="statusText" text="{auth>/user/Status}" width="100%"/>
+                            </form:content>
+                        </form:SimpleForm>
+                        
+                        <!-- User action buttons -->
+                        <HBox id="_IDGenHBox10" class="sapUiSmallMarginTop" justifyContent="Start">
+                            <Button id="updateButton" text="Update Profile" press=".onUpdateProfilePress" type="Emphasized"/>
+                            <Button id="changePasswordButton" text="Change Password" press=".onChangePasswordPress" class="sapUiSmallMarginBegin"/>
+                        </HBox>
+                    </VBox>
+                    
+                    <!-- Right Column - Workspace Information -->
+                    <VBox id="workspaceInfoSection" class="sapUiMediumMargin">
+                        <Title id="workspaceInfoTitle" text="Workspace Information" level="H3" class="sapUiSmallMarginBottom"/>
+                        
+                        <!-- Show workspace info only if user has workspace -->
+                        <VBox id="workspaceInfoBox2" visible="{= !!${auth>/user/WorkspaceID}}">
+                            <form:SimpleForm
+                                id="workspaceForm2"
+                                editable="false"
+                                layout="ResponsiveGridLayout"
+                                labelSpanXL="4"
+                                labelSpanL="4"
+                                labelSpanM="4"
+                                labelSpanS="12"
+                                adjustLabelSpan="false"
+                                emptySpanXL="0"
+                                emptySpanL="0"
+                                emptySpanM="0"
+                                emptySpanS="0"
+                                columnsXL="1"
+                                columnsL="1"
+                                columnsM="1"
+                                width="100%">
+                                <form:content>
+                                    <Label id="_IDGenLabel13"  text="Workspace ID" width="100%"/>
+                                    <Text id="workspaceIdText" text="{auth>/workspace/ID}" width="100%"/>
+                                    
+                                    <Label id="_IDGenLabel164" text="Company Name" width="100%"/>
+                                    <Text id="companyNameText" text="{auth>/workspace/CompanyName}" width="100%"/>
+                                    
+                                    <Label id="_IDGenLabel165" text="Address" width="100%"/>
+                                    <Text id="_IDGenText174" text="{auth>/workspace/Address}" width="100%"/>
+                                    
+                                    <Label id="_IDGenLabel166" text="Phone" width="100%"/>
+                                    <Text id="workspacePhoneText" text="{auth>/workspace/Phone}" width="100%"/>
+                                    
+                                    <Label id="_IDGenLabel167" text="Email" width="100%"/>
+                                    <Text id="workspaceEmailText" text="{auth>/workspace/Email}" width="100%"/>
+                                </form:content>
+                            </form:SimpleForm>
+                        </VBox>
+                        
+                        <!-- Show message if user doesn't have workspace -->
+                        <MessageStrip id="noWorkspaceMessage" 
+                            visible="{= !${auth>/user/WorkspaceID}}"
+                            text="You are not currently associated with any workspace. Please contact your administrator to join a workspace."
+                            type="Information"
+                            showIcon="true"
+                            class="sapUiSmallMarginTop">
+                        </MessageStrip>
+                    </VBox>
+                    
+                </layout:Grid>
             </VBox>
         </content>
     </Page>

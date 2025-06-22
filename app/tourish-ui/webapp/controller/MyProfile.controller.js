@@ -14,6 +14,7 @@ sap.ui.define([
         onInit: function () {
             // Load user profile when view is initialized
             this._loadUserProfile();
+            this._loadWorkspaceInfo();
         },
 
         _loadUserProfile: function () {
@@ -48,6 +49,41 @@ sap.ui.define([
                 console.error("Error loading user profile:", sMessage);
                 MessageBox.error(sMessage);
                 this.getOwnerComponent().getRouter().navTo("login", {}, true);
+            }.bind(this));
+        },
+
+        _loadWorkspaceInfo: function () {
+            var oAuthModel = this.getOwnerComponent().getModel("auth");
+            var oODataModel = this.getOwnerComponent().getModel("userService");
+            var sWorkspaceId = oAuthModel.getProperty("/user/WorkspaceID");
+
+            // Only load workspace info if user has a workspace
+            if (!sWorkspaceId) {
+                console.log("User has no workspace assigned");
+                return;
+            }
+
+            // Call getWorkspaceInfo action
+            var oInfoContext = oODataModel.bindContext("/getWorkspaceInfo(...)");
+            oInfoContext.execute().then(function () {
+                var oWorkspace = oInfoContext.getBoundContext().getObject();
+                console.log("Workspace info loaded:", oWorkspace);
+                
+                // Store workspace info in auth model
+                oAuthModel.setProperty("/workspace", oWorkspace);
+                
+            }.bind(this)).catch(function (oError) {
+                var sMessage = "Cannot load workspace information!";
+                try {
+                    if (oError.responseText) {
+                        var oResponse = JSON.parse(oError.responseText);
+                        sMessage = oResponse.error?.message || sMessage;
+                    }
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error loading workspace info:", sMessage);
+                MessageBox.warning("Could not load workspace information: " + sMessage);
             }.bind(this));
         },
 
@@ -99,182 +135,162 @@ sap.ui.define([
                     oAuthModel.setProperty("/user/Phone", oUpdatedData.phone);
                     MessageBox.success("Profile updated successfully!");
                 } else {
-                    MessageBox.error("Update failed: " + (oResult.message || "Unknown error"));
+                    MessageBox.error(oResult.message || "Failed to update profile!");
                 }
             }.bind(this)).catch(function (oError) {
-                var sMessage = "Update failed!";
+                var sMessage = "Failed to update profile!";
                 try {
                     var oResponse = JSON.parse(oError.responseText);
                     sMessage = oResponse.error.message || sMessage;
                 } catch (e) {
                     // Fallback to default message
                 }
+                console.error("Error updating profile:", sMessage);
                 MessageBox.error(sMessage);
-            });
-        },
-        
-        // Helper validation functions (add these if not already present)
-        _validateFullName: function(sFullName) {
-            if (!sFullName || sFullName.trim() === "") {
-                return { valid: false, message: "Full name is required" };
-            }
-            
-            if (sFullName.trim().length < 2) {
-                return { valid: false, message: "Full name must be at least 2 characters long" };
-            }
-            
-            if (sFullName.length > 100) {
-                return { valid: false, message: "Full name cannot exceed 100 characters" };
-            }
-            
-            if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(sFullName)) {
-                return { valid: false, message: "Full name can only contain letters and spaces" };
-            }
-            
-            if (sFullName.trim().split(/\s+/).length < 2) {
-                return { valid: false, message: "Please enter both first and last name" };
-            }
-            
-            return { valid: true };
-        },
-        
-        _validateEmail: function(sEmail) {
-            if (!sEmail || sEmail.trim() === "") {
-                return { valid: false, message: "Email is required" };
-            }
-            
-            // Comprehensive email regex pattern
-            const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-            
-            if (!emailPattern.test(sEmail.trim())) {
-                return { valid: false, message: "Please enter a valid email address" };
-            }
-            
-            // Additional checks
-            if (sEmail.length > 254) {
-                return { valid: false, message: "Email address is too long" };
-            }
-            
-            // Check for consecutive dots
-            if (sEmail.includes("..")) {
-                return { valid: false, message: "Email cannot contain consecutive dots" };
-            }
-            
-            return { valid: true };
-        },
-        
-        _validatePhone: function(sPhone) {
-            if (!sPhone || sPhone.trim() === "") {
-                return { valid: false, message: "Phone number is required" };
-            }
-            
-            // Remove all non-digit characters for validation
-            const cleanPhone = sPhone.replace(/\D/g, '');
-            
-            if (cleanPhone.length < 10) {
-                return { valid: false, message: "Phone number must be at least 10 digits" };
-            }
-            
-            if (cleanPhone.length > 15) {
-                return { valid: false, message: "Phone number cannot exceed 15 digits" };
-            }
-            
-            // Check for valid phone number format (allows digits, spaces, dashes, plus, parentheses, dots)
-            if (!/^[\+]?[\d\s\-\(\)\.]+$/.test(sPhone)) {
-                return { valid: false, message: "Phone number contains invalid characters" };
-            }
-            
-            // Check for minimum meaningful digits (not all zeros or ones)
-            if (/^[0-1]+$/.test(cleanPhone)) {
-                return { valid: false, message: "Please enter a valid phone number" };
-            }
-            
-            return { valid: true };
+            }.bind(this));
         },
 
         onChangePasswordPress: function () {
-            var oView = this.getView();
-        
-            // Tạo các control và lưu biến tham chiếu
-            var oCurrentInput = new Input({ type: "Password", placeholder: "Enter current password" });
-            var oNewInput = new Input({ type: "Password", placeholder: "Enter new password" });
-            var oConfirmInput = new Input({ type: "Password", placeholder: "Confirm new password" });
-        
-            var oDialog = new Dialog({
-                title: "Change Password",
-                type: "Message",
-                content: new VBox({
-                    items: [
-                        new Label({ text: "Current password", required: true }),
-                        oCurrentInput,
-                        new Label({ text: "New password", required: true }),
-                        oNewInput,
-                        new Label({ text: "Confirm new password", required: true }),
-                        oConfirmInput
-                    ]
-                }),
-                beginButton: new Button({
-                    text: "Change password",
-                    type: "Emphasized",
-                    press: function () {
-                        var sCurrentPassword = oCurrentInput.getValue();
-                        var sNewPassword = oNewInput.getValue();
-                        var sConfirmPassword = oConfirmInput.getValue();
-        
-                        // Validation và gọi OData như cũ...
-                        if (!sCurrentPassword || !sNewPassword || !sConfirmPassword) {
-                            MessageBox.error("Please fill in all fields!");
-                            return;
-                        }
-        
-                        if (sNewPassword !== sConfirmPassword) {
-                            MessageBox.error("New password and confirm password do not match!");
-                            return;
-                        }
-        
-                        if (sNewPassword.length < 8 || !/[A-Z]/.test(sNewPassword) || !/[a-z]/.test(sNewPassword) || !/[0-9]/.test(sNewPassword) || !/[!@#$%^&*(),.?":{}|<>]/.test(sNewPassword)) {
-                            MessageBox.error("New password must be at least 8 characters, including uppercase, lowercase, numbers and special characters!");
-                            return;
-                        }
-        
-                        var oODataModel = this.getOwnerComponent().getModel("userService");
-                        var oContext = oODataModel.bindContext("/changePassword(...)");
-                        oContext.setParameter("currentPassword", sCurrentPassword);
-                        oContext.setParameter("newPassword", sNewPassword);
-        
-                        oContext.execute().then(function () {
-                            var oResult = oContext.getBoundContext().getObject();
-                            if (oResult.success) {
-                                MessageBox.success("Password changed successfully!");
-                                oDialog.close();
-                            } else {
-                                MessageBox.error("Password change failed: " + (oResult.message || "Unknown error"));
-                            }
-                        }.bind(this)).catch(function (oError) {
-                            var sMessage = "Password change failed!";
-                            try {
-                                var oResponse = JSON.parse(oError.responseText);
-                                sMessage = oResponse.error.message || sMessage;
-                            } catch (e) { }
-                            MessageBox.error(sMessage);
-                        });
-        
-                    }.bind(this)
-                }),
-                endButton: new Button({
-                    text: "Cancel",
-                    press: function () {
-                        oDialog.close();
-                    }
-                }),
-                afterClose: function () {
-                    oDialog.destroy();
+            if (!this._oPasswordDialog) {
+                this._oPasswordDialog = new Dialog({
+                    title: "Change Password",
+                    content: new VBox({
+                        items: [
+                            new Label({ text: "Current Password:", required: true }),
+                            new Input({
+                                id: "currentPasswordInput",
+                                type: "Password",
+                                placeholder: "Enter current password...",
+                                width: "100%"
+                            }),
+                            new Label({ text: "New Password:", required: true, class: "sapUiSmallMarginTop" }),
+                            new Input({
+                                id: "newPasswordInput",
+                                type: "Password",
+                                placeholder: "Enter new password...",
+                                width: "100%"
+                            }),
+                            new Label({ text: "Confirm New Password:", required: true, class: "sapUiSmallMarginTop" }),
+                            new Input({
+                                id: "confirmPasswordInput",
+                                type: "Password",
+                                placeholder: "Confirm new password...",
+                                width: "100%"
+                            })
+                        ],
+                        width: "300px"
+                    }),
+                    beginButton: new Button({
+                        text: "Change Password",
+                        type: "Emphasized",
+                        press: this._onConfirmPasswordChange.bind(this)
+                    }),
+                    endButton: new Button({
+                        text: "Cancel",
+                        press: function () {
+                            this._oPasswordDialog.close();
+                        }.bind(this)
+                    })
+                });
+                this.getView().addDependent(this._oPasswordDialog);
+            }
+
+            // Clear previous values
+            sap.ui.getCore().byId("currentPasswordInput").setValue("");
+            sap.ui.getCore().byId("newPasswordInput").setValue("");
+            sap.ui.getCore().byId("confirmPasswordInput").setValue("");
+
+            this._oPasswordDialog.open();
+        },
+
+        _onConfirmPasswordChange: function () {
+            var sCurrentPassword = sap.ui.getCore().byId("currentPasswordInput").getValue();
+            var sNewPassword = sap.ui.getCore().byId("newPasswordInput").getValue();
+            var sConfirmPassword = sap.ui.getCore().byId("confirmPasswordInput").getValue();
+
+            // Validation
+            if (!sCurrentPassword || !sNewPassword || !sConfirmPassword) {
+                MessageBox.error("Please fill in all password fields!");
+                return;
+            }
+
+            if (sNewPassword !== sConfirmPassword) {
+                MessageBox.error("New passwords do not match!");
+                return;
+            }
+
+            if (sNewPassword.length < 6) {
+                MessageBox.error("New password must be at least 6 characters long!");
+                return;
+            }
+
+            var oODataModel = this.getOwnerComponent().getModel("userService");
+            var oContext = oODataModel.bindContext("/changePassword(...)");
+            oContext.setParameter("currentPassword", sCurrentPassword);
+            oContext.setParameter("newPassword", sNewPassword);
+
+            oContext.execute().then(function () {
+                var oResult = oContext.getBoundContext().getObject();
+                if (oResult.success) {
+                    MessageBox.success("Password changed successfully!");
+                    this._oPasswordDialog.close();
+                } else {
+                    MessageBox.error(oResult.message || "Failed to change password!");
                 }
-            });
-        
-            oView.addDependent(oDialog);
-            oDialog.open();
+            }.bind(this)).catch(function (oError) {
+                var sMessage = "Failed to change password!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error changing password:", sMessage);
+                MessageBox.error(sMessage);
+            }.bind(this));
+        },
+
+        // Validation functions
+        _validateFullName: function (sFullName) {
+            if (!sFullName || sFullName.length < 2) {
+                return { valid: false, message: "Full name must be at least 2 characters long." };
+            }
+            if (sFullName.length > 100) {
+                return { valid: false, message: "Full name cannot exceed 100 characters." };
+            }
+            if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(sFullName)) {
+                return { valid: false, message: "Full name can only contain letters and spaces." };
+            }
+            return { valid: true };
+        },
+
+        _validateEmail: function (sEmail) {
+            if (!sEmail) {
+                return { valid: false, message: "Email is required." };
+            }
+            if (sEmail.length > 100) {
+                return { valid: false, message: "Email cannot exceed 100 characters." };
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(sEmail)) {
+                return { valid: false, message: "Please enter a valid email address." };
+            }
+            return { valid: true };
+        },
+
+        _validatePhone: function (sPhone) {
+            if (!sPhone) {
+                return { valid: false, message: "Phone number is required." };
+            }
+            if (sPhone.length > 20) {
+                return { valid: false, message: "Phone number cannot exceed 20 characters." };
+            }
+            // Allow Vietnamese phone numbers (with or without country code)
+            const phoneRegex = /^(\+84|84|0)?[1-9][0-9]{8,9}$/;
+            if (!phoneRegex.test(sPhone.replace(/[\s\-\.]/g, ''))) {
+                return { valid: false, message: "Please enter a valid Vietnamese phone number." };
+            }
+            return { valid: true };
         }
-        
     });
 });

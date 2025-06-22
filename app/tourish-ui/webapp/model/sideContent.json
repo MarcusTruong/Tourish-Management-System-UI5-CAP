@@ -6,6 +6,7 @@
             "icon": "sap-icon://home",
             "expanded": true,
             "key": "dashboard",
+            "allowedRoles": ["Admin", "Manager", "Staff", "Accountant"],
             "items": []
         },
         {
@@ -13,6 +14,7 @@
             "icon": "sap-icon://business-objects-experience",
             "expanded": true,
             "key": "myWorkspace",
+            "allowedRoles": ["Admin"],
             "items": []
         },
         {
@@ -20,22 +22,26 @@
             "icon": "sap-icon://employee",
             "expanded": true,
             "key": "myProfile",
+            "allowedRoles": ["Admin", "Manager", "Staff", "Accountant"],
             "items": []
         },
         {
             "titleI18nKey": "Tour management",
             "icon": "sap-icon://bus-public-transport",
             "expanded": true,
+            "allowedRoles": ["Admin", "Manager"],
             "items": [
                 {
                     "titleI18nKey": "Create Template Tour",
                     "icon": "sap-icon://write-new",
-                    "key": "createSampleTour"
+                    "key": "createSampleTour",
+                    "allowedRoles": ["Admin", "Manager"]
                 },
                 {
                     "titleI18nKey": "Tour is on Sale",
                     "key": "saleTour",
-                    "icon": "sap-icon://manager-insight"
+                    "icon": "sap-icon://manager-insight",
+                    "allowedRoles": ["Admin", "Manager"]
                 }
             ]
         },
@@ -44,6 +50,7 @@
             "icon": "sap-icon://group",
             "expanded": true,
             "key": "customer",
+            "allowedRoles": ["Admin", "Manager"],
             "items": []
         },
         {
@@ -51,22 +58,26 @@
             "icon": "sap-icon://cart",
             "expanded": true,
             "key": "orders",
+            "allowedRoles": ["Admin", "Manager", "Staff"],
             "items": []
         },
         {
             "titleI18nKey": "Suppliers Management",
             "icon": "sap-icon://supplier",
             "expanded": true,
+            "allowedRoles": ["Admin", "Manager", "Staff"],
             "items": [
                 {
                     "titleI18nKey": "Supplier Infomation",
                     "key": "suppliers",
-                    "icon": "sap-icon://notes"
+                    "icon": "sap-icon://notes",
+                    "allowedRoles": ["Admin", "Manager", "Staff"]
                 },
                 {
                     "titleI18nKey": "Supplier Service",
                     "key": "services",
-                    "icon": "sap-icon://business-one"
+                    "icon": "sap-icon://business-one",
+                    "allowedRoles": ["Admin", "Manager", "Staff"]
                 }
             ]
         },
@@ -74,17 +85,19 @@
             "titleI18nKey": "Financial Accounting",
             "icon": "sap-icon://customer-financial-fact-sheet",
             "expanded": true,
-            "key": "",
+            "allowedRoles": ["Admin", "Accountant"],
             "items": [
                 {
                     "titleI18nKey": "Financial Report",
                     "key": "report",
-                    "icon": "sap-icon://manager-insight"
+                    "icon": "sap-icon://manager-insight",
+                    "allowedRoles": ["Admin", "Manager", "Accountant"]
                 },
                 {
                     "titleI18nKey": "Công nợ",
                     "key": "debt",
-                    "icon": "sap-icon://sales-quote"
+                    "icon": "sap-icon://sales-quote",
+                    "allowedRoles": ["Admin", "Accountant"]
                 }
             ]
         }
