@@ -32,7 +32,6 @@ sap.ui.define([
                     revenueData: [],
                     tourTypes: []
                 },
-                recentActivities: [],
                 upcomingDepartures: [],
                 alerts: []
             });
@@ -64,7 +63,6 @@ sap.ui.define([
                 this._loadWorkspaceInfo(),
                 this._loadKPIs(),
                 this._loadChartData(),
-                this._loadRecentActivities(),
                 this._loadUpcomingDepartures(),
                 this._loadAlerts()
             ]).then(function () {
@@ -424,48 +422,6 @@ _getTourStatusStatistics: function() {
                     }
                     resolve();
                 }).catch(reject);
-            });
-        },
-
-        _loadRecentActivities: function () {
-            return new Promise((resolve) => {
-                // Generate sample recent activities
-                var activities = [
-                    {
-                        title: "New order created",
-                        description: "Order #12345 for Beach Paradise Tour",
-                        timestamp: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
-                        icon: "sap-icon://cart"
-                    },
-                    {
-                        title: "Payment received",
-                        description: "$2,500 payment from John Smith",
-                        timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
-                        icon: "sap-icon://payment-approval"
-                    },
-                    {
-                        title: "New customer registered",
-                        description: "ABC Travel Company joined as business customer",
-                        timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
-                        icon: "sap-icon://person-placeholder"
-                    },
-                    {
-                        title: "Tour template published",
-                        description: "Mountain Adventure Tour template is now available",
-                        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-                        icon: "sap-icon://flight"
-                    },
-                    {
-                        title: "Supplier payment processed",
-                        description: "Payment to Hotel Paradise completed",
-                        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
-                        icon: "sap-icon://supplier"
-                    }
-                ];
-                
-                var oDashboardModel = this.getView().getModel("dashboard");
-                oDashboardModel.setProperty("/recentActivities", activities);
-                resolve();
             });
         },
 

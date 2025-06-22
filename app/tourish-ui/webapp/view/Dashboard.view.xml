@@ -17,7 +17,7 @@
                 <!-- Dynamic Page Header -->
                 <f:header>
                     <f:DynamicPageHeader id="dashboardHeader" pinnable="true">
-                        <VBox id="headerContent" class="sapUiMediumMargin">
+                        <VBox id="headerContent">
                             <!-- Welcome Section -->
                             <HBox id="welcomeBox" justifyContent="SpaceBetween" alignItems="Center" class="sapUiLargeMarginBottom">
                                 <VBox id="welcomeInfo">
@@ -50,13 +50,6 @@
                                             text="New Tour" 
                                             icon="sap-icon://map-2" 
                                             press=".onCreateTour" 
-                                            type="Ghost" 
-                                            class="sapUiTinyMarginBegin"/>
-                                        <!-- Only Admin can manage users -->
-                                        <Button id="manageUsersBtn" 
-                                            text="Manage Users" 
-                                            icon="sap-icon://employee" 
-                                            press=".onManageUsers" 
                                             type="Ghost" 
                                             class="sapUiTinyMarginBegin"/>
                                     </HBox>
@@ -367,69 +360,6 @@
                                 </f:content>
                             </f:Card>
                         </HBox>
-
-                        <!-- User Management Card - Admin Only -->
-                        <HBox id="userManagementRow" justifyContent="Center" class="sapUiLargeMarginBottom">
-                            <f:Card id="userManagementCard" class="sapUiTinyMargin dashboardCard" width="880px">
-                                <f:header>
-                                    <card:Header id="userManagementHeader" 
-                                        title="User Management" 
-                                        subtitle="System Users - Roles"
-                                        iconSrc="sap-icon://employee" 
-                                        iconDisplayShape="Circle"/>
-                                </f:header>
-                                <f:content>
-                                    <HBox id="userManagementContent" justifyContent="SpaceAround" alignItems="Center" class="sapUiMediumMargin">
-                                        <VBox id="userStatsBox" alignItems="Center">
-                                            <core:Icon id="usersIcon" src="sap-icon://group" size="2rem" color="Information"/>
-                                            <Text id="userStatsText" text="Manage Users - Roles" class="sapUiMediumMarginTop"/>
-                                            <Button id="manageUsersBtn2" 
-                                                text="Manage Users" 
-                                                type="Emphasized" 
-                                                press=".onManageUsers"
-                                                class="sapUiSmallMarginTop"/>
-                                        </VBox>
-                                        <VBox id="systemStatsBox" alignItems="Center">
-                                            <core:Icon id="systemIcon" src="sap-icon://settings" size="2rem" color="Good"/>
-                                            <Text id="systemStatsText" text="System Administration" class="sapUiMediumMarginTop"/>
-                                            <Button id="systemSettingsBtn" 
-                                                text="System Settings" 
-                                                type="Ghost" 
-                                                press=".onViewSettings"
-                                                class="sapUiSmallMarginTop"/>
-                                        </VBox>
-                                    </HBox>
-                                </f:content>
-                            </f:Card>
-                        </HBox>
-
-                        <!-- Recent Activities Panel - All Roles -->
-                        <Panel id="recentActivitiesPanel" headerText="Recent Activities" class="sapUiResponsiveMargin" expanded="true">
-                            <headerToolbar>
-                                <OverflowToolbar id="activitiesToolbar">
-                                    <Title id="activitiesTitle" text="Recent Activities" level="H3"/>
-                                    <ToolbarSpacer id="activitiesToolbarSpacer"/>
-                                    <Button id="refreshActivitiesBtn" 
-                                        icon="sap-icon://refresh" 
-                                        tooltip="Refresh Activities" 
-                                        press=".onRefreshDashboard" 
-                                        type="Transparent"/>
-                                </OverflowToolbar>
-                            </headerToolbar>
-                            <content>
-                                <List id="recentActivitiesList" 
-                                    items="{dashboard>/recentActivities}" 
-                                    noDataText="No recent activities"
-                                    class="sapUiMediumMarginTop">
-                                    <StandardListItem id="activityItem"
-                                        title="{dashboard>title}"
-                                        description="{dashboard>description}"
-                                        icon="{dashboard>icon}"
-                                        info="{dashboard>timestamp}"
-                                        type="Inactive"/>
-                                </List>
-                            </content>
-                        </Panel>
 
                         <!-- Upcoming Departures Panel - Hide from Accountant -->
                         <Panel id="upcomingDeparturesPanel" headerText="Upcoming Departures" class="sapUiResponsiveMargin" expanded="true">
