@@ -29,11 +29,36 @@
                                         <Text id="lastUpdate" text="Last updated: {dashboard>/lastUpdated}" class="sapUiTinyMarginBegin sapUiSmallText"/>
                                     </HBox>
                                 </VBox>
+                                
+                                <!-- Quick Actions - Role-based visibility -->
                                 <VBox id="quickActions" alignItems="End">
                                     <HBox id="actionButtons">
-                                        <Button id="refreshBtn" icon="sap-icon://refresh" tooltip="Refresh Dashboard" press=".onRefreshDashboard" type="Transparent"/>
-                                        <Button id="createOrderBtn3" text="New Order" icon="sap-icon://add" press=".onCreateOrder" type="Emphasized" class="sapUiTinyMarginBegin"/>
-                                        <Button id="viewReportsBtn" text="Reports" icon="sap-icon://pie-chart" press=".onViewReports" type="Ghost" class="sapUiTinyMarginBegin"/>
+                                        <Button id="refreshBtn" 
+                                            icon="sap-icon://refresh" 
+                                            tooltip="Refresh Dashboard" 
+                                            press=".onRefreshDashboard" 
+                                            type="Transparent"/>
+                                        <!-- Staff, Manager, Admin can create orders -->
+                                        <Button id="createOrderBtn3" 
+                                            text="New Order" 
+                                            icon="sap-icon://add" 
+                                            press=".onCreateOrder" 
+                                            type="Emphasized" 
+                                            class="sapUiTinyMarginBegin"/>
+                                        <!-- Only Admin, Manager can create tours -->
+                                        <Button id="createTourBtn" 
+                                            text="New Tour" 
+                                            icon="sap-icon://map-2" 
+                                            press=".onCreateTour" 
+                                            type="Ghost" 
+                                            class="sapUiTinyMarginBegin"/>
+                                        <!-- Only Admin can manage users -->
+                                        <Button id="manageUsersBtn" 
+                                            text="Manage Users" 
+                                            icon="sap-icon://employee" 
+                                            press=".onManageUsers" 
+                                            type="Ghost" 
+                                            class="sapUiTinyMarginBegin"/>
                                     </HBox>
                                 </VBox>
                             </HBox>
@@ -41,431 +66,430 @@
                     </f:DynamicPageHeader>
                 </f:header>
 
-                <!-- Dashboard Content -->
+                <!-- Dynamic Page Content -->
                 <f:content>
-                    <VBox id="dashboardContent" class="sapUiResponsiveMargin">
+                    <VBox id="dashboardContent" class="sapUiMediumMargin">
                         
-                        <!-- Key Performance Indicators -->
-                        <Panel id="kpiPanel" headerText="Key Performance Indicators" expandable="true" expanded="true" class="sapUiMediumMarginBottom">
-                            <l:Grid id="kpiGrid" defaultSpan="XL2 L3 M6 S12" hSpacing="1" vSpacing="1" containerQuery="true">
-                                
-                                <!-- Revenue Card -->
-                                <f:Card id="revenueCard" class="sapUiTinyMargin dashboardCard">
-                                    <f:header>
-                                        <card:Header id="revenueHeader" 
-                                            title="Total Revenue" 
-                                            subtitle="This Month"
-                                            iconSrc="sap-icon://sales-order" 
-                                            iconDisplayShape="Circle"/>
-                                    </f:header>
-                                    <f:content>
-                                        <VBox id="_IDGenVBox3" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
-                                            <ObjectNumber id="_IDGenObjectNumber39" 
-                                                number="{dashboard>/kpis/totalRevenue}" 
-                                                unit="USD" 
-                                                state="Success" 
-                                                emphasized="true" 
-                                                class="sapMObjectNumberLarge"/>
-    
-                                            <HBox id="_IDGenHBox54" alignItems="Center" justifyContent="Center" class="sapUiSmallMarginTop">
-                                                <core:Icon id="_IDGenIcon4" 
-                                                    src="{= ${dashboard>/kpis/revenueGrowth} >= 0 ? 'sap-icon://trend-up' : 'sap-icon://                                        trend-down'}" 
-                                                    color="{= ${dashboard>/kpis/revenueGrowth} >= 0 ? 'Positive' : 'Negative'}"
-                                                    class="sapUiTinyMarginEnd"/>
-                                                <Text id="_IDGenText328" 
-                                                    text="{= Math.abs(${dashboard>/kpis/revenueGrowth} || 0) + '% vs Last Month'}" 
-                                                    class="{= ${dashboard>/kpis/revenueGrowth} >= 0 ? 'sapThemeText-asColor10' :                                        'sapThemeText-asColor3'}"/>
+                        <!-- Main KPI Cards Row -->
+                        <HBox id="mainKpiRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
+                            
+                            <!-- Revenue Card - All roles can see -->
+                            <f:Card id="revenueCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                                <f:header>
+                                    <card:Header id="revenueHeader" 
+                                        title="Revenue" 
+                                        subtitle="This Month"
+                                        iconSrc="sap-icon://money-bills" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <VBox id="revenueContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
+                                        <ObjectNumber id="revenueAmount" 
+                                            number="{dashboard>/kpis/totalRevenue}" 
+                                            unit="USD" 
+                                            state="Success" 
+                                            emphasized="true" 
+                                            class="sapMObjectNumberLarge"/>
+                                        <!-- Hide growth details for Staff -->
+                                        <HBox id="revenueGrowthDetails" alignItems="Center" class="sapUiSmallMarginTop">
+                                            <core:Icon id="growthIcon" src="sap-icon://trend-up" color="Good" class="sapUiTinyMarginEnd"/>
+                                            <Text id="growthText" text="+{dashboard>/kpis/revenueGrowth}% vs last month"/>
+                                        </HBox>
+                                    </VBox>
+                                </f:content>
+                            </f:Card>
+
+                            <!-- Customer Card - Hide from Accountant -->
+                            <f:Card id="customerCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                                <f:header>
+                                    <card:Header id="customerHeader" 
+                                        title="Customers" 
+                                        subtitle="Total Active"
+                                        iconSrc="sap-icon://group" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <VBox id="customerContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
+                                        <ObjectNumber id="customerCount" 
+                                            number="{dashboard>/kpis/totalCustomers}" 
+                                            emphasized="true" 
+                                            class="sapMObjectNumberLarge"/>
+                                        <HBox id="customerBreakdown" justifyContent="SpaceAround" width="100%" class="sapUiSmallMarginTop">
+                                            <VBox id="individualBox" alignItems="Center">
+                                                <Text id="individualCount" text="{dashboard>/kpis/individualCustomers}"/>
+                                                <Text id="individualLabel" text="Individual" class="sapUiSmallText"/>
+                                            </VBox>
+                                            <VBox id="businessBox" alignItems="Center">
+                                                <Text id="businessCount" text="{dashboard>/kpis/businessCustomers}"/>
+                                                <Text id="businessLabel" text="Business" class="sapUiSmallText"/>
+                                            </VBox>
+                                        </HBox>
+                                    </VBox>
+                                </f:content>
+                            </f:Card>
+
+                            <!-- Active Tours Card - Hide from Staff and Accountant -->
+                            <f:Card id="toursCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                                <f:header>
+                                    <card:Header id="toursHeader" 
+                                        title="Active Tours" 
+                                        subtitle="Currently Running"
+                                        iconSrc="sap-icon://journey-arrive" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <VBox id="toursContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
+                                        <ObjectNumber id="activeTourCount" 
+                                            number="{dashboard>/kpis/activeTours}" 
+                                            state="Information" 
+                                            emphasized="true" 
+                                            class="sapMObjectNumberLarge"/>
+                                        <microchart:RadialMicroChart id="occupancyChart" 
+                                            percentage="{dashboard>/kpis/averageOccupancy}" 
+                                            size="S" 
+                                            valueColor="{= ${dashboard>/kpis/averageOccupancy} > 80 ? 'Good' : ${dashboard>/kpis/averageOccupancy} > 60 ? 'Critical' : 'Error'}"
+                                            class="sapUiSmallMarginTop" 
+                                            alignContent="Center"/>
+                                        <Text id="occupancyLabel" text="Avg. Occupancy" class="sapUiSmallText"/>
+                                    </VBox>
+                                </f:content>
+                            </f:Card>
+
+                            <!-- Profit Card - Hide from Staff -->
+                            <f:Card id="profitCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                                <f:header>
+                                    <card:Header id="profitHeader" 
+                                        title="Profit Margin" 
+                                        subtitle="Current Performance"
+                                        iconSrc="sap-icon://chart" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <VBox id="profitContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
+                                        <ObjectNumber id="profitMargin" 
+                                            number="{dashboard>/kpis/profitMargin}" 
+                                            unit="%" 
+                                            state="{= ${dashboard>/kpis/profitMargin} > 20 ? 'Success' : ${dashboard>/kpis/profitMargin} > 10 ? 'Warning' : 'Error'}" 
+                                            emphasized="true" 
+                                            class="sapMObjectNumberLarge"/>
+                                        <microchart:RadialMicroChart id="profitChart" 
+                                            percentage="{dashboard>/kpis/profitMargin}" 
+                                            size="S" 
+                                            valueColor="{= ${dashboard>/kpis/profitMargin} > 20 ? 'Good' : ${dashboard>/kpis/profitMargin} > 10 ? 'Critical' : 'Error'}"
+                                            class="sapUiSmallMarginTop" 
+                                            alignContent="Center"/>
+                                    </VBox>
+                                </f:content>
+                            </f:Card>
+                        </HBox>
+
+                        <!-- Secondary KPI Cards Row -->
+                        <HBox id="secondaryKpiRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
+                            
+                            <!-- Tour Status Card - Only Admin, Manager -->
+                            <f:Card id="tourStatusCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                                <f:header>
+                                    <card:Header id="tourStatusHeader" 
+                                        title="Tour Status" 
+                                        subtitle="Current Distribution"
+                                        iconSrc="sap-icon://status-completed" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <VBox id="tourStatusContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
+                                        <HBox id="statusIndicators" justifyContent="SpaceAround" width="100%">
+                                            <VBox id="openToursBox" alignItems="Center" class="sapUiTinyMargin">
+                                                <ObjectNumber id="openToursCount" 
+                                                    number="{dashboard>/kpis/tourStatusBreakdown/open}" 
+                                                    state="Success" 
+                                                    emphasized="true"/>
+                                                <Text id="openToursLabel" text="Open" class="sapUiSmallText"/>
+                                            </VBox>
+                                            <VBox id="closedToursBox" alignItems="Center" class="sapUiTinyMargin">
+                                                <ObjectNumber id="closedToursCount" 
+                                                    number="{dashboard>/kpis/tourStatusBreakdown/closed}" 
+                                                    state="Warning" 
+                                                    emphasized="true"/>
+                                                <Text id="closedToursLabel" text="Closed" class="sapUiSmallText"/>
+                                            </VBox>
+                                            <VBox id="completedToursBox" alignItems="Center" class="sapUiTinyMargin">
+                                                <ObjectNumber id="completedToursCount" 
+                                                    number="{dashboard>/kpis/tourStatusBreakdown/completed}" 
+                                                    state="Information" 
+                                                    emphasized="true"/>
+                                                <Text id="completedToursLabel" text="Completed" class="sapUiSmallText"/>
+                                            </VBox>
+                                        </HBox>
+                                        <Button id="statusDetailsBtn" 
+                                            text="View Details" 
+                                            type="Transparent" 
+                                            press=".onShowTourStatusBreakdown"
+                                            class="sapUiSmallMarginTop"/>
+                                    </VBox>
+                                </f:content>
+                            </f:Card>
+
+                            <!-- Orders Card - Hide from Accountant -->
+                            <f:Card id="ordersCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                                <f:header>
+                                    <card:Header id="ordersHeader" 
+                                        title="Orders" 
+                                        subtitle="Pending - Active"
+                                        iconSrc="sap-icon://sales-order" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <VBox id="ordersContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
+                                        <ObjectNumber id="pendingOrdersCount" 
+                                            number="{dashboard>/kpis/pendingOrders}" 
+                                            state="Warning" 
+                                            emphasized="true" 
+                                            class="sapMObjectNumberLarge"/>
+                                        <ObjectNumber id="pendingOrdersValue" 
+                                            number="{dashboard>/kpis/pendingOrdersValue}" 
+                                            unit="USD" 
+                                            state="None" 
+                                            class="sapUiSmallMarginTop"/>
+                                        <Button id="viewOrdersBtn" 
+                                            text="View Orders" 
+                                            type="Transparent" 
+                                            press=".onViewOrders"
+                                            class="sapUiSmallMarginTop"/>
+                                    </VBox>
+                                </f:content>
+                            </f:Card>
+
+                            <!-- Suppliers Card - Hide from Accountant -->
+                            <f:Card id="suppliersCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                                <f:header>
+                                    <card:Header id="suppliersHeader" 
+                                        title="Suppliers" 
+                                        subtitle="Active Partners"
+                                        iconSrc="sap-icon://supplier" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <VBox id="suppliersContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
+                                        <ObjectNumber id="totalSuppliersCount" 
+                                            number="{dashboard>/kpis/totalSuppliers}" 
+                                            emphasized="true" 
+                                            class="sapMObjectNumberLarge"/>
+                                        <Text id="suppliersLabel" text="Active Suppliers" class="sapUiSmallMarginTop"/>
+                                        <Button id="viewSuppliersBtn" 
+                                            text="View Suppliers" 
+                                            type="Transparent" 
+                                            press=".onViewSuppliers"
+                                            class="sapUiSmallMarginTop"/>
+                                    </VBox>
+                                </f:content>
+                            </f:Card>
+
+                            <!-- Financial Overview Card - Only Admin, Accountant -->
+                            <f:Card id="financialOverviewCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                                <f:header>
+                                    <card:Header id="financialHeader" 
+                                        title="Financial Overview" 
+                                        subtitle="Payments - Debts"
+                                        iconSrc="sap-icon://payment-approval" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <VBox id="financialContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
+                                        <ObjectNumber id="pendingPaymentsAmount" 
+                                            number="{dashboard>/kpis/pendingPayments}" 
+                                            unit="USD" 
+                                            emphasized="true" 
+                                            class="sapMObjectNumberLarge"/>
+                                        <Text id="pendingPaymentsLabel" text="Pending Payments" class="sapUiSmallMarginTop"/>
+                                        <Button id="viewPaymentsBtn" 
+                                            text="View Payments" 
+                                            type="Transparent" 
+                                            press=".onViewPayments"
+                                            class="sapUiSmallMarginTop"/>
+                                    </VBox>
+                                </f:content>
+                            </f:Card>
+                        </HBox>
+
+                        <!-- Management Cards Row - Admin Only -->
+                        <HBox id="managementCardsRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
+                            
+                            <!-- Tours Needing Attention - Only Admin, Manager -->
+                            <f:Card id="attentionCard" class="sapUiTinyMargin dashboardCard" width="430px">
+                                <f:header>
+                                    <card:Header id="attentionHeader" 
+                                        title="Needs Attention" 
+                                        subtitle="Tours Requiring Action"
+                                        iconSrc="sap-icon://alert" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <VBox id="attentionContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
+                                        <VBox id="attentionDetails" alignItems="Center">
+                                            <HBox id="toCloseBox" alignItems="Center" class="sapUiSmallMarginBottom">
+                                                <core:Icon id="closeIcon" src="sap-icon://locked" color="Critical" class="sapUiTinyMarginEnd"/>
+                                                <Text id="toCloseText" text="{dashboard>/kpis/tourStatusBreakdown/needsAttention/toClose} to close"/>
+                                            </HBox>
+                                            <HBox id="toCompleteBox" alignItems="Center" class="sapUiSmallMarginBottom">
+                                                <core:Icon id="completeIcon" src="sap-icon://accept" color="Good" class="sapUiTinyMarginEnd"/>
+                                                <Text id="toCompleteText" text="{dashboard>/kpis/tourStatusBreakdown/needsAttention/toComplete} to complete"/>
                                             </HBox>
                                         </VBox>
-                                    </f:content>
-                                </f:Card>
+                                        <Button id="autoUpdateBtn2" 
+                                            text="Run Auto Updates" 
+                                            type="Emphasized" 
+                                            press=".onRunAutomatedUpdates"
+                                            visible="{= (${dashboard>/kpis/tourStatusBreakdown/needsAttention/toClose} + ${dashboard>/kpis/tourStatusBreakdown/needsAttention/toComplete}) > 0 }"
+                                            class="sapUiSmallMarginTop"/>
+                                    </VBox>
+                                </f:content>
+                            </f:Card>
 
-                                <!-- Active Tours Card -->
-                                <f:Card id="toursCard" class="sapUiTinyMargin dashboardCard">
-                                    <f:header>
-                                        <card:Header id="toursHeader" 
-                                            title="Active Tours" 
-                                            subtitle="Currently Running"
-                                            iconSrc="sap-icon://flight" 
-                                            iconDisplayShape="Circle"
-                                            />
-                                    </f:header>
-                                    <f:content>
-                                        <VBox id="toursContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
-                                            <ObjectNumber id="toursNumber" 
-                                                number="{dashboard>/kpis/activeTours}" 
-                                                state="Information" 
-                                                emphasized="true" 
-                                                class="sapMObjectNumberLarge"/>
-                                            <ProgressIndicator id="occupancyRate" 
-                                                percentValue="{dashboard>/kpis/averageOccupancy}" 
-                                                displayValue="{dashboard>/kpis/averageOccupancy}% Occupancy"
-                                                state="{= ${dashboard>/kpis/averageOccupancy} > 80 ? 'Success' : ${dashboard>/kpis/averageOccupancy} > 60 ? 'Warning' : 'Error'}"
-                                                width="180%" 
-                                                class="sapUiSmallMarginTop" />
+                            <!-- Workspace Settings Card - Admin Only -->
+                            <f:Card id="workspaceCard" class="sapUiTinyMargin dashboardCard" width="430px">
+                                <f:header>
+                                    <card:Header id="workspaceHeader" 
+                                        title="Workspace" 
+                                        subtitle="System Settings"
+                                        iconSrc="sap-icon://building" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <VBox id="workspaceContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
+                                        <core:Icon id="workspaceIcon" src="sap-icon://business-objects-experience" size="2rem" color="Good"/>
+                                        <Text id="workspaceCompanyName" text="{dashboard>/workspaceInfo/CompanyName}" class="sapUiMediumMarginTop"/>
+                                        <Button id="viewSettingsBtn" 
+                                            text="Manage Settings" 
+                                            type="Transparent" 
+                                            press=".onViewSettings"
+                                            class="sapUiSmallMarginTop"/>
+                                    </VBox>
+                                </f:content>
+                            </f:Card>
+                        </HBox>
+
+                        <!-- User Management Card - Admin Only -->
+                        <HBox id="userManagementRow" justifyContent="Center" class="sapUiLargeMarginBottom">
+                            <f:Card id="userManagementCard" class="sapUiTinyMargin dashboardCard" width="880px">
+                                <f:header>
+                                    <card:Header id="userManagementHeader" 
+                                        title="User Management" 
+                                        subtitle="System Users - Roles"
+                                        iconSrc="sap-icon://employee" 
+                                        iconDisplayShape="Circle"/>
+                                </f:header>
+                                <f:content>
+                                    <HBox id="userManagementContent" justifyContent="SpaceAround" alignItems="Center" class="sapUiMediumMargin">
+                                        <VBox id="userStatsBox" alignItems="Center">
+                                            <core:Icon id="usersIcon" src="sap-icon://group" size="2rem" color="Information"/>
+                                            <Text id="userStatsText" text="Manage Users - Roles" class="sapUiMediumMarginTop"/>
+                                            <Button id="manageUsersBtn2" 
+                                                text="Manage Users" 
+                                                type="Emphasized" 
+                                                press=".onManageUsers"
+                                                class="sapUiSmallMarginTop"/>
                                         </VBox>
-                                    </f:content>
-                                </f:Card>
-
-                                <!-- Customers Card -->
-                                <f:Card id="customersCard" class="sapUiTinyMargin dashboardCard">
-                                    <f:header>
-                                        <card:Header id="customersHeader" 
-                                            title="Total Customers" 
-                                            subtitle="Individual + Business"
-                                            iconSrc="sap-icon://group" 
-                                            iconDisplayShape="Circle"
-                                            />
-                                    </f:header>
-                                    <f:content>
-                                        <VBox id="customersContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
-                                            <ObjectNumber id="customersNumber" 
-                                                number="{dashboard>/kpis/totalCustomers}" 
-                                                state="None" 
-                                                emphasized="true" 
-                                                class="sapMObjectNumberLarge"/>
-                                            <HBox id="customerBreakdown" justifyContent="Center" class="sapUiSmallMarginTop">
-                                                <VBox id="individualBox" alignItems="Center" class="sapUiTinyMarginEnd">
-                                                    <Text id="individualCount" text="{dashboard>/kpis/individualCustomers}" class="sapUiBoldText"/>
-                                                    <Text id="individualLabel" text="Individual" class="sapUiSmallText"/>
-                                                </VBox>
-                                                <VBox id="businessBox" alignItems="Center" class="sapUiTinyMarginBegin">
-                                                    <Text id="businessCount" text="{dashboard>/kpis/businessCustomers}" class="sapUiBoldText"/>
-                                                    <Text id="businessLabel" text="Business" class="sapUiSmallText"/>
-                                                </VBox>
-                                            </HBox>
+                                        <VBox id="systemStatsBox" alignItems="Center">
+                                            <core:Icon id="systemIcon" src="sap-icon://settings" size="2rem" color="Good"/>
+                                            <Text id="systemStatsText" text="System Administration" class="sapUiMediumMarginTop"/>
+                                            <Button id="systemSettingsBtn" 
+                                                text="System Settings" 
+                                                type="Ghost" 
+                                                press=".onViewSettings"
+                                                class="sapUiSmallMarginTop"/>
                                         </VBox>
-                                    </f:content>
-                                </f:Card>
+                                    </HBox>
+                                </f:content>
+                            </f:Card>
+                        </HBox>
 
-                                <!-- Orders Card -->
-                                <f:Card id="ordersCard" class="sapUiTinyMargin dashboardCard">
-                                    <f:header>
-                                        <card:Header id="ordersHeader" 
-                                            title="Pending Orders" 
-                                            subtitle="Requiring Attention"
-                                            iconSrc="sap-icon://cart" 
-                                            iconDisplayShape="Circle"/>
-                                    </f:header>
-                                    <f:content>
-                                        <VBox id="ordersContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
-                                            <ObjectNumber id="ordersNumber" 
-                                                number="{dashboard>/kpis/pendingOrders}" 
-                                                state="Warning" 
-                                                emphasized="true" 
-                                                class="sapMObjectNumberLarge"/>
-                                            <Text id="orderValue" 
-                                                text="Value: ${dashboard>/kpis/pendingOrdersValue} USD" 
-                                                class="sapUiSmallMarginTop sapUiMediumText"/>
-                                        </VBox>
-                                    </f:content>
-                                </f:Card>
-
-                                <!-- Suppliers Card -->
-                                <f:Card id="suppliersCard" class="sapUiTinyMargin dashboardCard">
-                                    <f:header>
-                                        <card:Header id="suppliersHeader" 
-                                            title="Active Suppliers" 
-                                            subtitle="Service Providers"
-                                            iconSrc="sap-icon://supplier" 
-                                            iconDisplayShape="Circle"/>
-                                    </f:header>
-                                    <f:content>
-                                        <VBox id="suppliersContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
-                                            <ObjectNumber id="suppliersNumber" 
-                                                number="{dashboard>/kpis/totalSuppliers}" 
-                                                state="Information" 
-                                                emphasized="true" 
-                                                class="sapMObjectNumberLarge"/>
-                                            <Text id="pendingPayments" 
-                                                text="Pending: ${dashboard>/kpis/pendingPayments} USD" 
-                                                class="sapUiSmallMarginTop sapUiMediumText"/>
-                                        </VBox>
-                                    </f:content>
-                                </f:Card>
-
-                                <!-- Profit Margin Card -->
-                                <f:Card id="profitCard" class="sapUiTinyMargin dashboardCard">
-                                    <f:header>
-                                        <card:Header id="profitHeader" 
-                                            title="Profit Margin" 
-                                            subtitle="This Month"
-                                            iconSrc="sap-icon://money-bills" 
-                                            iconDisplayShape="Circle"/>
-                                    </f:header>
-                                    <f:content>
-                                        <VBox id="profitContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
-                                            <ObjectNumber id="profitMargin" 
-                                                number="{dashboard>/kpis/profitMargin}" 
-                                                unit="%" 
-                                                state="{= ${dashboard>/kpis/profitMargin} > 20 ? 'Success' : ${dashboard>/kpis/profitMargin} > 10 ? 'Warning' : 'Error'}" 
-                                                emphasized="true" 
-                                                class="sapMObjectNumberLarge"/>
-                                            <microchart:RadialMicroChart id="profitChart" 
-                                                percentage="{dashboard>/kpis/profitMargin}" 
-                                                size="S" 
-                                                valueColor="{= ${dashboard>/kpis/profitMargin} > 20 ? 'Good' : ${dashboard>/kpis/profitMargin} > 10 ? 'Critical' : 'Error'}"
-                                                class="sapUiSmallMarginTop" alignContent="Center"/>
-                                        </VBox>
-                                    </f:content>
-                                </f:Card>
-
-                                <f:Card id="tourStatusCard" class="sapUiTinyMargin dashboardCard">
-    <f:header>
-        <card:Header id="tourStatusHeader" 
-            title="Tour Status" 
-            subtitle="Current Distribution"
-            iconSrc="sap-icon://status-completed" 
-            iconDisplayShape="Circle"/>
-    </f:header>
-    <f:content>
-        <VBox id="tourStatusContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
-            <HBox id="statusIndicators" justifyContent="SpaceAround" width="100%">
-                <VBox id="openToursBox" alignItems="Center" class="sapUiTinyMargin">
-                    <ObjectNumber id="openToursCount" 
-                        number="{dashboard>/kpis/tourStatusBreakdown/open}" 
-                        state="Success" 
-                        emphasized="true"/>
-                    <Text id="openToursLabel" text="Open" class="sapUiSmallText"/>
-                </VBox>
-                <VBox id="closedToursBox" alignItems="Center" class="sapUiTinyMargin">
-                    <ObjectNumber id="closedToursCount" 
-                        number="{dashboard>/kpis/tourStatusBreakdown/closed}" 
-                        state="Warning" 
-                        emphasized="true"/>
-                    <Text id="closedToursLabel" text="Closed" class="sapUiSmallText"/>
-                </VBox>
-                <VBox id="completedToursBox" alignItems="Center" class="sapUiTinyMargin">
-                    <ObjectNumber id="completedToursCount" 
-                        number="{dashboard>/kpis/tourStatusBreakdown/completed}" 
-                        state="Information" 
-                        emphasized="true"/>
-                    <Text id="completedToursLabel" text="Completed" class="sapUiSmallText"/>
-                </VBox>
-            </HBox>
-            <Button id="statusDetailsBtn" 
-                text="View Details" 
-                type="Transparent" 
-                press=".onShowTourStatusBreakdown"
-                class="sapUiSmallMarginTop"/>
-        </VBox>
-    </f:content>
-</f:Card>
-
-<!-- Tours Needing Attention Card -->
-<f:Card id="attentionCard" class="sapUiTinyMargin dashboardCard">
-    <f:header>
-        <card:Header id="attentionHeader" 
-            title="Needs Attention" 
-            subtitle="Tours Requiring Action"
-            iconSrc="sap-icon://alert" 
-            iconDisplayShape="Circle"/>
-    </f:header>
-    <f:content>
-        <VBox id="attentionContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
-            <VBox id="attentionDetails" alignItems="Center">
-                <HBox id="toCloseBox" alignItems="Center" class="sapUiSmallMarginBottom">
-                    <core:Icon id="closeIcon" src="sap-icon://locked" color="Critical" class="sapUiTinyMarginEnd"/>
-                    <Text id="toCloseText" text="{dashboard>/kpis/tourStatusBreakdown/needsAttention/toClose} to close"/>
-                </HBox>
-                <HBox id="toCompleteBox" alignItems="Center" class="sapUiSmallMarginBottom">
-                    <core:Icon id="completeIcon" src="sap-icon://accept" color="Good" class="sapUiTinyMarginEnd"/>
-                    <Text id="toCompleteText" text="{dashboard>/kpis/tourStatusBreakdown/needsAttention/toComplete} to complete"/>
-                </HBox>
-            </VBox>
-            <Button id="autoUpdateBtn2" 
-                text="Run Auto Updates" 
-                type="Emphasized" 
-                press=".onRunAutomatedUpdates"
-                visible="{= (${dashboard>/kpis/tourStatusBreakdown/needsAttention/toClose} + ${dashboard>/kpis/tourStatusBreakdown/needsAttention/toComplete}) > 0 }"
-                class="sapUiSmallMarginTop"/>
-        </VBox>
-    </f:content>
-</f:Card>
-                            </l:Grid>
+                        <!-- Recent Activities Panel - All Roles -->
+                        <Panel id="recentActivitiesPanel" headerText="Recent Activities" class="sapUiResponsiveMargin" expanded="true">
+                            <headerToolbar>
+                                <OverflowToolbar id="activitiesToolbar">
+                                    <Title id="activitiesTitle" text="Recent Activities" level="H3"/>
+                                    <ToolbarSpacer id="activitiesToolbarSpacer"/>
+                                    <Button id="refreshActivitiesBtn" 
+                                        icon="sap-icon://refresh" 
+                                        tooltip="Refresh Activities" 
+                                        press=".onRefreshDashboard" 
+                                        type="Transparent"/>
+                                </OverflowToolbar>
+                            </headerToolbar>
+                            <content>
+                                <List id="recentActivitiesList" 
+                                    items="{dashboard>/recentActivities}" 
+                                    noDataText="No recent activities"
+                                    class="sapUiMediumMarginTop">
+                                    <StandardListItem id="activityItem"
+                                        title="{dashboard>title}"
+                                        description="{dashboard>description}"
+                                        icon="{dashboard>icon}"
+                                        info="{dashboard>timestamp}"
+                                        type="Inactive"/>
+                                </List>
+                            </content>
                         </Panel>
 
-                        <!-- Charts and Analytics Section -->
-                        <l:Grid id="chartsGrid" defaultSpan="XL6 L6 M12 S12" hSpacing="1" vSpacing="1" containerQuery="true">
-                            
-                            <!-- Revenue Trend Chart -->
-                            <f:Card id="revenueTrendCard" class="sapUiTinyMargin">
-                                <f:header>
-                                    <card:Header id="revenueTrendHeader" 
-                                        title="Revenue Trend" 
-                                        subtitle="Last 6 Months"
-                                        iconSrc="sap-icon://line-chart"/>
-                                </f:header>
-                                <f:content>
-                                    <VBox id="revenueTrendContent" height="300px" class="sapUiSmallMargin">
-                                        <Table id="revenueTable" items="{dashboard>/charts/revenueData}" class="sapUiSmallMarginTop">
-                                            <columns>
-                                                <Column id="_IDGenColumn115"><Text id="_IDGenText" text="Month"/></Column>
-                                                <Column id="_IDGenColumn116"><Text id="_IDGenText277" text="Revenue"/></Column>
-                                            </columns>
-                                            <items>
-                                                <ColumnListItem id="_IDGenColumnListItem25">
-                                                    <Text id="_IDGenText327" text="{dashboard>month}"/>
-                                                    <ObjectNumber id="_IDGenObjectNumber37" number="{dashboard>revenue}" unit="USD"/>
-                                                </ColumnListItem>
-                                            </items>
-                                        </Table>
-                                    </VBox>
-                                </f:content>
-                            </f:Card>
-                        </l:Grid>
+                        <!-- Upcoming Departures Panel - Hide from Accountant -->
+                        <Panel id="upcomingDeparturesPanel" headerText="Upcoming Departures" class="sapUiResponsiveMargin" expanded="true">
+                            <content>
+                                <List id="upcomingDeparturesList" 
+                                    items="{dashboard>/upcomingDepartures}" 
+                                    noDataText="No upcoming departures"
+                                    class="sapUiMediumMarginTop">
+                                    <CustomListItem id="departureItem" press=".onDeparturePress">
+                                        <HBox id="departureBox" justifyContent="SpaceBetween" alignItems="Center" class="sapUiMediumMargin">
+                                            <VBox id="departureInfo">
+                                                <Title id="departureTitle" text="{dashboard>tourName}" level="H4"/>
+                                                <Text id="departureDate" text="Departure: {dashboard>departureDate}"/>
+                                                <Text id="departureStatus" text="Status: {dashboard>status}"/>
+                                            </VBox>
+                                            <VBox id="departureStats" alignItems="End">
+                                                <ObjectNumber id="departurePassengers" 
+                                                    number="{dashboard>passengers}" 
+                                                    unit="passengers"/>
+                                                <ObjectStatus id="departureCapacity" 
+                                                    text="{dashboard>capacity}% capacity" 
+                                                    state="{= ${dashboard>capacity} > 80 ? 'Success' : ${dashboard>capacity} > 60 ? 'Warning' : 'Error'}"/>
+                                            </VBox>
+                                        </HBox>
+                                    </CustomListItem>
+                                </List>
+                            </content>
+                        </Panel>
 
-                        <!-- Activity and Quick Actions Section -->
-                        <l:Grid id="activityGrid" defaultSpan="XL4 L6 M12 S12" hSpacing="1" vSpacing="1" containerQuery="true">
-                            <!-- Upcoming Departures -->
-                            <f:Card id="departuresCard" class="sapUiTinyMargin">
-                                <f:header>
-                                    <card:Header id="departuresHeader" 
-                                        title="Upcoming Departures" 
-                                        subtitle="Next 7 Days"
-                                        iconSrc="sap-icon://appointment-2"/>
-                                </f:header>
-                                <f:content>
-                                    <VBox id="departuresContent" height="300px">
-                                        <List id="departuresList" 
-                                            items="{dashboard>/upcomingDepartures}" 
-                                            noDataText="No upcoming departures"
-                                            class="sapUiSmallMargin">
-                                            <StandardListItem id="departureItem"
-                                                title="{dashboard>tourName}"
-                                                description="{dashboard>customerCount} passengers"
-                                                info="{
-                                                    path: 'dashboard>departureDate',
-                                                    formatter: '.formatDate'
-                                                }"
-                                                icon="sap-icon://flight"
-                                                iconInset="false"
-                                                type="Navigation"
-                                                press=".onDeparturePress"/>
-                                        </List>
-                                    </VBox>
-                                </f:content>
-                            </f:Card>
+                        <!-- Status Summary Bar - Only Admin, Manager -->
+                        <Panel id="statusSummaryPanel" class="sapUiResponsiveMargin">
+                            <content>
+                                <HBox id="statusSummaryBar" justifyContent="SpaceBetween" alignItems="Center" class="sapUiMediumMargin">
+                                    <HBox id="statusCounts" alignItems="Center">
+                                        <Text id="statusSummaryLabel" text="Tour Status Summary:" class="sapUiMediumMarginEnd"/>
+                                        <ObjectStatus id="openCount" 
+                                            text="{dashboard>/kpis/tourStatusBreakdown/open} Open" 
+                                            state="Success" 
+                                            class="sapUiTinyMarginEnd"/>
+                                        <ObjectStatus id="closedCount" 
+                                            text="{dashboard>/kpis/tourStatusBreakdown/closed} Closed" 
+                                            state="Warning" 
+                                            class="sapUiTinyMarginEnd"/>
+                                        <ObjectStatus id="completedCount" 
+                                            text="{dashboard>/kpis/tourStatusBreakdown/completed} Completed" 
+                                            state="Information" 
+                                            class="sapUiTinyMarginEnd"/>
+                                        <ObjectStatus id="canceledCount" 
+                                            text="{dashboard>/kpis/tourStatusBreakdown/canceled} Canceled" 
+                                            state="Error"/>
+                                    </HBox>
+                                    <Button id="refreshStatusBtn" 
+                                        icon="sap-icon://refresh" 
+                                        tooltip="Refresh Status Data" 
+                                        press=".onRefreshDashboard" 
+                                        type="Transparent"/>
+                                </HBox>
+                            </content>
+                        </Panel>
 
-                            <!-- Quick Actions -->
-                            <f:Card id="quickActionsCard" class="sapUiTinyMargin">
-    <f:header>
-        <card:Header id="quickActionsHeader" 
-            title="Quick Actions" 
-            subtitle="Tour - Status Management"
-            iconSrc="sap-icon://action"/>
-    </f:header>
-    <f:content>
-        <VBox id="quickActionsContent" height="300px" class="sapUiSmallMargin">
-            <l:Grid id="actionsGrid" defaultSpan="L6 M6 S12">
-                <!-- Tour Management -->
-                <Button id="newTourBtn" 
-                    text="New Tour" 
-                    icon="sap-icon://add" 
-                    press=".onCreateTour" 
-                    width="100%" 
-                    class="sapUiTinyMargin"/>
-                <Button id="manageTourStatusBtn" 
-                    text="Manage Tours" 
-                    icon="sap-icon://status-completed" 
-                    press=".onNavigateToToursByStatus" 
-                    width="100%" 
-                    class="sapUiTinyMargin"/>
-                
-                <!-- Order Management -->
-                <Button id="newOrderBtn" 
-                    text="New Order" 
-                    icon="sap-icon://cart" 
-                    press=".onCreateOrder" 
-                    width="100%" 
-                    class="sapUiTinyMargin"/>
-                <Button id="newCustomerBtn" 
-                    text="New Customer" 
-                    icon="sap-icon://person-placeholder" 
-                    press=".onCreateCustomer" 
-                    width="100%" 
-                    class="sapUiTinyMargin"/>
-                
-                <!-- System Management -->
-                <Button id="suppliersBtn" 
-                    text="Suppliers" 
-                    icon="sap-icon://supplier" 
-                    press=".onViewSuppliers" 
-                    width="100%" 
-                    class="sapUiTinyMargin"/>
-                <Button id="paymentsBtn" 
-                    text="Payments" 
-                    icon="sap-icon://payment-approval" 
-                    press=".onViewPayments" 
-                    width="100%" 
-                    class="sapUiTinyMargin"/>
-                
-                <!-- Status Actions -->
-                <Button id="statusBreakdownBtn" 
-                    text="Status Overview" 
-                    icon="sap-icon://pie-chart" 
-                    press=".onShowTourStatusBreakdown" 
-                    width="100%" 
-                    class="sapUiTinyMargin"/>
-                <Button id="settingsBtn" 
-                    text="Settings" 
-                    icon="sap-icon://action-settings" 
-                    press=".onViewSettings" 
-                    width="100%" 
-                    class="sapUiTinyMargin"/>
-            </l:Grid>
-        </VBox>
-    </f:content>
-</f:Card>
-                        </l:Grid>
-
-                        <!-- Alerts and Notifications -->
-                        <Panel id="alertsPanel" headerText="System Alerts &amp; Tour Status Notifications" expandable="true" expanded="true" class="sapUiMediumMarginTop">
-    <List id="alertsList" 
-        items="{dashboard>/alerts}" 
-        noDataText="No alerts at this time"
-        mode="None">
-        <NotificationListItem id="alertItem"
-            title="{dashboard>title}"
-            description="{dashboard>description}"
-            datetime="{
-                path: 'dashboard>timestamp',
-                formatter: '.formatRelativeTime'
-            }"
-            priority="{dashboard>priority}"
-            showButtons="false"
-            showCloseButton="true"
-            close=".onDismissAlert"
-            press="{= ${dashboard>title}.includes('Tours') ? '.onNavigateToToursByStatus' : undefined }"/>
-    </List>
-    
-    <!-- Status Summary Bar -->
-    <HBox id="statusSummaryBar" justifyContent="SpaceBetween" alignItems="Center" class="sapUiMediumMarginTop">
-        <HBox id="statusCounts" alignItems="Center">
-            <Text id="statusSummaryLabel" text="Tour Status Summary:" class="sapUiMediumMarginEnd"/>
-            <ObjectStatus id="openCount" 
-                text="{dashboard>/kpis/tourStatusBreakdown/open} Open" 
-                state="Success" 
-                class="sapUiTinyMarginEnd"/>
-            <ObjectStatus id="closedCount" 
-                text="{dashboard>/kpis/tourStatusBreakdown/closed} Closed" 
-                state="Warning" 
-                class="sapUiTinyMarginEnd"/>
-            <ObjectStatus id="completedCount" 
-                text="{dashboard>/kpis/tourStatusBreakdown/completed} Completed" 
-                state="Information" 
-                class="sapUiTinyMarginEnd"/>
-            <ObjectStatus id="canceledCount" 
-                text="{dashboard>/kpis/tourStatusBreakdown/canceled} Canceled" 
-                state="Error"/>
-        </HBox>
-        <Button id="refreshStatusBtn" 
-            icon="sap-icon://refresh" 
-            tooltip="Refresh Status Data" 
-            press=".onRefreshDashboard" 
-            type="Transparent"/>
-    </HBox>
-</Panel>
                     </VBox>
                 </f:content>
             </f:DynamicPage>

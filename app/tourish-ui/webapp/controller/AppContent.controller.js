@@ -79,6 +79,7 @@ sap.ui.define([
                         // Hide workspace menu for non-Admin
                         if (sKey === "myWorkspace" && sUserRole !== "Admin") {
                             oMenuItem.setVisible(false);
+                            console.log("🔒 Hidden 'My Workspace' menu for non-Admin user");
                         }
                     });
                 }

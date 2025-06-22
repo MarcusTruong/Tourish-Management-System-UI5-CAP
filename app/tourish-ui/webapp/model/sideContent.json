@@ -57,7 +57,7 @@
             "titleI18nKey": "Order Management",
             "icon": "sap-icon://cart",
             "expanded": true,
-            "key": "orders",
+            "key": "orderList",
             "allowedRoles": ["Admin", "Manager", "Staff"],
             "items": []
         },
@@ -69,13 +69,13 @@
             "items": [
                 {
                     "titleI18nKey": "Supplier Infomation",
-                    "key": "suppliers",
+                    "key": "supplierList",
                     "icon": "sap-icon://notes",
                     "allowedRoles": ["Admin", "Manager", "Staff"]
                 },
                 {
                     "titleI18nKey": "Supplier Service",
-                    "key": "services",
+                    "key": "serviceList",
                     "icon": "sap-icon://business-one",
                     "allowedRoles": ["Admin", "Manager", "Staff"]
                 }
@@ -89,13 +89,13 @@
             "items": [
                 {
                     "titleI18nKey": "Financial Report",
-                    "key": "report",
+                    "key": "reportList",
                     "icon": "sap-icon://manager-insight",
                     "allowedRoles": ["Admin", "Manager", "Accountant"]
                 },
                 {
                     "titleI18nKey": "Công nợ",
-                    "key": "debt",
+                    "key": "debtList",
                     "icon": "sap-icon://sales-quote",
                     "allowedRoles": ["Admin", "Accountant"]
                 }
