@@ -23,7 +23,7 @@ module.exports = (req, res, next) => {
   }
 
   if (!token) {
-    console.log('❌ Access denied: No token provided');
+    console.log('Access denied: No token provided');
     return res.status(401).json({
       error: 'Access denied. No token provided.',
       code: 'NO_TOKEN'
@@ -33,7 +33,7 @@ module.exports = (req, res, next) => {
   try {
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log('🔐 Token decoded successfully for user:', decoded.username);
+    console.log('Token decoded successfully for user:', decoded.username);
     
     // Enhanced user object with more information for CDS
     req.user = new cds.User({
@@ -46,14 +46,14 @@ module.exports = (req, res, next) => {
           username: decoded.username,
           role: decoded.role,
           userId: decoded.id,
-          workspaceID: decoded.workspaceID, // ⭐ Thêm workspace info
+          workspaceID: decoded.workspaceID, 
           fullName: decoded.fullName,
           email: decoded.email
       }
     });
 
     // Log user info for debugging
-    console.log('✅ User authenticated:', {
+    console.log('User authenticated:', {
       username: decoded.username,
       role: decoded.role,
       workspaceID: decoded.workspaceID
@@ -61,7 +61,7 @@ module.exports = (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('❌ Token verification failed:', error.message);
+    console.error('Token verification failed:', error.message);
     
     // Provide specific error messages
     let errorMessage = 'Invalid token.';

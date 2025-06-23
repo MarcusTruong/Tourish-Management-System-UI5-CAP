@@ -1,49 +1,70 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
-    <Dialog id="_IDGenDialog4" title="{= ${editPassenger>/isNew} ? 'Add Passenger' : 'Edit Passenger'}" 
-        contentWidth="600px">
+    <Dialog id="_IDGenDialog4" 
+        title="{= ${editPassenger>/isNew} ? 'Add Passenger' : 'Edit Passenger'}" 
+        contentWidth="500px"
+        contentHeight="auto"
+        verticalScrolling="false"
+        horizontalScrolling="false">
         <content>
-            <f:SimpleForm id="_IDGenSimpleForm17" editable="true" 
-                layout="ResponsiveGridLayout"
-                class="sapUiMediumMargin">
-                <f:content>
-                    <Label id="_IDGenLabel218" text="Passenger Type:"/>
-                    <Text id="_IDGenText274" text="{= ${editPassenger>/passenger/IsAdult} ? 'Adult' : 'Child'}"/>
-                    
-                    <Label id="_IDGenLabel219" text="Full Name:" required="true"/>
-                    <Input id="_IDGenInput16" value="{editPassenger>/passenger/FullName}" 
-                        placeholder="Enter full name"/>
-                    
-                    <Label id="_IDGenLabel220" text="Gender:" required="true"/>
-                    <RadioButtonGroup id="_IDGenRadioButtonGroup" selectedIndex="{= ${editPassenger>/passenger/Gender} === 'Female' ? 1 : 0}">
-                        <RadioButton id="_IDGenRadioButton" text="Male"/>
-                        <RadioButton id="_IDGenRadioButton1" text="Female"/>
-                    </RadioButtonGroup>
-                    
-                    <Label id="_IDGenLabel221" text="Birth Date:" required="true"/>
-                    <DatePicker id="_IDGenDatePicker2" value="{editPassenger>/passenger/BirthDate}" 
-                        displayFormat="dd/MM/yyyy"
-                        valueFormat="yyyy-MM-dd"/>
-                    
-                    <Label id="_IDGenLabel223" text="ID Number:" required="true"/>
-                    <Input id="_IDGenInput17" value="{editPassenger>/passenger/IDNumber}" 
-                        placeholder="Enter ID number"/>
-                    
-                    <Label id="_IDGenLabel224" text="Phone:"/>
-                    <Input id="_IDGenInput18" value="{editPassenger>/passenger/Phone}" 
-                        placeholder="Enter phone number"/>
-                    
-                    <Label id="_IDGenLabel225" text="Email:"/>
-                    <Input id="_IDGenInput19" value="{editPassenger>/passenger/Email}" 
-                        placeholder="Enter email address"
-                        type="Email"/>
-                    
-                    <Label id="_IDGenLabel226" text="Special Requirements:"/>
-                    <TextArea id="_IDGenTextArea4" value="{editPassenger>/passenger/SpecialRequirements}" 
-                        rows="3" 
-                        width="100%"
-                        placeholder="Any special requirements or notes"/>
-                </f:content>
-            </f:SimpleForm>
+            <VBox id="_IDGenVBox3" class="sapUiMediumMargin">
+                <f:SimpleForm id="_IDGenSimpleForm17" 
+                    editable="true" 
+                    layout="ResponsiveGridLayout"
+                    labelSpanXL="4"
+                    labelSpanL="4"
+                    labelSpanM="4"
+                    labelSpanS="12"
+                    adjustLabelSpan="false"
+                    emptySpanXL="0"
+                    emptySpanL="0"
+                    emptySpanM="0"
+                    emptySpanS="0"
+                    columnsXL="1"
+                    columnsL="1"
+                    columnsM="1"
+                    singleContainerFullSize="false">
+                    <f:content>
+                        <Label id="_IDGenLabel218" text="Passenger Type"/>
+                        <Text id="_IDGenText274" text="{= ${editPassenger>/passenger/IsAdult} ? 'Adult' : 'Child'}"/>
+                        
+                        <Label id="_IDGenLabel219" text="Full Name" required="true"/>
+                        <Input id="_IDGenInput16" value="{editPassenger>/passenger/FullName}" 
+                            placeholder="Enter full name"/>
+                        
+                        <Label id="_IDGenLabel220" text="Gender" required="true"/>
+                        <RadioButtonGroup id="_IDGenRadioButtonGroup" 
+                            selectedIndex="{= ${editPassenger>/passenger/Gender} === 'Female' ? 1 : 0}"
+                            select=".onGenderChange">
+                            <RadioButton id="_IDGenRadioButton" text="Male"/>
+                            <RadioButton id="_IDGenRadioButton1" text="Female"/>
+                        </RadioButtonGroup>
+                        
+                        <Label id="_IDGenLabel221" text="Birth Date" required="true"/>
+                        <DatePicker id="_IDGenDatePicker2" value="{editPassenger>/passenger/BirthDate}" 
+                            displayFormat="dd/MM/yyyy"
+                            valueFormat="yyyy-MM-dd"/>
+                        
+                        <Label id="_IDGenLabel223" text="ID Number" required="true"/>
+                        <Input id="_IDGenInput17" value="{editPassenger>/passenger/IDNumber}" 
+                            placeholder="Enter ID number"/>
+                        
+                        <Label id="_IDGenLabel224" text="Phone"/>
+                        <Input id="_IDGenInput18" value="{editPassenger>/passenger/Phone}" 
+                            placeholder="Enter phone number"/>
+                        
+                        <Label id="_IDGenLabel225" text="Email"/>
+                        <Input id="_IDGenInput19" value="{editPassenger>/passenger/Email}" 
+                            placeholder="Enter email address"
+                            type="Email"/>
+                        
+                        <Label id="_IDGenLabel226" text="Special Requirements"/>
+                        <TextArea id="_IDGenTextArea4" value="{editPassenger>/passenger/SpecialRequirements}" 
+                            rows="3" 
+                            width="100%"
+                            placeholder="Any special requirements or notes"/>
+                    </f:content>
+                </f:SimpleForm>
+            </VBox>
         </content>
         <beginButton>
             <Button id="_IDGenButton78" text="Save" type="Emphasized" press=".onSavePassenger"/>

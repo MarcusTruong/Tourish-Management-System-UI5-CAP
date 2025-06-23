@@ -787,6 +787,27 @@ onEmailChange: function(oEvent) {
             // Set busy state
             this._oDebtDialog.setBusy(true);
             
+            // === FORMAT DUE DATE CORRECTLY ===
+            var sDueDate = "";
+            if (oData.dueDate instanceof Date) {
+                // Nếu là Date object, chuyển thành string YYYY-MM-DD
+                sDueDate = oData.dueDate.toISOString().split('T')[0];
+            } else if (typeof oData.dueDate === "string") {
+                // Nếu là string ISO (2025-06-23T17:00:00.000Z), extract date part
+                if (oData.dueDate.includes('T')) {
+                    sDueDate = oData.dueDate.split('T')[0];
+                } else {
+                    // Nếu đã là YYYY-MM-DD format
+                    sDueDate = oData.dueDate;
+                }
+            } else {
+                // Fallback
+                sDueDate = oData.dueDate;
+            }
+            
+            console.log("Original dueDate:", oData.dueDate);
+            console.log("Formatted dueDate:", sDueDate);
+            
             var oSupplierService = this.getOwnerComponent().getModel("supplierService");
             var oContext;
             var sSuccessMessage;
@@ -796,7 +817,7 @@ onEmailChange: function(oEvent) {
                 oContext = oSupplierService.bindContext("/updateSupplierDebt(...)");
                 oContext.setParameter("debtID", oData.ID);
                 oContext.setParameter("amount", parseFloat(oData.amount));
-                oContext.setParameter("dueDate", oData.dueDate);
+                oContext.setParameter("dueDate", sDueDate); // Sử dụng formatted date
                 oContext.setParameter("status", oData.status);
                 oContext.setParameter("description", oData.description || "");
                 sSuccessMessage = "Debt updated successfully";
@@ -812,31 +833,29 @@ onEmailChange: function(oEvent) {
                 oContext = oSupplierService.bindContext("/createSupplierDebt(...)");
                 oContext.setParameter("supplierID", oData.supplierID);
                 oContext.setParameter("amount", parseFloat(oData.amount));
-                oContext.setParameter("dueDate", oData.dueDate);
+                oContext.setParameter("dueDate", sDueDate); // Sử dụng formatted date
                 oContext.setParameter("status", oData.status);
                 oContext.setParameter("description", oData.description);
-                oContext.setParameter("tourServiceID", null);
                 sSuccessMessage = "Debt created successfully";
             }
             
+            // === EXECUTE REQUEST ===
             oContext.execute().then(function () {
-                var oResult = oContext.getBoundContext().getObject();
-                
-                // Clear busy state
+                // Tắt busy state
                 this._oDebtDialog.setBusy(false);
                 
-                if (oResult && (oResult.ID || oResult.success)) {
-                    MessageToast.show(sSuccessMessage);
-                    this._oDebtDialog.close();
-                    
-                    // Reload supplier details
-                    var sSupplierID = this.getView().getModel("supplier").getProperty("/ID");
-                    this._loadSupplier(sSupplierID);
-                } else {
-                    MessageBox.error("Failed to save debt");
-                }
+                // Hiển thị thông báo thành công
+                MessageToast.show(sSuccessMessage);
+                
+                // Đóng dialog
+                this._oDebtDialog.close();
+                
+                // Reload supplier details để cập nhật danh sách debt
+                var sSupplierID = this.getView().getModel("supplier").getProperty("/ID");
+                this._loadSupplier(sSupplierID);
+                
             }.bind(this)).catch(function (oError) {
-                // Clear busy state
+                // Tắt busy state
                 this._oDebtDialog.setBusy(false);
                 
                 var sMessage = "Failed to save debt!";
@@ -848,7 +867,7 @@ onEmailChange: function(oEvent) {
                 }
                 console.error("Error saving debt:", sMessage);
                 MessageBox.error(sMessage);
-            }.bind(this));
+            });
         },
 
         onEditDebt: function (oEvent) {

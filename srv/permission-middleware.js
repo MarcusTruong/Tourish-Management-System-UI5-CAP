@@ -16,24 +16,24 @@ class PermissionMiddleware {
      */
     static checkPermission(role, resource, action) {
         if (!role || !resource || !action) {
-            console.log('❌ Permission check failed: Missing parameters', { role, resource, action });
+            console.log('Permission check failed: Missing parameters', { role, resource, action });
             return false;
         }
 
         const permissions = rolePermissions[role];
         if (!permissions) {
-            console.log('❌ Permission check failed: Invalid role', role);
+            console.log('Permission check failed: Invalid role', role);
             return false;
         }
 
         const resourcePermissions = permissions[resource];
         if (!resourcePermissions) {
-            console.log('❌ Permission check failed: Resource not found', { role, resource });
+            console.log('Permission check failed: Resource not found', { role, resource });
             return false;
         }
 
         const hasPermission = resourcePermissions.includes(action);
-        console.log(`🔐 Permission check: ${role} -> ${resource}:${action} = ${hasPermission ? '✅ ALLOWED' : '❌ DENIED'}`);
+        console.log(`Permission check: ${role} -> ${resource}:${action} = ${hasPermission ? 'ALLOWED' : 'DENIED'}`);
         
         return hasPermission;
     }
@@ -51,7 +51,7 @@ class PermissionMiddleware {
                 const user = req.user;
                 
                 if (!user || !user.role) {
-                    console.log('❌ Permission denied: No user or role found');
+                    console.log('Permission denied: No user or role found');
                     return res.status(401).json({
                         error: 'Authentication required',
                         code: 'AUTH_REQUIRED'
@@ -62,7 +62,7 @@ class PermissionMiddleware {
                 const hasPermission = this.checkPermission(user.role, resource, action);
                 
                 if (!hasPermission) {
-                    console.log(`❌ Permission denied for user: ${user.username} (${user.role})`);
+                    console.log(`Permission denied for user: ${user.username} (${user.role})`);
                     return res.status(403).json({
                         error: 'Insufficient permissions',
                         code: 'PERMISSION_DENIED',
@@ -74,11 +74,11 @@ class PermissionMiddleware {
                 }
 
                 // Có quyền - tiếp tục
-                console.log(`✅ Permission granted for ${user.username} (${user.role}) -> ${resource}:${action}`);
+                console.log(`Permission granted for ${user.username} (${user.role}) -> ${resource}:${action}`);
                 next();
                 
             } catch (error) {
-                console.error('❌ Error in permission middleware:', error);
+                console.error('Error in permission middleware:', error);
                 return res.status(500).json({
                     error: 'Internal server error during permission check',
                     code: 'PERMISSION_ERROR'
@@ -126,14 +126,14 @@ class PermissionMiddleware {
         const user = req.user;
         
         if (!user || !user.attr || !user.attr.workspaceID) {
-            console.log('❌ Workspace access denied: No user workspace info');
+            console.log('Workspace access denied: No user workspace info');
             return false;
         }
 
         const userWorkspaceId = user.attr.workspaceID;
         const hasAccess = userWorkspaceId === entityWorkspaceId;
         
-        console.log(`🏢 Workspace access check: User workspace ${userWorkspaceId} vs Entity workspace ${entityWorkspaceId} = ${hasAccess ? '✅ ALLOWED' : '❌ DENIED'}`);
+        console.log(`Workspace access check: User workspace ${userWorkspaceId} vs Entity workspace ${entityWorkspaceId} = ${hasAccess ? 'ALLOWED' : 'DENIED'}`);
         
         return hasAccess;
     }
@@ -149,7 +149,7 @@ class PermissionMiddleware {
                 // Thêm workspace filter vào query
                 req.query = req.query || {};
                 req.query.workspaceFilter = user.attr.workspaceID;
-                console.log(`🏢 Applied workspace filter: ${user.attr.workspaceID}`);
+                console.log(`Applied workspace filter: ${user.attr.workspaceID}`);
             }
             
             next();

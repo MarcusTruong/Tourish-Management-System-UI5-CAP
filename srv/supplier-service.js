@@ -435,10 +435,10 @@ this.on('updateSupplier', async (req) => {
     }
   });
 
-  // Handler cho createSupplierDebt
   this.on('createSupplierDebt', async (req) => {
     const { supplierID, amount, dueDate, status, description, tourServiceID } = req.data;
     console.log(`Executing createSupplierDebt for supplier ID: ${supplierID}`);
+    console.log('Received dueDate:', dueDate, 'Type:', typeof dueDate);
     
     // Validation
     if (!supplierID) {
@@ -459,17 +459,22 @@ this.on('updateSupplier', async (req) => {
     let formattedDueDate;
     try {
       if (typeof dueDate === 'string') {
-        // Nếu là string như "2025-06-23", convert thành Date object
-        formattedDueDate = new Date(dueDate + 'T00:00:00.000Z');
-        
-        // Validate date
-        if (isNaN(formattedDueDate.getTime())) {
-          req.error(400, 'Invalid due date format. Expected YYYY-MM-DD');
-          return;
+        // Kiểm tra xem có phải là ISO string không
+        if (dueDate.includes('T')) {
+          // ISO string format như "2025-06-23T17:00:00.000Z"
+          formattedDueDate = dueDate.split('T')[0];
+        } else if (dueDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          // Đã là YYYY-MM-DD format
+          formattedDueDate = dueDate;
+        } else {
+          // Thử parse và format
+          const dateObj = new Date(dueDate);
+          if (isNaN(dateObj.getTime())) {
+            req.error(400, 'Invalid due date format. Expected YYYY-MM-DD');
+            return;
+          }
+          formattedDueDate = dateObj.toISOString().split('T')[0];
         }
-        
-        // Convert back to YYYY-MM-DD string for database
-        formattedDueDate = dueDate; // Keep original string format
       } else if (dueDate instanceof Date) {
         formattedDueDate = dueDate.toISOString().split('T')[0];
       } else {
@@ -478,12 +483,19 @@ this.on('updateSupplier', async (req) => {
       }
       
       console.log('Formatted due date:', formattedDueDate);
+      
+      // Validate formatted date
+      if (!formattedDueDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        req.error(400, 'Invalid due date format. Expected YYYY-MM-DD');
+        return;
+      }
+      
     } catch (error) {
       console.error('Date parsing error:', error);
       req.error(400, 'Invalid due date format');
       return;
     }
-
+    
     const tx = cds.transaction(req);
   
     try {
@@ -503,8 +515,10 @@ this.on('updateSupplier', async (req) => {
         TourServiceID: tourServiceID    
       };
       
+      console.log('Creating debt with data:', debt);
+      
       await tx.run(INSERT.into(SupplierDebts).entries(debt));
-      console.log('Supplier debt created:', debt);
+      console.log('Supplier debt created successfully');
       
       const createdDebt = await tx.run(SELECT.one.from(SupplierDebts).where({ ID: debt.ID }));
       await tx.commit();

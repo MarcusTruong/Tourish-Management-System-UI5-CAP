@@ -654,12 +654,8 @@ sap.ui.define([
             this.getOwnerComponent().getRouter().navTo("supplierList");
         },
 
-        onViewReports: function () {
-            MessageToast.show("Reports feature coming soon!");
-        },
-
         onViewPayments: function () {
-            this.getOwnerComponent().getRouter().navTo("orderList");
+            this.getOwnerComponent().getRouter().navTo("supplierList");
         },
 
         onViewSettings: function () {

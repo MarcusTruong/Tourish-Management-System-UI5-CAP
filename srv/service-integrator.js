@@ -15,7 +15,7 @@ class ServiceIntegrator {
      * @param {string} serviceName - Tên service (user, tour, customer, order, supplier)
      */
     static setupServiceSecurity(srv, serviceName) {
-        console.log(`🔧 Setting up security for ${serviceName} service`);
+        console.log(`Setting up security for ${serviceName} service`);
         
         // Apply workspace filtering
         WorkspaceSecurity.applyWorkspaceFiltering(srv);
@@ -26,7 +26,7 @@ class ServiceIntegrator {
         // Setup custom error handling
         this.setupErrorHandling(srv);
         
-        console.log(`✅ Security setup completed for ${serviceName} service`);
+        console.log(`Security setup completed for ${serviceName} service`);
     }
     
     /**
@@ -52,7 +52,7 @@ class ServiceIntegrator {
             const user = req.user;
             const entityName = req.target.name;
             
-            console.log(`🔐 READ permission check: ${user?.role} accessing ${entityName}`);
+            console.log(`READ permission check: ${user?.role} accessing ${entityName}`);
             
             if (!user) {
                 req.error(401, 'Authentication required', 'AUTH_REQUIRED');
@@ -71,7 +71,7 @@ class ServiceIntegrator {
             const user = req.user;
             const entityName = req.target.name;
             
-            console.log(`🔐 CREATE permission check: ${user?.role} creating ${entityName}`);
+            console.log(`CREATE permission check: ${user?.role} creating ${entityName}`);
             
             if (!user) {
                 req.error(401, 'Authentication required', 'AUTH_REQUIRED');
@@ -89,7 +89,7 @@ class ServiceIntegrator {
             const user = req.user;
             const entityName = req.target.name;
             
-            console.log(`🔐 UPDATE permission check: ${user?.role} updating ${entityName}`);
+            console.log(`UPDATE permission check: ${user?.role} updating ${entityName}`);
             
             if (!user) {
                 req.error(401, 'Authentication required', 'AUTH_REQUIRED');
@@ -107,7 +107,7 @@ class ServiceIntegrator {
             const user = req.user;
             const entityName = req.target.name;
             
-            console.log(`🔐 DELETE permission check: ${user?.role} deleting ${entityName}`);
+            console.log(`DELETE permission check: ${user?.role} deleting ${entityName}`);
             
             if (!user) {
                 req.error(401, 'Authentication required', 'AUTH_REQUIRED');
@@ -164,18 +164,18 @@ class ServiceIntegrator {
                 
                 // Permission check
                 if (!PermissionMiddleware.checkPermission(user.role, resource, action)) {
-                    console.log(`❌ Action permission denied: ${user.username} (${user.role}) -> ${resource}:${action}`);
+                    console.log(`Action permission denied: ${user.username} (${user.role}) -> ${resource}:${action}`);
                     req.error(403, `Insufficient permissions for ${resource}:${action}`, 'PERMISSION_DENIED');
                     return;
                 }
                 
-                console.log(`✅ Action permission granted: ${user.username} (${user.role}) -> ${resource}:${action}`);
+                console.log(`Action permission granted: ${user.username} (${user.role}) -> ${resource}:${action}`);
                 
                 // Call original handler
                 return await handler.call(this, req);
                 
             } catch (error) {
-                console.error(`❌ Error in protected action ${resource}:${action}:`, error);
+                console.error(`Error in protected action ${resource}:${action}:`, error);
                 req.error(500, `Service error: ${error.message}`, 'SERVICE_ERROR');
             }
         };
@@ -186,7 +186,7 @@ class ServiceIntegrator {
      * @param {Object} srv - User service object
      */
     static setupUserServiceActions(srv) {
-        console.log('🔧 Setting up User Service action permissions');
+        console.log('Setting up User Service action permissions');
         
         // Wrap existing handlers with permission checks
         const originalHandlers = {
@@ -271,7 +271,7 @@ class ServiceIntegrator {
         // Log successful operations
         srv.after('*', (results, req) => {
             if (req.user && ['CREATE', 'UPDATE', 'DELETE'].includes(req.event)) {
-                console.log('📋 Audit log:', {
+                console.log('Audit log:', {
                     timestamp: new Date().toISOString(),
                     user: req.user.username,
                     role: req.user.role,
@@ -285,7 +285,7 @@ class ServiceIntegrator {
         // Log failed operations
         srv.on('error', (err, req) => {
             if (req.user && ['PERMISSION_DENIED', 'AUTH_REQUIRED'].includes(err.code)) {
-                console.log('📋 Security audit log:', {
+                console.log('Security audit log:', {
                     timestamp: new Date().toISOString(),
                     user: req.user?.username || 'anonymous',
                     role: req.user?.role || 'none',
@@ -304,7 +304,7 @@ class ServiceIntegrator {
      * @param {string} serviceName - Service name
      */
     static initializeServiceSecurity(srv, serviceName) {
-        console.log(`🚀 Initializing complete security for ${serviceName} service`);
+        console.log(`Initializing complete security for ${serviceName} service`);
         
         // Basic security setup
         this.setupServiceSecurity(srv, serviceName);
@@ -320,7 +320,7 @@ class ServiceIntegrator {
             this.setupUserServiceActions(srv);
         }
         
-        console.log(`✅ Complete security initialization done for ${serviceName} service`);
+        console.log(`Complete security initialization done for ${serviceName} service`);
     }
 }
 

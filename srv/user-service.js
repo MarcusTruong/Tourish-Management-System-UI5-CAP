@@ -54,7 +54,7 @@ function generateToken(user) {
         status: user.Status
     };
     
-    console.log('🔐 Generating JWT token for user:', {
+    console.log('Generating JWT token for user:', {
         username: user.Username,
         role: user.Role,
         workspaceID: user.WorkspaceID
@@ -101,18 +101,18 @@ function createProtectedAction(resource, action, handler) {
             
             // Permission check
             if (!PermissionMiddleware.checkPermission(user.role, resource, action)) {
-                console.log(`❌ Permission denied: ${user.username} (${user.role}) -> ${resource}:${action}`);
+                console.log(`Permission denied: ${user.username} (${user.role}) -> ${resource}:${action}`);
                 req.error(403, `Insufficient permissions for ${resource}:${action}`, 'PERMISSION_DENIED');
                 return;
             }
             
-            console.log(`✅ Permission granted: ${user.username} (${user.role}) -> ${resource}:${action}`);
+            console.log(`Permission granted: ${user.username} (${user.role}) -> ${resource}:${action}`);
             
             // Call original handler
             return await handler.call(this, req);
             
         } catch (error) {
-            console.error(`❌ Error in protected action ${resource}:${action}:`, error);
+            console.error(`Error in protected action ${resource}:${action}:`, error);
             req.error(500, `Service error: ${error.message}`, 'SERVICE_ERROR');
         }
     };
@@ -175,7 +175,6 @@ module.exports = (srv) => {
             );
             await tx.commit();
 
-            console.log('✅ User registered successfully:', createdUser.Username);
             
             return {
                 ID: createdUser.ID,
@@ -189,7 +188,6 @@ module.exports = (srv) => {
             };
 
         } catch (error) {
-            console.error('❌ Error in createUser:', error);
             await tx.rollback();
             req.error(500, `Failed to create user: ${error.message}`);
         }
@@ -199,7 +197,6 @@ module.exports = (srv) => {
      * Authentication (Public)
      */
     srv.on('authenticate', async (req) => {
-        console.log('>>> authenticate handler called with data:', req.data);
         const { username, password } = req.data;
 
         try {
@@ -212,7 +209,6 @@ module.exports = (srv) => {
                 ]);
 
             if (!user) {
-                console.log('❌ Authentication failed: User not found for username:', username);
                 return {
                     success: false,
                     user: null,
@@ -248,7 +244,6 @@ module.exports = (srv) => {
             // Generate enhanced JWT token
             const token = generateToken(user);
 
-            console.log('✅ Authentication successful for username:', username, 'Role:', user.Role);
 
             return {
                 success: true,
@@ -326,7 +321,6 @@ module.exports = (srv) => {
 
             await tx.commit();
 
-            console.log('✅ Workspace created successfully:', workspace.ID);
 
             return {
                 ID: workspace.ID,
@@ -337,7 +331,6 @@ module.exports = (srv) => {
             };
 
         } catch (error) {
-            console.error('❌ Error in createWorkspace:', error);
             await tx.rollback();
             req.error(500, `Failed to create workspace: ${error.message}`);
         }
@@ -406,7 +399,6 @@ module.exports = (srv) => {
             await tx.run(INSERT.into(Users).entries(newUser));
             await tx.commit();
 
-            console.log('✅ User added successfully:', newUser.Username);
 
             return {
                 ID: newUser.ID,
@@ -477,12 +469,9 @@ module.exports = (srv) => {
 
             await tx.commit();
 
-            console.log('✅ User permissions updated successfully:', updatedUser.Username);
-
             return updatedUser;
 
         } catch (error) {
-            console.error('❌ Error in updateUserPermissions:', error);
             await tx.rollback();
             req.error(500, `Failed to update user permissions: ${error.message}`);
         }
@@ -587,7 +576,6 @@ module.exports = (srv) => {
 
             await tx.commit();
 
-            console.log('✅ User removed from workspace successfully:', targetUser.Username);
 
             return {
                 success: true,
@@ -610,12 +598,9 @@ module.exports = (srv) => {
         try {
             const members = await WorkspaceSecurity.getWorkspaceMembers(req);
             
-            console.log('✅ Retrieved workspace members:', members.length);
-            
             return members;
 
         } catch (error) {
-            console.error('❌ Error in getWorkspaceMembers:', error);
             req.error(500, `Failed to get workspace members: ${error.message}`);
         }
     }));
@@ -649,9 +634,6 @@ module.exports = (srv) => {
             );
 
             await tx.commit();
-
-            console.log('✅ Workspace info updated successfully');
-
             return {
                 success: true,
                 message: 'Workspace information updated successfully'
@@ -682,12 +664,9 @@ module.exports = (srv) => {
                 .where({ Username: user.username })
                 .columns(['ID', 'Username', 'Role', 'FullName', 'Email', 'Phone', 'Status', 'WorkspaceID']);
 
-            console.log('✅ Retrieved user profile for:', user.username);
-
             return userProfile;
 
         } catch (error) {
-            console.error('❌ Error in getUserProfile:', error);
             req.error(500, `Failed to get user profile: ${error.message}`);
         }
     });
@@ -717,8 +696,6 @@ module.exports = (srv) => {
             );
 
             await tx.commit();
-
-            console.log('✅ User profile updated successfully for:', user.username);
 
             return {
                 success: true,
@@ -752,8 +729,6 @@ module.exports = (srv) => {
                     message: 'User does not belong to any workspace'
                 };
             }
-
-            console.log('✅ Retrieved workspace info for user:', user.username);
 
             return workspace;
 
@@ -817,8 +792,6 @@ module.exports = (srv) => {
 
             await tx.commit();
 
-            console.log('✅ Password changed successfully for user:', user.username);
-
             return {
                 success: true,
                 message: 'Password changed successfully'
@@ -841,8 +814,6 @@ module.exports = (srv) => {
             req.error(401, 'Authentication required');
             return;
         }
-
-        console.log('✅ User logged out:', user.username);
 
         return {
             success: true,
@@ -867,7 +838,6 @@ module.exports = (srv) => {
             const permissions = PermissionMiddleware.getPermissionSummary(user.role);
             const workspace = await WorkspaceSecurity.getUserWorkspace(req);
 
-            console.log('✅ Retrieved permissions for user:', user.username);
 
             return {
                 user: {
@@ -886,16 +856,12 @@ module.exports = (srv) => {
             };
 
         } catch (error) {
-            console.error('❌ Error in getUserPermissions:', error);
             req.error(500, `Failed to get user permissions: ${error.message}`);
         }
     });
 
-    // ===== INITIALIZE SECURITY =====
-    console.log('🔧 Initializing UserService security...');
     
     // Apply workspace filtering and permission checks
     ServiceIntegrator.initializeServiceSecurity(srv, 'user');
     
-    console.log('✅ UserService security initialization completed');
 };

@@ -103,7 +103,7 @@
                                             class="sapUiSmallMarginTop"
                                             visible="{permissions>/visibility/revenue}">
                                             <core:Icon id="growthIcon" src="sap-icon://trend-up" color="Good" class="sapUiTinyMarginEnd"/>
-                                            <Text id="growthText" text="+{dashboard>/kpis/revenueGrowth}% vs last month"/>
+                                            <Text id="growthText" text="+0% vs last month"/>
                                         </HBox>
                                     </VBox>
                                 </f:content>
@@ -387,7 +387,7 @@
                                     items="{dashboard>/upcomingDepartures}" 
                                     noDataText="No upcoming departures"
                                     class="sapUiMediumMarginTop">
-                                    <CustomListItem id="departureItem" press=".onDeparturePress">
+                                    <CustomListItem id="departureItem" type="Navigation" press=".onDeparturePress">
                                         <FlexBox id="departureBox" 
                                             justifyContent="SpaceBetween" 
                                             alignItems="Center" 

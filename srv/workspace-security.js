@@ -17,12 +17,12 @@ class WorkspaceSecurity {
         const user = req.user;
         
         if (!user || !user.attr || !user.attr.workspaceID) {
-            console.log('⚠️ No workspace filter applied - missing user workspace info');
+            console.log('No workspace filter applied - missing user workspace info');
             return query;
         }
         
         const workspaceID = user.attr.workspaceID;
-        console.log(`🏢 Adding workspace filter: ${workspaceID}`);
+        console.log(`Adding workspace filter: ${workspaceID}`);
         
         // Add workspace filter to existing where conditions
         if (query.SELECT && query.SELECT.where) {
@@ -66,7 +66,7 @@ class WorkspaceSecurity {
             
             if (workspaceEntities.includes(entityName)) {
                 req.query = this.addWorkspaceFilter(req, req.query);
-                console.log(`🏢 Applied workspace filtering to ${entityName}`);
+                console.log(`Applied workspace filtering to ${entityName}`);
             }
         });
         
@@ -87,7 +87,7 @@ class WorkspaceSecurity {
             
             if (workspaceEntities.includes(entityName) && user && user.attr && user.attr.workspaceID) {
                 req.data.WorkspaceID = user.attr.workspaceID;
-                console.log(`🏢 Auto-set WorkspaceID for new ${entityName}: ${user.attr.workspaceID}`);
+                console.log(`Auto-set WorkspaceID for new ${entityName}: ${user.attr.workspaceID}`);
             }
         });
         
@@ -118,7 +118,7 @@ class WorkspaceSecurity {
                     );
                     
                     if (existing && existing.WorkspaceID !== user.attr.workspaceID) {
-                        console.log(`❌ Workspace access denied: User ${user.username} cannot modify record in different workspace`);
+                        console.log(`Workspace access denied: User ${user.username} cannot modify record in different workspace`);
                         req.error(403, 'Access denied: Record belongs to different workspace', 'WORKSPACE_ACCESS_DENIED');
                         return;
                     }
@@ -149,17 +149,17 @@ class WorkspaceSecurity {
             );
             
             if (!record) {
-                console.log(`❌ Record not found: ${entityName}/${recordId}`);
+                console.log(`Record not found: ${entityName}/${recordId}`);
                 return false;
             }
             
             const hasAccess = record.WorkspaceID === user.attr.workspaceID;
-            console.log(`🏢 Record access check: ${hasAccess ? '✅ ALLOWED' : '❌ DENIED'} for ${entityName}/${recordId}`);
+            console.log(`Record access check: ${hasAccess ? 'ALLOWED' : 'DENIED'} for ${entityName}/${recordId}`);
             
             return hasAccess;
             
         } catch (error) {
-            console.error('❌ Error verifying record access:', error);
+            console.error('Error verifying record access:', error);
             return false;
         }
     }
@@ -185,7 +185,7 @@ class WorkspaceSecurity {
             return workspace;
             
         } catch (error) {
-            console.error('❌ Error getting user workspace:', error);
+            console.error('Error getting user workspace:', error);
             return null;
         }
     }
@@ -222,7 +222,7 @@ class WorkspaceSecurity {
             return members;
             
         } catch (error) {
-            console.error('❌ Error getting workspace members:', error);
+            console.error('Error getting workspace members:', error);
             throw error;
         }
     }

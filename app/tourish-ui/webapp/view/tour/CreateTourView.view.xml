@@ -1,9 +1,5 @@
 <mvc:View controllerName="tourishui.controller.tour.CreateTourView" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:upload="sap.m.upload" xmlns:f="sap.ui.layout.form">
     <Page id="createTourPage" title="{= ${tour>/templateName} ? ${tour>/templateName} : 'New Tour Template' }" showNavButton="true" navButtonPress=".onNavBack">
-        <headerContent>
-            <Button id="headerCompleteButton" text="Complete Template" type="Emphasized" press=".onCompleteTemplate" visible="{= !${tour>/templateID} || ${tour>/status} !== 'Published'}" tooltip="Complete and publish this template"/>
-            <Button id="headerOpenSellButton" text="Create Active Tour" type="Emphasized" press=".onCreateActiveTour" visible="{= !${tour>/templateID} || ${tour>/status} === 'Published'}" tooltip="Open selling this template"/>
-        </headerContent>
         <content>
             <IconTabBar id="tourTabBar" expanded="true" select=".onTabSelect" class="sapUiResponsiveContentPadding">
                 <items>

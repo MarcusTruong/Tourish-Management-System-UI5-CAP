@@ -216,6 +216,14 @@ sap.ui.define([
             this._oEditPassengerDialog.setModel(oEditModel, "editPassenger");
             this._oEditPassengerDialog.open();
         },
+        onGenderChange: function(oEvent) {
+            var iSelectedIndex = oEvent.getParameter("selectedIndex");
+            var sGender = iSelectedIndex === 1 ? "Female" : "Male";
+            
+            var oEditModel = this._oEditPassengerDialog.getModel("editPassenger");
+            oEditModel.setProperty("/passenger/Gender", sGender);
+            
+        },
         
         onSavePassenger: function() {
             var oEditModel = this._oEditPassengerDialog.getModel("editPassenger");

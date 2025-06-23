@@ -57,7 +57,7 @@ sap.ui.define([
             const oAuthModel = oSessionManager.getAuthModel();
             this.getView().setModel(oAuthModel, "auth");
             
-            console.log(`🎭 Navigation filtered for role: ${sUserRole}`, aFilteredNavigation);
+            console.log(`Navigation filtered for role: ${sUserRole}`, aFilteredNavigation);
         },
 
         /**
@@ -79,7 +79,7 @@ sap.ui.define([
                         // Hide workspace menu for non-Admin
                         if (sKey === "myWorkspace" && sUserRole !== "Admin") {
                             oMenuItem.setVisible(false);
-                            console.log("🔒 Hidden 'My Workspace' menu for non-Admin user");
+                            console.log("Hidden 'My Workspace' menu for non-Admin user");
                         }
                     });
                 }
@@ -116,7 +116,7 @@ sap.ui.define([
             var sRouteName = oEvent.getParameter("name");
             var oMainContents = this.getView().byId("mainContents");
             
-            console.log(`🧭 Route matched: ${sRouteName}`);
+            console.log(`Route matched: ${sRouteName}`);
             
             // Check if user has permission to access this route
             if (!this._checkRouteAccess(sRouteName)) {
@@ -246,7 +246,7 @@ sap.ui.define([
             const oItem = oEvent.getParameter("item");
             const sKey = oItem.getKey();
             
-            console.log(`🔗 Navigation item selected: ${sKey}`);
+            console.log(`Navigation item selected: ${sKey}`);
             
             // Navigate to selected route
             const oRouter = this.getOwnerComponent().getRouter();
