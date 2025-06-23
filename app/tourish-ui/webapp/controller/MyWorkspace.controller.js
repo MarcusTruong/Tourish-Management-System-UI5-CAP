@@ -414,29 +414,68 @@ sap.ui.define([
                             console.log("Workspace created:", oResult);
                             oViewModel.setProperty("/busy", false);
                             
-                            if (oResult) {
-                                // Update auth model with new WorkspaceID
-                                oAuthModel.setProperty("/user/WorkspaceID", oResult.ID);
-                                oAuthModel.setProperty("/workspace", oResult);
+                            if (oResult && oResult.success) {
+                                // ====== FIX: CẬP NHẬT TOKEN MỚI ======
+                                
+                                // Kiểm tra và cập nhật token mới nếu có
+                                if (oResult.newToken) {
+                                    console.log("✅ Received new token, updating session...");
+                                    
+                                    // Cập nhật token trong SessionManager
+                                    this.getOwnerComponent()._oSessionManager.updateToken(oResult.newToken);
+                                    
+                                    // Refresh auth headers cho tất cả models
+                                    this.getOwnerComponent().refreshAuthHeaders();
+                                    
+                                    console.log("✅ Token and auth headers updated successfully");
+                                }
+                                
+                                // Cập nhật auth model với workspace và user info mới
+                                if (oResult.workspace) {
+                                    oAuthModel.setProperty("/workspace", oResult.workspace);
+                                    console.log("✅ Workspace info updated in auth model");
+                                }
+                                
+                                if (oResult.user) {
+                                    // Cập nhật user info với WorkspaceID mới
+                                    oAuthModel.setProperty("/user", oResult.user);
+                                    console.log("✅ User info updated with WorkspaceID:", oResult.user.WorkspaceID);
+                                }
+                                
+                                // Hiển thị thông báo thành công
                                 MessageToast.show("Workspace created successfully!", {
                                     duration: 3000,
                                     width: "20em"
                                 });
+                                
+                                // Đóng dialog
                                 oDialog.close();
-                                // Reload workspace info to update UI
+                                
+                                // Reload workspace info để đảm bảo UI được cập nhật
                                 this._loadWorkspaceInfo();
+                                
+                                // Force refresh view để hiển thị workspace mới
+                                this._refreshWorkspaceDisplay();
+                                
                             } else {
-                                MessageBox.error("Failed to create workspace: " + (oResult.message || "Unknown error"));
+                                // Xử lý trường hợp lỗi từ server
+                                var errorMessage = oResult.message || "Unknown error occurred";
+                                MessageBox.error("Failed to create workspace: " + errorMessage);
                             }
                         }.bind(this)).catch(function (oError) {
                             oViewModel.setProperty("/busy", false);
                             var sMessage = "Failed to create workspace!";
+                            
+                            console.error("❌ Error creating workspace:", oError);
+                            
                             try {
                                 var oResponse = JSON.parse(oError.responseText);
                                 sMessage = oResponse.error.message || sMessage;
                             } catch (e) {
                                 // Fallback to default message
+                                console.error("Error parsing error response:", e);
                             }
+                            
                             MessageBox.error(sMessage);
                         });
                     }.bind(this)
@@ -454,6 +493,63 @@ sap.ui.define([
         
             oView.addDependent(oDialog);
             oDialog.open();
+        },
+        
+        // ====== THÊM CÁC HELPER METHODS ======
+        
+        /**
+         * Refresh workspace display after creation
+         * @private
+         */
+        _refreshWorkspaceDisplay: function() {
+            try {
+                // Refresh view model
+                var oViewModel = this.getView().getModel();
+                if (oViewModel) {
+                    oViewModel.refresh();
+                }
+                
+                // Refresh binding context nếu có
+                var oBindingContext = this.getView().getBindingContext();
+                if (oBindingContext) {
+                    oBindingContext.refresh();
+                }
+                
+                // Trigger view update
+                this.getView().invalidate();
+                
+                console.log("✅ Workspace display refreshed");
+                
+            } catch (error) {
+                console.error("Error refreshing workspace display:", error);
+            }
+        },
+        
+        /**
+         * Load workspace info after creation
+         * @private  
+         */
+        _loadWorkspaceInfo: function() {
+            var oODataModel = this.getOwnerComponent().getModel("userService");
+            var oAuthModel = this.getOwnerComponent().getModel("auth");
+            
+            // Gọi action để lấy workspace info mới nhất
+            this.getOwnerComponent().executeAuthenticatedAction(
+                oODataModel,
+                "/getWorkspaceInfo(...)",
+                {}
+            ).then(function(oContext) {
+                var oWorkspaceInfo = oContext.getBoundContext().getObject();
+                
+                if (oWorkspaceInfo) {
+                    // Cập nhật workspace info trong auth model
+                    oAuthModel.setProperty("/workspace", oWorkspaceInfo);
+                    console.log("✅ Workspace info reloaded:", oWorkspaceInfo);
+                }
+                
+            }).catch(function(oError) {
+                console.error("❌ Error loading workspace info:", oError);
+            });
         },
 
         onEditWorkspacePress: function() {

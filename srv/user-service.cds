@@ -58,18 +58,33 @@ service UserService @(path: '/user-service') {
 
   // Action để tạo Workspace (Admin only)
   @(requires: 'Admin')
-  action createWorkspace(
-    companyName: String,
-    address: String,
-    phone: String,
-    email: String
-  ) returns {
+action createWorkspace(
+  companyName: String,
+  address: String,
+  phone: String,
+  email: String
+) returns {
+  success: Boolean;
+  workspace: {
     ID: UUID;
     CompanyName: String(100);
     Address: String(200);
     Phone: String(20);
     Email: String(100);
   };
+  newToken: String;
+  user: {
+    ID: UUID;
+    WorkspaceID: UUID;
+    Username: String(50);
+    Role: String(20);
+    FullName: String(100);
+    Email: String(100);
+    Phone: String(20);
+    Status: String(20);
+  };
+  message: String;
+};
 
   // Action để thêm User vào Workspace (Admin only)
   @(requires: 'Admin')

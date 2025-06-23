@@ -1,4 +1,3 @@
-// srv/user-service.js
 const cds = require('@sap/cds');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -274,16 +273,12 @@ module.exports = (srv) => {
         }
     });
 
-    // ===== PROTECTED ACTIONS (Admin only) =====
 
-    /**
-     * Create workspace (Admin only)
-     */
     srv.on('createWorkspace', createProtectedAction('workspace', 'create', async (req) => {
         console.log('>>> createWorkspace handler called with data:', req.data);
         const { companyName, address, phone, email } = req.data;
         const tx = cds.transaction(req);
-
+    
         try {
             const user = req.user;
             
@@ -294,7 +289,7 @@ module.exports = (srv) => {
                     message: 'User already belongs to a workspace'
                 };
             }
-
+    
             // Create workspace
             const workspace = {
                 ID: cds.utils.uuid(),
@@ -303,14 +298,14 @@ module.exports = (srv) => {
                 Phone: phone,
                 Email: email
             };
-
+    
             await tx.run(INSERT.into(Workspaces).entries(workspace));
-
+    
             // Update user's WorkspaceID
             const userFromDB = await tx.run(
                 SELECT.one.from(Users).where({ Username: user.username })
             );
-
+    
             if (userFromDB) {
                 await tx.run(
                     UPDATE(Users)
@@ -318,18 +313,52 @@ module.exports = (srv) => {
                         .where({ ID: userFromDB.ID })
                 );
             }
-
+    
+            // ====== FIX: LẤY USER DATA TRƯỚC KHI COMMIT ======
+            // Get updated user data from database WITHIN the same transaction
+            const updatedUser = await tx.run(
+                SELECT.one.from(Users)
+                    .where({ Username: user.username })
+                    .columns([
+                        'ID', 'Username', 'Role', 'WorkspaceID',
+                        'FullName', 'Email', 'Phone', 'Status'
+                    ])
+            );
+    
+            // Commit transaction after all database operations are complete
             await tx.commit();
-
-
+    
+            // ====== GENERATE TOKEN AFTER COMMIT ======
+            // Generate new token with updated workspace information
+            const newToken = generateToken(updatedUser);
+    
+            console.log('✅ Workspace created successfully with ID:', workspace.ID);
+            console.log('✅ User updated with WorkspaceID:', updatedUser.WorkspaceID);
+    
             return {
-                ID: workspace.ID,
-                CompanyName: workspace.CompanyName,
-                Address: workspace.Address,
-                Phone: workspace.Phone,
-                Email: workspace.Email
+                success: true,
+                workspace: {
+                    ID: workspace.ID,
+                    CompanyName: workspace.CompanyName,
+                    Address: workspace.Address,
+                    Phone: workspace.Phone,
+                    Email: workspace.Email
+                },
+                // Return new token so frontend can update it
+                newToken: newToken,
+                user: {
+                    ID: updatedUser.ID,
+                    WorkspaceID: updatedUser.WorkspaceID,
+                    Username: updatedUser.Username,
+                    Role: updatedUser.Role,
+                    FullName: updatedUser.FullName,
+                    Email: updatedUser.Email,
+                    Phone: updatedUser.Phone,
+                    Status: updatedUser.Status
+                },
+                message: 'Workspace created successfully'
             };
-
+    
         } catch (error) {
             await tx.rollback();
             req.error(500, `Failed to create workspace: ${error.message}`);
