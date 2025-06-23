@@ -84,7 +84,7 @@
         {
             "titleI18nKey": "Financial Accounting",
             "icon": "sap-icon://customer-financial-fact-sheet",
-            "expanded": true,
+            "expanded": false,
             "allowedRoles": ["Admin", "Accountant"],
             "items": [
                 {

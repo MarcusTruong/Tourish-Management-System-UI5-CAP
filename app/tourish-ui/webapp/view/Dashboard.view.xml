@@ -159,41 +159,6 @@
                                     </VBox>
                                 </f:content>
                             </f:Card>
-
-                            <!-- Profit Card - Hide from Staff -->
-                            <f:Card id="profitCard" 
-                                class="sapUiTinyMargin dashboardCard" 
-                                width="280px"
-                                visible="{permissions>/visibility/profitMargin}">
-                                <f:header>
-                                    <card:Header id="profitHeader" 
-                                        title="Profit Margin" 
-                                        subtitle="Current Performance"
-                                        iconSrc="sap-icon://chart" 
-                                        iconDisplayShape="Circle"/>
-                                </f:header>
-                                <f:content>
-                                    <VBox id="profitContent" alignItems="Center" class="sapUiSmallMargin" width="100%" justifyContent="Center" height="140px">
-                                        <ObjectNumber id="profitMargin" 
-                                            number="{dashboard>/kpis/profitMargin}" 
-                                            unit="%" 
-                                            state="{= ${dashboard>/kpis/profitMargin} > 20 ? 'Success' : ${dashboard>/kpis/profitMargin} > 10 ? 'Warning' : 'Error'}" 
-                                            emphasized="true" 
-                                            class="sapMObjectNumberLarge"/>
-                                        <microchart:RadialMicroChart id="profitChart" 
-                                            percentage="{dashboard>/kpis/profitMargin}" 
-                                            size="S" 
-                                            valueColor="{= ${dashboard>/kpis/profitMargin} > 20 ? 'Good' : ${dashboard>/kpis/profitMargin} > 10 ? 'Critical' : 'Error'}"
-                                            class="sapUiSmallMarginTop" 
-                                            alignContent="Center"/>
-                                    </VBox>
-                                </f:content>
-                            </f:Card>
-                        </HBox>
-
-                        <!-- Secondary KPI Cards Row -->
-                        <HBox id="secondaryKpiRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
-                            
                             <!-- Tour Status Card - Hide from Staff -->
                             <f:Card id="tourStatusCard" 
                                 class="sapUiTinyMargin dashboardCard" 
@@ -239,6 +204,10 @@
                                     </VBox>
                                 </f:content>
                             </f:Card>
+                        </HBox>
+
+                        <!-- Secondary KPI Cards Row -->
+                        <HBox id="secondaryKpiRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
 
                             <!-- Orders Card - Hide from Accountant -->
                             <f:Card id="ordersCard" 
@@ -329,15 +298,11 @@
                                     </VBox>
                                 </f:content>
                             </f:Card>
-                        </HBox>
 
-                        <!-- Management Cards Row -->
-                        <HBox id="managementCardsRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
-                            
-                            <!-- Tours Needing Attention - Hide from Staff -->
+                                                        <!-- Tours Needing Attention - Hide from Staff -->
                             <f:Card id="attentionCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="430px"
+                                width="280px"
                                 visible="{permissions>/visibility/needsAttention}">
                                 <f:header>
                                     <card:Header id="attentionHeader" 
@@ -371,7 +336,7 @@
                             <!-- Workspace Settings Card - Admin Only -->
                             <f:Card id="workspaceCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="430px"
+                                width="280px"
                                 visible="{permissions>/visibility/workspace}">
                                 <f:header>
                                     <card:Header id="workspaceHeader" 

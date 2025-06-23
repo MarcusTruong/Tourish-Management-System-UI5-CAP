@@ -224,7 +224,6 @@ module.exports = (srv) => {
 
             // Check user status
             if (user.Status !== 'Active') {
-                console.log('❌ Authentication failed: User account is not active:', username);
                 return {
                     success: false,
                     user: null,
@@ -237,7 +236,6 @@ module.exports = (srv) => {
             // Verify password
             const isPasswordValid = await comparePassword(password, user.Password);
             if (!isPasswordValid) {
-                console.log('❌ Authentication failed: Incorrect password for username:', username);
                 return {
                     success: false,
                     user: null,
@@ -265,7 +263,7 @@ module.exports = (srv) => {
                     Status: user.Status
                 },
                 token: token,
-                permissions: getPermissionSummary(user.Role), // ⭐ Include permissions
+                permissions: getPermissionSummary(user.Role), 
                 message: 'Authentication successful'
             };
 
@@ -500,7 +498,7 @@ module.exports = (srv) => {
 
         try {
             // Validate status
-            const validStatuses = ['Active', 'Inactive', 'Suspended'];
+            const validStatuses = ['Active', 'Inactive'];
             if (!validStatuses.includes(status)) {
                 return {
                     success: false,
@@ -520,11 +518,6 @@ module.exports = (srv) => {
                 };
             }
 
-            // if (!WorkspaceSecurity.checkWorkspaceAccess(req, targetUser.WorkspaceID)) {
-            //     req.error(403, 'Cannot modify user from different workspace');
-            //     return;
-            // }
-
             // Update user status
             await tx.run(
                 UPDATE(Users)
@@ -534,7 +527,7 @@ module.exports = (srv) => {
 
             await tx.commit();
 
-            console.log('✅ User status updated successfully:', targetUser.Username, 'to', status);
+            console.log('User status updated successfully:', targetUser.Username, 'to', status);
 
             return {
                 success: true,
@@ -542,7 +535,7 @@ module.exports = (srv) => {
             };
 
         } catch (error) {
-            console.error('❌ Error in updateUserStatus:', error);
+            console.error('Error in updateUserStatus:', error);
             await tx.rollback();
             req.error(500, `Failed to update user status: ${error.message}`);
         }

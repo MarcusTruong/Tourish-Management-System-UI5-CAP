@@ -9,7 +9,7 @@ sap.ui.define([
 
     return Controller.extend("tourishui.controller.AppContent", {
         onInit: function () {
-            console.log("🚀 AppContent Controller initialized");
+            console.log("AppContent Controller initialized");
             
             // Initialize navigation with role-based filtering
             this._initializeRoleBasedNavigation();
@@ -28,10 +28,10 @@ sap.ui.define([
         _initializeRoleBasedNavigation: function() {
             // Get current user role
             const sUserRole = PermissionHelper.getCurrentUserRole();
-            console.log(`👤 Current user role: ${sUserRole}`);
+            console.log(`Current user role: ${sUserRole}`);
             
             if (!sUserRole) {
-                console.warn("⚠️ No user role found, redirecting to login");
+                console.warn("No user role found, redirecting to login");
                 this.getOwnerComponent().getRouter().navTo("login");
                 return;
             }
@@ -120,7 +120,7 @@ sap.ui.define([
             
             // Check if user has permission to access this route
             if (!this._checkRouteAccess(sRouteName)) {
-                console.warn(`❌ Access denied to route: ${sRouteName}`);
+                console.warn(`Access denied to route: ${sRouteName}`);
                 MessageBox.error("You don't have permission to access this page.", {
                     title: "Access Denied",
                     onClose: () => {
@@ -141,7 +141,7 @@ sap.ui.define([
                 }
                 
             } catch (e) {
-                console.error(`❌ Error navigating to view: ${sRouteName}`, e);
+                console.error(`Error navigating to view: ${sRouteName}`, e);
                 MessageBox.error("Page not found or error loading page.");
             }
         },
@@ -199,7 +199,7 @@ sap.ui.define([
             var oItem = oEvent.getSource();
             var sKey = oItem.getKey();
             
-            console.log("👤 Menu item pressed:", sKey);
+            console.log("Menu item pressed:", sKey);
             
             var oRouter = this.getOwnerComponent().getRouter();
             var oSessionManager = this.getOwnerComponent().getSessionManager();
@@ -227,6 +227,7 @@ sap.ui.define([
                                 oSessionManager.clearSession();
                                 MessageBox.success("Logged out successfully!");
                                 oRouter.navTo("login", {}, true);
+                                window.location.reload();
                             }
                         }
                     });
@@ -253,7 +254,7 @@ sap.ui.define([
             try {
                 oRouter.navTo(sKey, {}, false);
             } catch (e) {
-                console.error(`❌ Error navigating to: ${sKey}`, e);
+                console.error(`Error navigating to: ${sKey}`, e);
                 MessageBox.information(`Feature "${oItem.getText()}" is not available yet.`);
             }
         },
@@ -263,7 +264,7 @@ sap.ui.define([
          * @public
          */
         refreshNavigation: function() {
-            console.log("🔄 Refreshing navigation...");
+            console.log("Refreshing navigation...");
             this._initializeRoleBasedNavigation();
             this._applyHeaderPermissions();
         },

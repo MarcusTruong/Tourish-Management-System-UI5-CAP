@@ -25,7 +25,6 @@ sap.ui.define([
         return;
       }
 
-      // Tạo một XMLHttpRequest thông thường cho login (không cần token)
       this._performLogin(sUsername, sPassword);
     },
 

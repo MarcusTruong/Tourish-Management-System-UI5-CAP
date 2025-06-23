@@ -321,7 +321,6 @@ sap.ui.define([
                             return sum + (order.Status !== 'Canceled' ? (parseFloat(order.PaidAmount) || 0) : 0);
                         }, 0);
                         
-                        // Mock profit calculation (in real scenario, you'd get this from tour estimates)
                         var estimatedCosts = totalRevenue * 0.7; // Assume 70% costs
                         var profit = totalPaid - estimatedCosts;
                         var profitMargin = totalRevenue > 0 ? Math.round((profit / totalRevenue) * 100) : 0;
@@ -674,7 +673,7 @@ sap.ui.define([
         },
 
         onViewOrders: function () {
-            this.getOwnerComponent().getRouter().navTo("orders");
+            this.getOwnerComponent().getRouter().navTo("orderList");
         },
 
         onViewSuppliers: function () {

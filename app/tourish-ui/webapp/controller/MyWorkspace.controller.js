@@ -823,6 +823,8 @@ sap.ui.define([
             var oRoleSelect = new Select({ id: this.createId("editRoleSelect") });
             oRoleSelect.addItem(new Item({ key: "Staff", text: "Staff" }));
             oRoleSelect.addItem(new Item({ key: "Admin", text: "Admin" }));
+            oRoleSelect.addItem(new Item({ key: "Manager", text: "Manager" }));
+            oRoleSelect.addItem(new Item({ key: "Accountant", text: "Accountant" }));
             oRoleSelect.setSelectedKey(oUser.Role || "Staff");
             
             var oDialog = new Dialog({
@@ -830,14 +832,22 @@ sap.ui.define([
                 type: "Message",
                 content: new VBox({
                     items: [
-                        new Label({ text: "Username", required: false }),
-                        oUsernameLabel,
-                        new Label({ text: "Current Role", required: false }),
-                        oCurrentRoleLabel,
-                        new Label({ text: "New Role", required: true }),
+                        new Label({ 
+                            text: "Username", 
+                            required: false 
+                        }).addStyleClass("sapUiTinyMarginBottom"),
+                        oUsernameLabel.addStyleClass("sapUiSmallMarginBottom"),
+                        new Label({ 
+                            text: "Current Role", 
+                            required: false 
+                        }).addStyleClass("sapUiTinyMarginBottom"),
+                        oCurrentRoleLabel.addStyleClass("sapUiSmallMarginBottom"),
+                        new Label({ 
+                            text: "New Role", 
+                            required: true 
+                        }).addStyleClass("sapUiTinyMarginBottom"),
                         oRoleSelect
-                    ],
-                    spacing: "0.5rem"
+                    ]
                 }).addStyleClass("sapUiSmallMargin"),
                 beginButton: new Button({
                     text: "Save",
