@@ -614,7 +614,6 @@ if (!oDialogModel || !this._currentEditingService) {
             });
         },
         
-        // Override the existing onSaveService to handle both add and edit
         onSaveService: function() {
             var oDialogModel = this._oAddServiceDialog.getModel("serviceDialog");
             var oData = oDialogModel.getData();
@@ -671,11 +670,33 @@ if (!oDialogModel || !this._currentEditingService) {
                 this._oAddServiceDialog.setBusy(false);
                 
                 if ((oData.isEditMode && oResult && oResult.success) || 
-                    (!oData.isEditMode && oResult && oResult.tourServiceID)) {
-                    MessageToast.show(sSuccessMessage);
-                    this._closeAndResetDialog();
-                    this._loadTourServices();
-                } else {
+            (!oData.isEditMode && oResult && oResult.tourServiceID)) {
+            
+            var sDisplayMessage = sSuccessMessage;
+            
+            // Nếu là add mode và có debt được tạo
+            if (!oData.isEditMode && oResult.debtID) {
+                sDisplayMessage = oResult.message || sSuccessMessage;
+                
+                // Hiển thị success message với thông tin debt
+                MessageBox.success(sDisplayMessage, {
+                    title: "Service Added Successfully",
+                    details: oResult.debtID ? 
+                        `Debt ID: ${oResult.debtID}\nThe debt has been automatically added to the supplier's account.` : 
+                        "Service has been added to the tour.",
+                    actions: [MessageBox.Action.OK],
+                    onClose: function() {
+                    }.bind(this)
+                });
+            } else {
+                // Trường hợp edit hoặc không có debt
+                MessageToast.show(sDisplayMessage);
+            }
+            
+            this._closeAndResetDialog();
+            this._loadTourServices();
+            
+        } else {
                     MessageBox.error(oResult && oResult.message ? oResult.message : "Failed to save service");
                 }
             }.bind(this)).catch(function(oError) {

@@ -715,13 +715,15 @@ onEmailChange: function(oEvent) {
                 this.getView().addDependent(this._oDebtDialog);
             }
             
-            // Reset model
+            // Reset model với description field
             var oDebtModel = new JSONModel({
                 ID: "",
                 supplierID: this.getView().getModel("supplier").getProperty("/ID"),
                 amount: 0,
                 dueDate: new Date(),
-                status: "Pending"
+                status: "Pending",
+                description: "",  
+                isEditMode: false
             });
             this.getView().setModel(oDebtModel, "newDebt");
             
@@ -768,19 +770,131 @@ onEmailChange: function(oEvent) {
         },
         
         onSaveDebt: function () {
-            // Validate input
-            if (!this._validateDebtForm()) {
+            var oDebtModel = this.getView().getModel("newDebt");
+            var oData = oDebtModel.getData();
+            
+            // === VALIDATION ===
+            if (!oData.amount || oData.amount <= 0) {
+                MessageBox.error("Please enter a valid amount");
                 return;
             }
             
-            var oDebtModel = this.getView().getModel("newDebt");
-            var oDebtData = oDebtModel.getData();
+            if (!oData.dueDate) {
+                MessageBox.error("Please select a due date");
+                return;
+            }
             
-            // Set busy indicator
-            sap.ui.core.BusyIndicator.show(0);
+            // Set busy state
+            this._oDebtDialog.setBusy(true);
             
-            // Create new debt
-            this._createDebt(oDebtData);
+            var oSupplierService = this.getOwnerComponent().getModel("supplierService");
+            var oContext;
+            var sSuccessMessage;
+            
+            if (oData.isEditMode) {
+                // === EDIT MODE ===
+                oContext = oSupplierService.bindContext("/updateSupplierDebt(...)");
+                oContext.setParameter("debtID", oData.ID);
+                oContext.setParameter("amount", parseFloat(oData.amount));
+                oContext.setParameter("dueDate", oData.dueDate);
+                oContext.setParameter("status", oData.status);
+                oContext.setParameter("description", oData.description || "");
+                sSuccessMessage = "Debt updated successfully";
+            } else {
+                // === CREATE MODE ===
+                // Auto-generate description nếu rỗng
+                if (!oData.description || oData.description.trim() === "") {
+                    var oSupplierModel = this.getView().getModel("supplier");
+                    var sSupplierName = oSupplierModel.getProperty("/SupplierName");
+                    oData.description = `Manual debt entry for ${sSupplierName} - Amount: ${oData.amount} USD`;
+                }
+                
+                oContext = oSupplierService.bindContext("/createSupplierDebt(...)");
+                oContext.setParameter("supplierID", oData.supplierID);
+                oContext.setParameter("amount", parseFloat(oData.amount));
+                oContext.setParameter("dueDate", oData.dueDate);
+                oContext.setParameter("status", oData.status);
+                oContext.setParameter("description", oData.description);
+                oContext.setParameter("tourServiceID", null);
+                sSuccessMessage = "Debt created successfully";
+            }
+            
+            oContext.execute().then(function () {
+                var oResult = oContext.getBoundContext().getObject();
+                
+                // Clear busy state
+                this._oDebtDialog.setBusy(false);
+                
+                if (oResult && (oResult.ID || oResult.success)) {
+                    MessageToast.show(sSuccessMessage);
+                    this._oDebtDialog.close();
+                    
+                    // Reload supplier details
+                    var sSupplierID = this.getView().getModel("supplier").getProperty("/ID");
+                    this._loadSupplier(sSupplierID);
+                } else {
+                    MessageBox.error("Failed to save debt");
+                }
+            }.bind(this)).catch(function (oError) {
+                // Clear busy state
+                this._oDebtDialog.setBusy(false);
+                
+                var sMessage = "Failed to save debt!";
+                try {
+                    var oResponse = JSON.parse(oError.responseText);
+                    sMessage = oResponse.error.message || sMessage;
+                } catch (e) {
+                    // Fallback to default message
+                }
+                console.error("Error saving debt:", sMessage);
+                MessageBox.error(sMessage);
+            }.bind(this));
+        },
+
+        onEditDebt: function (oEvent) {
+            var oButton = oEvent.getSource();
+            var oContext = oButton.getBindingContext("debts");
+            var oDebt = oContext.getObject();
+            
+            // Hiển thị dialog để edit debt
+            if (!this._oDebtDialog) {
+                this._oDebtDialog = sap.ui.xmlfragment("tourishui.view.fragments.DebtDialog", this);
+                this.getView().addDependent(this._oDebtDialog);
+            }
+            
+            // Set model với data hiện tại
+            var oDebtModel = new JSONModel({
+                ID: oDebt.ID,
+                supplierID: oDebt.SupplierID,
+                amount: oDebt.Amount,
+                dueDate: new Date(oDebt.DueDate),
+                status: oDebt.Status,
+                description: oDebt.Description || "", // === INCLUDE DESCRIPTION ===
+                isEditMode: true
+            });
+            this.getView().setModel(oDebtModel, "newDebt");
+            
+            // Cài đặt tiêu đề cho edit mode
+            sap.ui.getCore().byId("debtDialogTitle").setText("Edit Debt");
+            
+            // Disable amount editing nếu là auto-generated debt
+            var oAmountInput = sap.ui.getCore().byId("debtAmountInput");
+            var oDescriptionTextArea = sap.ui.getCore().byId("debtDescriptionTextArea");
+            
+            if (oDebt.TourServiceID) {
+                oAmountInput.setEnabled(false);
+                oAmountInput.setTooltip("Amount cannot be changed for auto-generated debts");
+                oDescriptionTextArea.setEnabled(false);
+                oDescriptionTextArea.setTooltip("Description cannot be changed for auto-generated debts");
+            } else {
+                oAmountInput.setEnabled(true);
+                oAmountInput.setTooltip("");
+                oDescriptionTextArea.setEnabled(true);
+                oDescriptionTextArea.setTooltip("");
+            }
+            
+            // Mở dialog
+            this._oDebtDialog.open();
         },
         
         _validateDebtForm: function () {
@@ -873,6 +987,122 @@ onEmailChange: function(oEvent) {
             });
             
             return oDateFormat.format(oDate);
+        },
+
+
+formatDebtSource: function(sTourServiceID) {
+    return sTourServiceID ? "Auto-Generated" : "Manual";
+},
+
+formatDebtSourceState: function(sTourServiceID) {
+    return sTourServiceID ? "Success" : "Information";
+},
+
+formatDebtStatus: function(sStatus) {
+    switch(sStatus) {
+        case "Pending":
+            return "Pending Payment";
+        case "Completed":
+            return "Paid";
+        default:
+            return sStatus || "Unknown";
+    }
+},
+
+formatDebtState: function(sStatus) {
+    switch(sStatus) {
+        case "Pending":
+            return "Warning";
+        case "Completed":
+            return "Success";
+        default:
+            return "None";
+    }
+},
+
+// === FILTER METHODS ===
+onShowAllDebts: function() {
+    this._filterDebts(null);
+    this._updateFilterButtonStates("showAllDebtsBtn");
+},
+
+onShowAutoGeneratedDebts: function() {
+    var oFilter = new sap.ui.model.Filter("TourServiceID", sap.ui.model.FilterOperator.NE, null);
+    this._filterDebts([oFilter]);
+    this._updateFilterButtonStates("showAutoDebtsBtn");
+},
+
+onShowManualDebts: function() {
+    var oFilter = new sap.ui.model.Filter("TourServiceID", sap.ui.model.FilterOperator.EQ, null);
+    this._filterDebts([oFilter]);
+    this._updateFilterButtonStates("showManualDebtsBtn");
+},
+
+onShowPendingDebts: function() {
+    var oFilter = new sap.ui.model.Filter("Status", sap.ui.model.FilterOperator.EQ, "Pending");
+    this._filterDebts([oFilter]);
+    this._updateFilterButtonStates("showPendingDebtsBtn");
+},
+
+_filterDebts: function(aFilters) {
+    var oTable = this.byId("debtsTable");
+    var oBinding = oTable.getBinding("items");
+    oBinding.filter(aFilters || []);
+},
+
+_updateFilterButtonStates: function(sActiveButtonId) {
+    // Reset all button states
+    var aButtonIds = ["showAllDebtsBtn", "showAutoDebtsBtn", "showManualDebtsBtn", "showPendingDebtsBtn"];
+    aButtonIds.forEach(function(sId) {
+        var oButton = this.byId(sId);
+        if (oButton) {
+            oButton.setType(sId === sActiveButtonId ? "Emphasized" : "Transparent");
         }
+    }.bind(this));
+},
+
+// === ENHANCED DELETE DEBT METHOD ===
+onDeleteDebt: function(oEvent) {
+    var oButton = oEvent.getSource();
+    var oContext = oButton.getBindingContext("debts");
+    var oDebt = oContext.getObject();
+    
+    var sConfirmMessage = "Are you sure you want to delete this debt?";
+    if (oDebt.TourServiceID) {
+        sConfirmMessage += "\n\nNote: This is an auto-generated debt from a tour service.";
+    }
+    
+    MessageBox.confirm(sConfirmMessage, {
+        title: "Confirm Delete",
+        onClose: function(sAction) {
+            if (sAction === MessageBox.Action.OK) {
+                this._deleteDebt(oDebt.ID);
+            }
+        }.bind(this)
+    });
+},
+
+_deleteDebt: function(sDebtId) {
+    var oSupplierService = this.getOwnerComponent().getModel("supplierService");
+    var oContext = oSupplierService.bindContext("/deleteSupplierDebt(...)");
+    oContext.setParameter("debtID", sDebtId);
+    
+    oContext.execute().then(function() {
+        MessageToast.show("Debt deleted successfully");
+        // Reload supplier details
+        var sSupplierID = this.getView().getModel("supplier").getProperty("/ID");
+        this._loadSupplier(sSupplierID);
+    }.bind(this)).catch(function(oError) {
+        var sMessage = "Failed to delete debt!";
+        try {
+            var oResponse = JSON.parse(oError.responseText);
+            sMessage = oResponse.error.message || sMessage;
+        } catch (e) {
+            // Fallback to default message
+        }
+        console.error("Error deleting debt:", sMessage);
+        MessageBox.error(sMessage);
+    });
+}
     });
 });

@@ -305,6 +305,8 @@ entity SupplierDebt {
   Amount : Decimal(15,2);
   DueDate : Date;
   Status : String(20) default 'Pending'; // Pending/Completed
+  Description: String(500);
+  TourServiceID: UUID;
 }
 
 entity Receipt {

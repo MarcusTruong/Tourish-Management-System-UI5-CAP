@@ -437,16 +437,16 @@ this.on('updateSupplier', async (req) => {
 
   // Handler cho createSupplierDebt
   this.on('createSupplierDebt', async (req) => {
-    const { supplierID, amount, dueDate, status } = req.data;
+    const { supplierID, amount, dueDate, status, description, tourServiceID } = req.data;
     console.log(`Executing createSupplierDebt for supplier ID: ${supplierID}`);
     
-    // Validate input
+    // Validation
     if (!supplierID) {
       req.error(400, 'Supplier ID is required');
       return;
     }
     
-    if (amount === undefined || amount <= 0) {
+    if (!amount || amount <= 0) {
       req.error(400, 'Valid amount is required');
       return;
     }
@@ -456,8 +456,36 @@ this.on('updateSupplier', async (req) => {
       return;
     }
     
-    const tx = cds.transaction(req);
+    let formattedDueDate;
+    try {
+      if (typeof dueDate === 'string') {
+        // Nếu là string như "2025-06-23", convert thành Date object
+        formattedDueDate = new Date(dueDate + 'T00:00:00.000Z');
+        
+        // Validate date
+        if (isNaN(formattedDueDate.getTime())) {
+          req.error(400, 'Invalid due date format. Expected YYYY-MM-DD');
+          return;
+        }
+        
+        // Convert back to YYYY-MM-DD string for database
+        formattedDueDate = dueDate; // Keep original string format
+      } else if (dueDate instanceof Date) {
+        formattedDueDate = dueDate.toISOString().split('T')[0];
+      } else {
+        req.error(400, 'Invalid due date format');
+        return;
+      }
+      
+      console.log('Formatted due date:', formattedDueDate);
+    } catch (error) {
+      console.error('Date parsing error:', error);
+      req.error(400, 'Invalid due date format');
+      return;
+    }
 
+    const tx = cds.transaction(req);
+  
     try {
       const supplier = await tx.run(SELECT.one.from(Suppliers).where({ ID: supplierID }));
       if (!supplier) {
@@ -469,8 +497,10 @@ this.on('updateSupplier', async (req) => {
         ID: cds.utils.uuid(),
         SupplierID: supplierID,
         Amount: amount,
-        DueDate: dueDate,
-        Status: status || 'Pending'
+        DueDate: formattedDueDate,
+        Status: status || 'Pending',
+        Description: description || '', 
+        TourServiceID: tourServiceID    
       };
       
       await tx.run(INSERT.into(SupplierDebts).entries(debt));
@@ -485,7 +515,9 @@ this.on('updateSupplier', async (req) => {
         SupplierID: createdDebt.SupplierID,
         Amount: createdDebt.Amount,
         DueDate: createdDebt.DueDate,
-        Status: createdDebt.Status
+        Status: createdDebt.Status,
+        Description: createdDebt.Description,    
+        TourServiceID: createdDebt.TourServiceID 
       };
     } catch (error) {
       console.error('Error occurred:', error);
@@ -632,7 +664,9 @@ this.on('updateSupplier', async (req) => {
           SupplierID: d.SupplierID,
           Amount: d.Amount,
           DueDate: d.DueDate,
-          Status: d.Status
+          Status: d.Status,
+          Description: d.Description,       // THÊM MỚI
+          TourServiceID: d.TourServiceID    // THÊM MỚI
         })),
         debtStatistics: {
           totalDebt: totalDebt,
@@ -645,6 +679,143 @@ this.on('updateSupplier', async (req) => {
     } catch (error) {
       console.error('Error occurred:', error);
       req.error(500, `Failed to get supplier details: ${error.message}`);
+    }
+  });
+
+  this.on('deleteSupplierDebt', async (req) => {
+    const { debtID } = req.data;
+    console.log(`Executing deleteSupplierDebt with ID: ${debtID}`);
+    
+    if (!debtID) {
+      req.error(400, 'Debt ID is required');
+      return;
+    }
+    
+    const tx = cds.transaction(req);
+  
+    try {
+      const debt = await tx.run(SELECT.one.from(SupplierDebts).where({ ID: debtID }));
+      if (!debt) {
+        req.error(404, `Debt with ID ${debtID} not found`);
+        return;
+      }
+      
+      // Kiểm tra nếu debt có liên quan đến tour service
+      if (debt.TourServiceID) {
+        console.log(`Warning: Deleting auto-generated debt linked to tour service: ${debt.TourServiceID}`);
+      }
+      
+      await tx.run(DELETE.from(SupplierDebts).where({ ID: debtID }));
+      await tx.commit();
+      console.log('Supplier debt deleted successfully');
+      
+      return {
+        success: true,
+        message: 'Debt deleted successfully'
+      };
+    } catch (error) {
+      console.error('Error occurred:', error);
+      await tx.rollback();
+      req.error(500, `Failed to delete supplier debt: ${error.message}`);
+    }
+  });
+
+  this.on('updateSupplierDebt', async (req) => {
+    const { debtID, amount, dueDate, status, description } = req.data;
+    console.log(`Executing updateSupplierDebt with ID: ${debtID}`);
+    
+    if (!debtID) {
+      req.error(400, 'Debt ID is required');
+      return;
+    }
+    
+    if (!amount || amount <= 0) {
+      req.error(400, 'Valid amount is required');
+      return;
+    }
+    
+    if (!dueDate) {
+      req.error(400, 'Due date is required');
+      return;
+    }
+
+    let formattedDueDate;
+  try {
+    if (typeof dueDate === 'string') {
+      formattedDueDate = new Date(dueDate + 'T00:00:00.000Z');
+      if (isNaN(formattedDueDate.getTime())) {
+        req.error(400, 'Invalid due date format. Expected YYYY-MM-DD');
+        return;
+      }
+      formattedDueDate = dueDate;
+    } else if (dueDate instanceof Date) {
+      formattedDueDate = dueDate.toISOString().split('T')[0];
+    } else {
+      req.error(400, 'Invalid due date format');
+      return;
+    }
+    
+    console.log('Formatted due date:', formattedDueDate);
+  } catch (error) {
+    console.error('Date parsing error:', error);
+    req.error(400, 'Invalid due date format');
+    return;
+  }
+    
+    const tx = cds.transaction(req);
+  
+    try {
+      const existingDebt = await tx.run(SELECT.one.from(SupplierDebts).where({ ID: debtID }));
+      if (!existingDebt) {
+        req.error(404, `Debt with ID ${debtID} not found`);
+        return;
+      }
+      
+      if (existingDebt.TourServiceID) {
+        await tx.run(
+          UPDATE(SupplierDebts)
+            .set({
+              DueDate: formattedDueDate,
+              Status: status
+            })
+            .where({ ID: debtID })
+        );
+        
+        console.log('Auto-generated debt updated (limited fields)');
+      } else {
+        // Manual debt có thể update tất cả fields
+        await tx.run(
+          UPDATE(SupplierDebts)
+            .set({
+              Amount: amount,
+              DueDate: formattedDueDate,
+              Status: status,
+              Description: description || ''
+            })
+            .where({ ID: debtID })
+        );
+        
+        console.log('Manual debt updated (all fields)');
+      }
+      
+      const updatedDebt = await tx.run(SELECT.one.from(SupplierDebts).where({ ID: debtID }));
+      await tx.commit();
+      console.log('Transaction committed successfully');
+      
+      return {
+        ID: updatedDebt.ID,
+        SupplierID: updatedDebt.SupplierID,
+        Amount: updatedDebt.Amount,
+        DueDate: updatedDebt.DueDate,
+        Status: updatedDebt.Status,
+        Description: updatedDebt.Description,
+        success: true,
+        message: 'Debt updated successfully'
+      };
+    } catch (error) {
+      console.error('Error occurred:', error);
+      await tx.rollback();
+      req.error(500, `Failed to update supplier debt: ${error.message}`);
     }
   });
 

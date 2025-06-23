@@ -53,7 +53,7 @@ service OrderService @(path: '/order-service') {
   };
 
   // Payment Management Actions
-@(requires: ['Admin', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action addPayment(
     orderID: UUID,
     paymentDate: Date,
@@ -66,7 +66,7 @@ service OrderService @(path: '/order-service') {
     remainingAmount: Decimal;
   };
 
-@(requires: ['Admin', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action updatePayment(
     paymentID: UUID,
     paymentDate: Date,
@@ -78,7 +78,7 @@ service OrderService @(path: '/order-service') {
     remainingAmount: Decimal;
   };
 
-@(requires: ['Admin', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action deletePayment(
     paymentID: UUID
   ) returns {
@@ -87,7 +87,7 @@ service OrderService @(path: '/order-service') {
     remainingAmount: Decimal;
   };
 
-@(requires: ['Admin', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Accountant'])
   action processRefund(
     orderID: UUID,
     amount: Decimal,

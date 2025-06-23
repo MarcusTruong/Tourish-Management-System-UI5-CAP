@@ -15,8 +15,6 @@
                 <Button id="_IDGenButton51"  icon="sap-icon://nav-back" press=".onNavBack" />
                 <Title id="orderDetailTitle" text="Order Details" />
                 <ToolbarSpacer id="_IDGenToolbarSpacer33"  />
-                <Button id="editOrderButton" text="Edit" icon="sap-icon://edit" press=".onEditOrder" type="Transparent" visible="{= ${orderDetail>/Status} !== 'Canceled' }" />
-                <Button id="cancelOrderButton" text="Cancel" icon="sap-icon://decline" press=".onCancelOrder" type="Transparent" visible="{= ${orderDetail>/Status} === 'Pending' }" />
             </Toolbar>
     </customHeader>
 
@@ -271,6 +269,7 @@
             <Toolbar id="_IDGenToolbar12" >
                 <ToolbarSpacer id="_IDGenToolbarSpacer35" />
                 <Button id="_IDGenButton58"  text="Back to Orders" press=".onNavBack" type="Default" />
+                <Button id="cancelOrderButton" text="Cancel" icon="sap-icon://decline" press=".onCancelOrder" type="Emphasized" visible="{= ${orderDetail>/Status} === 'Pending' }" />
                 <Button id="managePaymentsButton" text="Manage Payments" press=".onManagePayments" type="Emphasized" visible="{= ${orderDetail>/Status} !== 'Canceled' }" />
             </Toolbar>
         </footer>

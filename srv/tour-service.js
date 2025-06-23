@@ -2201,6 +2201,7 @@ srv.on('getPassengersByOrder', async (req) => {
       if (!service) {
         return {
           tourServiceID: null,
+          debtID: null,
           message: 'Service not found'
         };
       }
@@ -2208,7 +2209,7 @@ srv.on('getPassengersByOrder', async (req) => {
       // Calculate total price
       const totalPrice = quantity * unitPrice;
       
-      // Create tour service
+      // === BƯỚC 1: Tạo tour service ===
       await cds.transaction(req).run(
         INSERT.into(ActiveTourServices).entries({
           ID: tourServiceID,
@@ -2221,25 +2222,69 @@ srv.on('getPassengersByOrder', async (req) => {
         })
       );
       
-      // Log the change
+      // === BƯỚC 2: TỰ ĐỘNG TẠO DEBT CHO SUPPLIER ===
+      let debtID = null;
+      let debtMessage = '';
+      
+      try {
+        // Tính toán số tiền debt
+        const debtAmount = totalPrice; // Debt = tổng tiền service
+        
+        // Tạo due date (30 ngày từ hiện tại)
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 30);
+        
+        // Tạo description cho debt
+        const debtDescription = `Auto-generated debt for service: ${service.ServiceName} (Tour Service ID: ${tourServiceID})`;
+        
+        // Generate debt ID
+        debtID = cds.utils.uuid();
+        
+        // Insert debt vào SupplierDebts table
+        await cds.transaction(req).run(
+          INSERT.into('tourish.management.SupplierDebt').entries({
+            ID: debtID,
+            SupplierID: service.SupplierID,
+            Amount: debtAmount,
+            DueDate: dueDate,
+            Status: 'Pending',
+            Description: debtDescription,
+            TourServiceID: tourServiceID
+          })
+        );
+        
+        debtMessage = ` Debt automatically created for supplier (Amount: ${debtAmount} USD, Due: ${dueDate.toISOString().split('T')[0]}).`;
+        
+        console.log(`Auto-created debt: ${debtID} for supplier: ${service.SupplierID}, amount: ${debtAmount}`);
+        
+      } catch (debtError) {
+        console.error('Error creating automatic debt:', debtError);
+        debtMessage = ' Note: Could not create automatic debt for supplier.';
+        // Không throw error ở đây vì tour service đã được tạo thành công
+      }
+      
+      // === BƯỚC 3: Log history ===
       await cds.transaction(req).run(
         INSERT.into(ActiveTourHistories).entries({
           ID: cds.utils.uuid(),
           ActiveTourID: tourID,
           ModifiedDate: timestamp,
           ModifiedBy: 'system',
-          Changes: `Added service: ${service.ServiceName}, Quantity: ${quantity}`
+          Changes: `Added service: ${service.ServiceName}, Quantity: ${quantity}${debtMessage}`
         })
       );
       
       return {
         tourServiceID: tourServiceID,
-        message: 'Service added successfully'
+        debtID: debtID, // Trả về debt ID cho frontend
+        message: `Service added successfully.${debtMessage}`
       };
+      
     } catch (error) {
       console.error(error);
       return {
         tourServiceID: null,
+        debtID: null,
         message: `Error adding service: ${error.message}`
       };
     }

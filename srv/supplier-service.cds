@@ -80,21 +80,25 @@ service SupplierService @(path: '/supplier-service') {
   ) returns Boolean;
 
   // Các action cho quản lý công nợ nhà cung cấp
-  @(requires: ['Admin', 'Accountant'])
+  @(requires: ['Admin', 'Manager', 'Accountant'])
   action createSupplierDebt(
     supplierID: UUID,
     amount: Decimal,
     dueDate: Date,
-    status: String
+    status: String,
+    description: String,
+    TourServiceID: UUID
   ) returns {
     ID: UUID;
     SupplierID: UUID;
     Amount: Decimal(15,2);
     DueDate: Date;
     Status: String(20);
+    Description: String(500);
+    TourServiceID: UUID;
   };
 
-  @(requires: ['Admin', 'Accountant'])
+  @(requires: ['Admin', 'Manager', 'Accountant'])
   action markDebtAsPaid(
     debtID: UUID
   ) returns {
@@ -150,6 +154,8 @@ service SupplierService @(path: '/supplier-service') {
       Amount: Decimal(15,2);
       DueDate: Date;
       Status: String(20);
+      Description: String(500);
+      TourServiceID: UUID;
     };
     debtStatistics: {
       totalDebt: Decimal(15,2);
@@ -223,6 +229,32 @@ service SupplierService @(path: '/supplier-service') {
       debtCount: Integer;
     }
   };
+
+  @(requires: ['Admin', 'Accountant'])
+  action deleteSupplierDebt(
+    debtID: UUID
+  ) returns {
+    success: Boolean;
+    message: String;
+  };
+
+  @(requires: ['Admin', 'Accountant'])
+action updateSupplierDebt(
+  debtID: UUID,
+  amount: Decimal,
+  dueDate: Date,
+  status: String,
+  description: String
+) returns {
+  ID: UUID;
+  SupplierID: UUID;
+  Amount: Decimal(15,2);
+  DueDate: Date;
+  Status: String(20);
+  Description: String(500);
+  success: Boolean;
+  message: String;
+};
   
   // Lấy danh sách các loại dịch vụ
   @(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])

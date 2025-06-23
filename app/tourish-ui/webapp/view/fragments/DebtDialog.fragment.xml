@@ -42,16 +42,39 @@
                     
                     <Label id="_IDGenLabel18" text="Due Date *" required="true" />
                     <DatePicker id="debtDueDatePicker" 
-                        value="{newDebt>/dueDate}" 
-                        valueFormat="yyyy-MM-dd"
-                        displayFormat="long"
-                        required="true" />
+                        value="{
+                            path: 'newDebt>/dueDate',
+                            type: 'sap.ui.model.type.Date',
+                            formatOptions: {
+                                pattern: 'dd-MM-yyyy',
+                                UTC: false
+                            }
+                        }"
+                        valueFormat="dd-MM-yyyy"
+                        displayFormat="medium"
+                        required="true"
+                        placeholder="Select due date" />
                     
                     <Label id="_IDGenLabel163"   text="Status" />
                     <Select id="debtStatusSelect" selectedKey="{newDebt>/status}">
                         <core:Item id="_IDGenItem7" key="Pending" text="Pending" />
                         <core:Item id="_IDGenItem8" key="Completed" text="Completed" />
                     </Select>
+
+                    <Label id="_IDGenLabel169" text="Description" />
+                    <TextArea id="debtDescriptionTextArea"
+                        value="{newDebt>/description}"
+                        rows="3"
+                        cols="50"
+                        maxLength="500"
+                        placeholder="Enter description for this debt"
+                        showExceededText="true"
+                        class="sapUiSmallMarginBottom" />
+                    
+                    <Text id="_IDGenText_Helper" 
+                        text="Note: Auto-generated debts will have system-generated descriptions."
+                        class="sapUiTinyMarginTop sapThemeTextColor6" />
+                    
                 </f:content>
             </f:SimpleForm>
         </content>

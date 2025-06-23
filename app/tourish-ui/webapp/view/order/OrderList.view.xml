@@ -130,28 +130,28 @@
                     </headerToolbar>
                     
                     <columns>
-                        <Column id="_IDGenColumn53"  width="12%">
+                        <Column id="_IDGenColumn53"  width="12%" minScreenWidth="Tablet" demandPopin="true" hAlign="Begin">
                             <Text id="_IDGenText107"  text="Order ID"/>
                         </Column>
-                        <Column id="_IDGenColumn54"  width="12%">
+                        <Column id="_IDGenColumn54"  width="12%" minScreenWidth="Desktop" demandPopin="true">
                             <Text id="_IDGenText108"   text="Order Date"/>
                         </Column>
-                        <Column id="_IDGenColumn55"  width="15%">
+                        <Column id="_IDGenColumn55"  width="15%" minScreenWidth="Tablet" hAlign="Begin">
                             <Text id="_IDGenText109" text="Customer"/>
                         </Column>
-                        <Column id="_IDGenColumn56"  width="18%">
+                        <Column id="_IDGenColumn56"  width="18%" minScreenWidth="Desktop" demandPopin="true">
                             <Text id="_IDGenText110" text="Tour"/>
                         </Column>
-                        <Column id="_IDGenColumn57"  width="10%" hAlign="End">
+                        <Column id="_IDGenColumn57"  width="10%" hAlign="End" minScreenWidth="Desktop" demandPopin="true">
                             <Text id="_IDGenText111" text="Amount"/>
                         </Column>
-                        <Column id="_IDGenColumn58"  width="12%" hAlign="End">
+                        <Column id="_IDGenColumn58"  width="12%" hAlign="End" minScreenWidth="Desktop" demandPopin="true">
                             <Text id="_IDGenText112" text="Paid"/>
                         </Column>
-                        <Column id="_IDGenColumn59"  width="8%">
+                        <Column id="_IDGenColumn59"  width="8%" minScreenWidth="Desktop" demandPopin="true">
                             <Text id="_IDGenText113" text="Status"/>
                         </Column>
-                        <Column id="_IDGenColumn60" width="13%" hAlign="End">
+                        <Column id="_IDGenColumn60" hAlign="End" >
                             <Text id="_IDGenText114" text="Actions"/>
                         </Column>
                     </columns>

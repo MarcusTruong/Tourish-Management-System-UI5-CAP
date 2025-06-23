@@ -617,33 +617,7 @@ sap.ui.define([
          * Show detailed tour status breakdown
          */
         onShowTourStatusBreakdown: function() {
-            var oDashboardModel = this.getView().getModel("dashboard");
-            var statusBreakdown = oDashboardModel.getProperty("/kpis/tourStatusBreakdown");
-            
-            if (!statusBreakdown) {
-                MessageToast.show("Status data not available");
-                return;
-            }
-            
-            var sMessage = `Tour Status Breakdown:\n\n`;
-            sMessage += `🟢 Open: ${statusBreakdown.open} (accepting bookings)\n`;
-            sMessage += `🟡 Closed: ${statusBreakdown.closed} (booking closed)\n`;
-            sMessage += `🔵 Completed: ${statusBreakdown.completed} (tour finished)\n`;
-            sMessage += `🔴 Canceled: ${statusBreakdown.canceled} (tour canceled)\n\n`;
-            
-            var total = statusBreakdown.open + statusBreakdown.closed + statusBreakdown.completed + statusBreakdown.canceled;
-            sMessage += `Total: ${total} tours\n\n`;
-            
-            if (statusBreakdown.needsAttention) {
-                sMessage += `⚠️ Needs Attention:\n`;
-                sMessage += `• ${statusBreakdown.needsAttention.toClose} tours to close\n`;
-                sMessage += `• ${statusBreakdown.needsAttention.toComplete} tours to complete`;
-            }
-            
-            MessageBox.information(sMessage, {
-                title: "Tour Status Details",
-                styleClass: "sapUiSizeCompact"
-            });
+            this.getOwnerComponent().getRouter().navTo("saleTour");
         },
 
         /**

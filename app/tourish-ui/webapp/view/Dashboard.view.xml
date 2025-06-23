@@ -19,20 +19,27 @@
                     <f:DynamicPageHeader id="dashboardHeader" pinnable="true">
                         <VBox id="headerContent">
                             <!-- Welcome Section -->
-                            <HBox id="welcomeBox" justifyContent="SpaceBetween" alignItems="Center" class="sapUiLargeMarginBottom">
-                                <VBox id="welcomeInfo">
+                            <FlexBox id="welcomeBox" 
+                                justifyContent="SpaceBetween" 
+                                alignItems="Center" 
+                                direction="{= ${device>/system/phone} ? 'Column' : 'Row'}"
+                                class="sapUiLargeMarginBottom">
+                                <VBox id="welcomeInfo" class="{= ${device>/system/phone} ? 'sapUiSmallMarginBottom' : ''}">
                                     <Title id="welcomeTitle" text="Welcome back, {auth>/user/FullName}!" level="H2" class="sapUiNoMarginTop"/>
                                     <Text id="welcomeSubtitle" text="Here's what's happening with your tourism business today" class="sapUiMediumMarginTop"/>
                                     <HBox id="businessInfo" alignItems="Center" class="sapUiSmallMarginTop">
                                         <core:Icon id="companyIcon" src="sap-icon://building" class="sapUiTinyMarginEnd"/>
                                         <Text id="companyName" text="{dashboard>/workspaceInfo/CompanyName}" class="sapUiMediumText"/>
-                                        <Text id="lastUpdate" text="Last updated: {dashboard>/lastUpdated}" class="sapUiTinyMarginBegin sapUiSmallText"/>
+                                        <Text id="lastUpdate" 
+                                            text="Last updated: {dashboard>/lastUpdated}" 
+                                            class="sapUiTinyMarginBegin sapUiSmallText"
+                                            visible="{= !${device>/system/phone}}"/>
                                     </HBox>
                                 </VBox>
                                 
                                 <!-- Quick Actions - Role-based visibility -->
-                                <VBox id="quickActions" alignItems="End">
-                                    <HBox id="actionButtons">
+                                <VBox id="quickActions" alignItems="{= ${device>/system/phone} ? 'Center' : 'End'}">
+                                    <HBox id="actionButtons" wrap="Wrap" justifyContent="{= ${device>/system/phone} ? 'Center' : 'End'}">
                                         <Button id="refreshBtn" 
                                             icon="sap-icon://refresh" 
                                             tooltip="Refresh Dashboard" 
@@ -54,7 +61,7 @@
                                             class="sapUiTinyMarginBegin"/>
                                     </HBox>
                                 </VBox>
-                            </HBox>
+                            </FlexBox>
                         </VBox>
                     </f:DynamicPageHeader>
                 </f:header>
@@ -64,12 +71,16 @@
                     <VBox id="dashboardContent" class="sapUiMediumMargin">
                         
                         <!-- Main KPI Cards Row -->
-                        <HBox id="mainKpiRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
+                        <l:Grid id="mainKpiRow" 
+                            class="sapUiLargeMarginBottom"
+                            defaultSpan="XL3 L6 M6 S12"
+                            hSpacing="1"
+                            vSpacing="1">
                             
                             <!-- Revenue Card - Hide from Staff -->
                             <f:Card id="revenueCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="280px"
+                                width="100%"
                                 visible="{permissions>/visibility/revenue}">
                                 <f:header>
                                     <card:Header id="revenueHeader" 
@@ -101,7 +112,7 @@
                             <!-- Customer Card - Hide from Accountant -->
                             <f:Card id="customerCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="280px"
+                                width="100%"
                                 visible="{= ${permissions>/userRole} !== 'Accountant' || ${permissions>/userRole} !== 'Staff'}">
                                 <f:header>
                                     <card:Header id="customerHeader" 
@@ -133,7 +144,7 @@
                             <!-- Active Tours Card - Hide from Staff and Accountant -->
                             <f:Card id="toursCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="280px"
+                                width="100%"
                                 visible="{permissions>/visibility/tourStatus}">
                                 <f:header>
                                     <card:Header id="toursHeader" 
@@ -159,10 +170,11 @@
                                     </VBox>
                                 </f:content>
                             </f:Card>
+                            
                             <!-- Tour Status Card - Hide from Staff -->
                             <f:Card id="tourStatusCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="280px"
+                                width="100%"
                                 visible="{permissions>/visibility/tourStatus}">
                                 <f:header>
                                     <card:Header id="tourStatusHeader" 
@@ -204,15 +216,19 @@
                                     </VBox>
                                 </f:content>
                             </f:Card>
-                        </HBox>
+                        </l:Grid>
 
                         <!-- Secondary KPI Cards Row -->
-                        <HBox id="secondaryKpiRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
+                        <l:Grid id="secondaryKpiRow" 
+                            class="sapUiLargeMarginBottom"
+                            defaultSpan="XL3 L6 M6 S12"
+                            hSpacing="1"
+                            vSpacing="1">
 
                             <!-- Orders Card - Hide from Accountant -->
                             <f:Card id="ordersCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="280px"
+                                width="100%"
                                 visible="{= ${permissions>/userRole} !== 'Accountant'}">
                                 <f:header>
                                     <card:Header id="ordersHeader" 
@@ -245,7 +261,7 @@
                             <!-- Suppliers Card - Hide from Accountant -->
                             <f:Card id="suppliersCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="280px"
+                                width="100%"
                                 visible="{= ${permissions>/userRole} !== 'Accountant'}">
                                 <f:header>
                                     <card:Header id="suppliersHeader" 
@@ -273,7 +289,7 @@
                             <!-- Financial Overview Card - Show to Admin, Accountant, hide from Staff -->
                             <f:Card id="financialOverviewCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="280px"
+                                width="100%"
                                 visible="{permissions>/visibility/financialOverview}">
                                 <f:header>
                                     <card:Header id="financialHeader" 
@@ -299,10 +315,10 @@
                                 </f:content>
                             </f:Card>
 
-                                                        <!-- Tours Needing Attention - Hide from Staff -->
+                            <!-- Tours Needing Attention - Hide from Staff -->
                             <f:Card id="attentionCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="280px"
+                                width="100%"
                                 visible="{permissions>/visibility/needsAttention}">
                                 <f:header>
                                     <card:Header id="attentionHeader" 
@@ -336,7 +352,7 @@
                             <!-- Workspace Settings Card - Admin Only -->
                             <f:Card id="workspaceCard" 
                                 class="sapUiTinyMargin dashboardCard" 
-                                width="280px"
+                                width="100%"
                                 visible="{permissions>/visibility/workspace}">
                                 <f:header>
                                     <card:Header id="workspaceHeader" 
@@ -358,7 +374,7 @@
                                     </VBox>
                                 </f:content>
                             </f:Card>
-                        </HBox>
+                        </l:Grid>
 
                         <!-- Upcoming Departures Panel - Hide from Accountant -->
                         <Panel id="upcomingDeparturesPanel" 
@@ -372,21 +388,17 @@
                                     noDataText="No upcoming departures"
                                     class="sapUiMediumMarginTop">
                                     <CustomListItem id="departureItem" press=".onDeparturePress">
-                                        <HBox id="departureBox" justifyContent="SpaceBetween" alignItems="Center" class="sapUiMediumMargin">
-                                            <VBox id="departureInfo">
+                                        <FlexBox id="departureBox" 
+                                            justifyContent="SpaceBetween" 
+                                            alignItems="Center" 
+                                            direction="{= ${device>/system/phone} ? 'Column' : 'Row'}"
+                                            class="sapUiMediumMargin">
+                                            <VBox id="departureInfo" class="{= ${device>/system/phone} ? 'sapUiSmallMarginBottom' : ''}">
                                                 <Title id="departureTitle" text="{dashboard>tourName}" level="H4"/>
                                                 <Text id="departureDate" text="Departure: {dashboard>departureDate}"/>
                                                 <Text id="departureStatus" text="Status: {dashboard>status}"/>
                                             </VBox>
-                                            <VBox id="departureStats" alignItems="End">
-                                                <ObjectNumber id="departurePassengers" 
-                                                    number="{dashboard>passengers}" 
-                                                    unit="passengers"/>
-                                                <ObjectStatus id="departureCapacity" 
-                                                    text="{dashboard>capacity}% capacity" 
-                                                    state="{= ${dashboard>capacity} > 80 ? 'Success' : ${dashboard>capacity} > 60 ? 'Warning' : 'Error'}"/>
-                                            </VBox>
-                                        </HBox>
+                                        </FlexBox>
                                     </CustomListItem>
                                 </List>
                             </content>
@@ -397,9 +409,19 @@
                             class="sapUiResponsiveMargin"
                             visible="{permissions>/visibility/tourStatus}">
                             <content>
-                                <HBox id="statusSummaryBar" justifyContent="SpaceBetween" alignItems="Center" class="sapUiMediumMargin">
-                                    <HBox id="statusCounts" alignItems="Center">
-                                        <Text id="statusSummaryLabel" text="Tour Status Summary:" class="sapUiMediumMarginEnd"/>
+                                <FlexBox id="statusSummaryBar" 
+                                    justifyContent="SpaceBetween" 
+                                    alignItems="Center" 
+                                    direction="{= ${device>/system/phone} ? 'Column' : 'Row'}"
+                                    class="sapUiMediumMargin">
+                                    <FlexBox id="statusCounts" 
+                                        alignItems="Center" 
+                                        wrap="Wrap"
+                                        class="{= ${device>/system/phone} ? 'sapUiSmallMarginBottom' : ''}">
+                                        <Text id="statusSummaryLabel" 
+                                            text="Tour Status Summary:" 
+                                            class="sapUiMediumMarginEnd"
+                                            visible="{= !${device>/system/phone}}"/>
                                         <ObjectStatus id="openCount" 
                                             text="{dashboard>/kpis/tourStatusBreakdown/open} Open" 
                                             state="Success" 
@@ -415,13 +437,13 @@
                                         <ObjectStatus id="canceledCount" 
                                             text="{dashboard>/kpis/tourStatusBreakdown/canceled} Canceled" 
                                             state="Error"/>
-                                    </HBox>
+                                    </FlexBox>
                                     <Button id="refreshStatusBtn" 
                                         icon="sap-icon://refresh" 
                                         tooltip="Refresh Status Data" 
                                         press=".onRefreshDashboard" 
                                         type="Transparent"/>
-                                </HBox>
+                                </FlexBox>
                             </content>
                         </Panel>
 
