@@ -66,8 +66,11 @@
                         <!-- Main KPI Cards Row -->
                         <HBox id="mainKpiRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
                             
-                            <!-- Revenue Card - All roles can see -->
-                            <f:Card id="revenueCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                            <!-- Revenue Card - Hide from Staff -->
+                            <f:Card id="revenueCard" 
+                                class="sapUiTinyMargin dashboardCard" 
+                                width="280px"
+                                visible="{permissions>/visibility/revenue}">
                                 <f:header>
                                     <card:Header id="revenueHeader" 
                                         title="Revenue" 
@@ -84,7 +87,10 @@
                                             emphasized="true" 
                                             class="sapMObjectNumberLarge"/>
                                         <!-- Hide growth details for Staff -->
-                                        <HBox id="revenueGrowthDetails" alignItems="Center" class="sapUiSmallMarginTop">
+                                        <HBox id="revenueGrowthDetails" 
+                                            alignItems="Center" 
+                                            class="sapUiSmallMarginTop"
+                                            visible="{permissions>/visibility/revenue}">
                                             <core:Icon id="growthIcon" src="sap-icon://trend-up" color="Good" class="sapUiTinyMarginEnd"/>
                                             <Text id="growthText" text="+{dashboard>/kpis/revenueGrowth}% vs last month"/>
                                         </HBox>
@@ -93,7 +99,10 @@
                             </f:Card>
 
                             <!-- Customer Card - Hide from Accountant -->
-                            <f:Card id="customerCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                            <f:Card id="customerCard" 
+                                class="sapUiTinyMargin dashboardCard" 
+                                width="280px"
+                                visible="{= ${permissions>/userRole} !== 'Accountant' || ${permissions>/userRole} !== 'Staff'}">
                                 <f:header>
                                     <card:Header id="customerHeader" 
                                         title="Customers" 
@@ -122,7 +131,10 @@
                             </f:Card>
 
                             <!-- Active Tours Card - Hide from Staff and Accountant -->
-                            <f:Card id="toursCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                            <f:Card id="toursCard" 
+                                class="sapUiTinyMargin dashboardCard" 
+                                width="280px"
+                                visible="{permissions>/visibility/tourStatus}">
                                 <f:header>
                                     <card:Header id="toursHeader" 
                                         title="Active Tours" 
@@ -149,7 +161,10 @@
                             </f:Card>
 
                             <!-- Profit Card - Hide from Staff -->
-                            <f:Card id="profitCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                            <f:Card id="profitCard" 
+                                class="sapUiTinyMargin dashboardCard" 
+                                width="280px"
+                                visible="{permissions>/visibility/profitMargin}">
                                 <f:header>
                                     <card:Header id="profitHeader" 
                                         title="Profit Margin" 
@@ -179,8 +194,11 @@
                         <!-- Secondary KPI Cards Row -->
                         <HBox id="secondaryKpiRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
                             
-                            <!-- Tour Status Card - Only Admin, Manager -->
-                            <f:Card id="tourStatusCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                            <!-- Tour Status Card - Hide from Staff -->
+                            <f:Card id="tourStatusCard" 
+                                class="sapUiTinyMargin dashboardCard" 
+                                width="280px"
+                                visible="{permissions>/visibility/tourStatus}">
                                 <f:header>
                                     <card:Header id="tourStatusHeader" 
                                         title="Tour Status" 
@@ -223,7 +241,10 @@
                             </f:Card>
 
                             <!-- Orders Card - Hide from Accountant -->
-                            <f:Card id="ordersCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                            <f:Card id="ordersCard" 
+                                class="sapUiTinyMargin dashboardCard" 
+                                width="280px"
+                                visible="{= ${permissions>/userRole} !== 'Accountant'}">
                                 <f:header>
                                     <card:Header id="ordersHeader" 
                                         title="Orders" 
@@ -253,7 +274,10 @@
                             </f:Card>
 
                             <!-- Suppliers Card - Hide from Accountant -->
-                            <f:Card id="suppliersCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                            <f:Card id="suppliersCard" 
+                                class="sapUiTinyMargin dashboardCard" 
+                                width="280px"
+                                visible="{= ${permissions>/userRole} !== 'Accountant'}">
                                 <f:header>
                                     <card:Header id="suppliersHeader" 
                                         title="Suppliers" 
@@ -277,8 +301,11 @@
                                 </f:content>
                             </f:Card>
 
-                            <!-- Financial Overview Card - Only Admin, Accountant -->
-                            <f:Card id="financialOverviewCard" class="sapUiTinyMargin dashboardCard" width="280px">
+                            <!-- Financial Overview Card - Show to Admin, Accountant, hide from Staff -->
+                            <f:Card id="financialOverviewCard" 
+                                class="sapUiTinyMargin dashboardCard" 
+                                width="280px"
+                                visible="{permissions>/visibility/financialOverview}">
                                 <f:header>
                                     <card:Header id="financialHeader" 
                                         title="Financial Overview" 
@@ -304,11 +331,14 @@
                             </f:Card>
                         </HBox>
 
-                        <!-- Management Cards Row - Admin Only -->
+                        <!-- Management Cards Row -->
                         <HBox id="managementCardsRow" justifyContent="SpaceAround" class="sapUiLargeMarginBottom">
                             
-                            <!-- Tours Needing Attention - Only Admin, Manager -->
-                            <f:Card id="attentionCard" class="sapUiTinyMargin dashboardCard" width="430px">
+                            <!-- Tours Needing Attention - Hide from Staff -->
+                            <f:Card id="attentionCard" 
+                                class="sapUiTinyMargin dashboardCard" 
+                                width="430px"
+                                visible="{permissions>/visibility/needsAttention}">
                                 <f:header>
                                     <card:Header id="attentionHeader" 
                                         title="Needs Attention" 
@@ -339,7 +369,10 @@
                             </f:Card>
 
                             <!-- Workspace Settings Card - Admin Only -->
-                            <f:Card id="workspaceCard" class="sapUiTinyMargin dashboardCard" width="430px">
+                            <f:Card id="workspaceCard" 
+                                class="sapUiTinyMargin dashboardCard" 
+                                width="430px"
+                                visible="{permissions>/visibility/workspace}">
                                 <f:header>
                                     <card:Header id="workspaceHeader" 
                                         title="Workspace" 
@@ -355,6 +388,7 @@
                                             text="Manage Settings" 
                                             type="Transparent" 
                                             press=".onViewSettings"
+                                            visible="{permissions>/visibility/workspaceSettings}"
                                             class="sapUiSmallMarginTop"/>
                                     </VBox>
                                 </f:content>
@@ -362,7 +396,11 @@
                         </HBox>
 
                         <!-- Upcoming Departures Panel - Hide from Accountant -->
-                        <Panel id="upcomingDeparturesPanel" headerText="Upcoming Departures" class="sapUiResponsiveMargin" expanded="true">
+                        <Panel id="upcomingDeparturesPanel" 
+                            headerText="Upcoming Departures" 
+                            class="sapUiResponsiveMargin" 
+                            expanded="true"
+                            visible="{permissions>/visibility/upcomingDepartures}">
                             <content>
                                 <List id="upcomingDeparturesList" 
                                     items="{dashboard>/upcomingDepartures}" 
@@ -389,8 +427,10 @@
                             </content>
                         </Panel>
 
-                        <!-- Status Summary Bar - Only Admin, Manager -->
-                        <Panel id="statusSummaryPanel" class="sapUiResponsiveMargin">
+                        <!-- Status Summary Bar - Hide from Staff -->
+                        <Panel id="statusSummaryPanel" 
+                            class="sapUiResponsiveMargin"
+                            visible="{permissions>/visibility/tourStatus}">
                             <content>
                                 <HBox id="statusSummaryBar" justifyContent="SpaceBetween" alignItems="Center" class="sapUiMediumMargin">
                                     <HBox id="statusCounts" alignItems="Center">

@@ -161,67 +161,6 @@
                                             </VBox>
                                         </IconTabFilter>
                                         
-                                        <!-- Contracts Tab -->
-                                        <IconTabFilter id="contractsTab" icon="sap-icon://document-text" key="contracts" text="Contracts">
-                                            <VBox id="_IDGenVBox37">
-                                                <Toolbar id="_IDGenToolbar8">
-                                                    <Title id="_IDGenTitle14" text="Customer Contracts" level="H2" />
-                                                    <ToolbarSpacer id="_IDGenToolbarSpacer26" />
-                                                    <Button id="_IDGenButton45" icon="sap-icon://add" text="Add Contract" press=".onAddContract" type="Emphasized" />
-                                                </Toolbar>
-                                                
-                                                <Table
-                                                    id="contractsTable"
-                                                    items="{customerDetail>/contracts}"
-                                                    noDataText="No contracts found"
-                                                    growing="true"
-                                                    growingThreshold="10"
-                                                    growingScrollToLoad="true">
-                                                    <columns>
-                                                        <Column id="_IDGenColumn43" width="20%">
-                                                            <Text id="_IDGenText84" text="Contract Date" />
-                                                        </Column>
-                                                        <Column id="_IDGenColumn44" width="25%">
-                                                            <Text id="_IDGenText85" text="Tour" />
-                                                        </Column>
-                                                        <Column id="_IDGenColumn45" width="15%" hAlign="End">
-                                                            <Text id="_IDGenText86" text="Amount" />
-                                                        </Column>
-                                                        <Column id="_IDGenColumn46" width="15%">
-                                                            <Text id="_IDGenText87" text="Status" />
-                                                        </Column>
-                                                        <Column id="_IDGenColumn47" width="15%" hAlign="End">
-                                                            <Text id="_IDGenText88" text="Actions" />
-                                                        </Column>
-                                                    </columns>
-                                                    
-                                                    <items>
-                                                        <ColumnListItem id="_IDGenColumnListItem8">
-                                                            <cells>
-                                                                <Text id="_IDGenText89" text="{
-                                                                    path: 'customerDetail>ContractDate',
-                                                                    formatter: '.formatter.formatDate'
-                                                                }" />
-                                                                <Text id="_IDGenText90" text="{customerDetail>TourName}" />
-                                                                <ObjectNumber id="_IDGenObjectNumber7"
-                                                                    number="{
-                                                                        parts: [{path: 'customerDetail>TotalAmount'}, {path: '/currencyCode'}],
-                                                                        type: 'sap.ui.model.type.Currency',
-                                                                        formatOptions: {showMeasure: false}
-                                                                    }"/>
-                                                                <ObjectStatus id="_IDGenObjectStatus9"
-                                                                    text="{customerDetail>Status}"
-                                                                    state="{= ${customerDetail>Status} === 'Completed' ? 'Success' : ${customerDetail>Status} === 'Pending' ? 'Warning' : 'Error' }" />
-                                                                <HBox id="_IDGenHBox23" justifyContent="End">
-                                                                    <Button id="_IDGenButton46" icon="sap-icon://display" type="Transparent" press=".onViewContract" tooltip="View Contract" />
-                                                                </HBox>
-                                                            </cells>
-                                                        </ColumnListItem>
-                                                    </items>
-                                                </Table>
-                                            </VBox>
-                                        </IconTabFilter>
-                                        
                                         <!-- Orders Tab -->
                                         <IconTabFilter id="ordersTab" icon="sap-icon://cart" key="orders" text="Orders">
                                             <VBox id="_IDGenVBox38">

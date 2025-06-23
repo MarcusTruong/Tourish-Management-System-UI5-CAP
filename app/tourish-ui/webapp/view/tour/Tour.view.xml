@@ -22,7 +22,6 @@
                             <core:Item id="_IDGenItem23" key="" text="All Statuses"/>
                             <core:Item id="_IDGenItem24" key="Draft" text="Draft"/>
                             <core:Item id="_IDGenItem25" key="Published" text="Published"/>
-                            <core:Item id="_IDGenItem26" key="Archived" text="Archived"/>
                         </Select>
 
                         <Button id="clearFiltersBtn" text="Clear Filters" press=".onClearFilters" class="sapUiSmallMarginEnd"/>

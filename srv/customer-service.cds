@@ -258,7 +258,7 @@ service CustomerService @(path: '/customer-service') {
     }
   };
   
-@(requires: ['Admin', 'Manager', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Staff', 'Accountant'])
   action getCustomerStatistics() returns {
     totalIndividualCustomers: Integer;
     totalBusinessCustomers: Integer;
