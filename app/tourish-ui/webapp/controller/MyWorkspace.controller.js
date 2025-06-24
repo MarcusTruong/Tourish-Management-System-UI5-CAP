@@ -524,33 +524,6 @@ sap.ui.define([
                 console.error("Error refreshing workspace display:", error);
             }
         },
-        
-        /**
-         * Load workspace info after creation
-         * @private  
-         */
-        _loadWorkspaceInfo: function() {
-            var oODataModel = this.getOwnerComponent().getModel("userService");
-            var oAuthModel = this.getOwnerComponent().getModel("auth");
-            
-            // Gọi action để lấy workspace info mới nhất
-            this.getOwnerComponent().executeAuthenticatedAction(
-                oODataModel,
-                "/getWorkspaceInfo(...)",
-                {}
-            ).then(function(oContext) {
-                var oWorkspaceInfo = oContext.getBoundContext().getObject();
-                
-                if (oWorkspaceInfo) {
-                    // Cập nhật workspace info trong auth model
-                    oAuthModel.setProperty("/workspace", oWorkspaceInfo);
-                    console.log("✅ Workspace info reloaded:", oWorkspaceInfo);
-                }
-                
-            }).catch(function(oError) {
-                console.error("❌ Error loading workspace info:", oError);
-            });
-        },
 
         onEditWorkspacePress: function() {
             var oView = this.getView();

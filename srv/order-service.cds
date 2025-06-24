@@ -34,7 +34,7 @@ service OrderService @(path: '/order-service') {
     totalAmount: Decimal;
   };
 
-@(requires: ['Admin', 'Manager'])
+@(requires: ['Admin', 'Manager', 'Staff'])
   action cancelOrder(
     orderID: UUID,
     reason: String
@@ -43,7 +43,7 @@ service OrderService @(path: '/order-service') {
     message: String;
   };
 
-@(requires: ['Admin', 'Manager', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Staff'])
   action updateOrderStatus(
     orderID: UUID,
     status: String
@@ -53,7 +53,7 @@ service OrderService @(path: '/order-service') {
   };
 
   // Payment Management Actions
-@(requires: ['Admin', 'Manager', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Staff'])
   action addPayment(
     orderID: UUID,
     paymentDate: Date,
@@ -66,7 +66,7 @@ service OrderService @(path: '/order-service') {
     remainingAmount: Decimal;
   };
 
-@(requires: ['Admin', 'Manager', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Staff'])
   action updatePayment(
     paymentID: UUID,
     paymentDate: Date,
@@ -78,7 +78,7 @@ service OrderService @(path: '/order-service') {
     remainingAmount: Decimal;
   };
 
-@(requires: ['Admin', 'Manager', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Staff'])
   action deletePayment(
     paymentID: UUID
   ) returns {
@@ -87,7 +87,7 @@ service OrderService @(path: '/order-service') {
     remainingAmount: Decimal;
   };
 
-@(requires: ['Admin', 'Manager', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Staff'])
   action processRefund(
     orderID: UUID,
     amount: Decimal,
@@ -225,7 +225,7 @@ service OrderService @(path: '/order-service') {
     };
   };
 
-@(requires: ['Admin', 'Manager', 'Accountant'])
+@(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
 action generateInvoiceData(
   orderID: UUID
 ) returns {

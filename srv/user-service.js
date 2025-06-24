@@ -457,6 +457,7 @@ module.exports = (srv) => {
 
         try {
             const currentUser = req.user;
+            console.log(currentUser);
 
             // Validate role
             const validRoles = ['Admin', 'Manager', 'Staff', 'Accountant'];
@@ -479,11 +480,12 @@ module.exports = (srv) => {
                 };
             }
 
-            // Verify workspace access
-            // if (!WorkspaceSecurity.checkWorkspaceAccess(req, targetUser.WorkspaceID)) {
-            //     req.error(403, 'Cannot modify user from different workspace');
-            //     return;
-            // }
+            if (targetUser.Username === currentUser.username) {
+                return {
+                    success: false,
+                    message: 'Can not update your role'
+                };
+            }
 
             // Update user role
             await tx.run(
@@ -515,6 +517,9 @@ module.exports = (srv) => {
         const tx = cds.transaction(req);
 
         try {
+
+            const currentUser = req.user;
+
             // Validate status
             const validStatuses = ['Active', 'Inactive'];
             if (!validStatuses.includes(status)) {
@@ -533,6 +538,13 @@ module.exports = (srv) => {
                 return {
                     success: false,
                     message: 'User not found'
+                };
+            }
+
+            if (targetUser.Username === currentUser.username) {
+                return {
+                    success: false,
+                    message: 'Cannot deactive yourself'
                 };
             }
 
@@ -582,12 +594,6 @@ module.exports = (srv) => {
                 };
             }
 
-            // Verify workspace access
-            // if (!WorkspaceSecurity.checkWorkspaceAccess(req, targetUser.WorkspaceID)) {
-            //     req.error(403, 'Cannot remove user from different workspace');
-            //     return;
-            // }
-
             // Cannot remove self
             if (targetUser.Username === currentUser.username) {
                 return {
@@ -612,7 +618,7 @@ module.exports = (srv) => {
             };
 
         } catch (error) {
-            console.error('❌ Error in removeUserFromWorkspace:', error);
+            console.error('Error in removeUserFromWorkspace:', error);
             await tx.rollback();
             req.error(500, `Failed to remove user: ${error.message}`);
         }
