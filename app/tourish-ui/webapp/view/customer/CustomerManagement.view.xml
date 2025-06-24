@@ -150,9 +150,6 @@
                         busyIndicatorDelay="0"
                     >
                         <columns>
-                            <Column id="idColumn" minScreenWidth="Tablet" demandPopin="true" hAlign="Begin">
-                                <Text id="_IDGenText67" text="Customer ID" />
-                            </Column>
                             <Column id="nameColumn" minScreenWidth="Tablet" demandPopin="true" hAlign="Begin" width="15%">
                                 <Text id="_IDGenText68" text="Customer Name" />
                             </Column>
@@ -179,7 +176,6 @@
                         <items>
                             <ColumnListItem id="customerListItem" type="Navigation" press=".onCustomerPress">
                                 <cells>
-                                    <ObjectIdentifier id="_IDGenObjectIdentifier" title="{ID}" />
                                     <Text id="_IDGenText75" text="{= ${Type} === 'Individual' ? ${Name} : ${Name} }" />
                                     <Text id="_IDGenText76" text="{Address}" />
                                     <Link id="_IDGenLink" text="{Phone}" href="tel:{Phone}" />

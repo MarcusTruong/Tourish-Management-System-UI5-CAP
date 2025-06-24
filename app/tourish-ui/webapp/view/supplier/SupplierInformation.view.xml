@@ -73,9 +73,6 @@
                     alternateRowColors="true">
 
                     <columns>
-                        <Column id="_IDGenColumn90"  minScreenWidth="Tablet" demandPopin="true">
-                            <Text id="_IDGenText208"  text="Supplier ID" />
-                        </Column>
                         <Column id="_IDGenColumn7" minScreenWidth="Tablet" demandPopin="true">
                             <Text id="_IDGenText209"  text="Supplier Name" />
                         </Column>
@@ -96,7 +93,6 @@
                     <items>
                         <ColumnListItem id="_IDGenColumnListItem1" type="Navigation" press=".onSupplierPress">
                             <cells>
-                                <Text id="_IDGenText24" text="{ID}" />
                                 <Text id="_IDGenText25" text="{SupplierName}" />
                                 <Text id="_IDGenText26" text="{Address}" />
                                 <Text id="_IDGenText27" text="{Phone}" />

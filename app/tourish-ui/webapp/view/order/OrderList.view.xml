@@ -130,9 +130,6 @@
                     </headerToolbar>
                     
                     <columns>
-                        <Column id="_IDGenColumn53"  width="12%" minScreenWidth="Tablet" demandPopin="true" hAlign="Begin">
-                            <Text id="_IDGenText107"  text="Order ID"/>
-                        </Column>
                         <Column id="_IDGenColumn54"  width="12%" minScreenWidth="Desktop" demandPopin="true">
                             <Text id="_IDGenText108"   text="Order Date"/>
                         </Column>
@@ -159,7 +156,6 @@
                     <items>
                         <ColumnListItem id="_IDGenColumnListItem10"  type="Navigation" press=".onOrderPress">
                             <cells>
-                                <Text id="_IDGenText115" text="{orders>ID}"/>
                                 <Text id="_IDGenText116"  text="{
                                     path: 'orders>OrderDate',
                                     formatter: '.formatter.formatDate'

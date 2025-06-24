@@ -10,8 +10,8 @@ POST {{host}}/user-service/authenticate
 Content-Type: {{contentType}}
 
 {
-    "username": "truong",
-    "password": "Truong@2208"
+    "username": "linh",
+    "password": "Linh@2409"
 }
 
 ### Lưu token sau khi xác thực
