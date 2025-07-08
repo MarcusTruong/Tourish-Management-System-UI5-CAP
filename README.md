@@ -30,3 +30,7 @@ Learn more at https://cap.cloud.sap/docs/get-started/.
   ![image](https://github.com/user-attachments/assets/d219f765-7546-4cc9-8537-e9173002069b)
   ![image](https://github.com/user-attachments/assets/bf6ce14d-7ad6-4dbd-a07f-9a2c025c64b9)
 2. Dashboard
+![image](https://github.com/user-attachments/assets/ca6cd12f-8a04-4faf-bb93-308f16ae3f05)
+![image](https://github.com/user-attachments/assets/ad29579b-eaed-42d0-88a4-ea137cfb0ba2)
+
+- The data in dashboard is real, it calculates in all the
