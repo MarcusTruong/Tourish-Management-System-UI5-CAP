@@ -1,7 +1,157 @@
 const cds = require('@sap/cds');
+const PDFDocument = require('pdfkit');
+const { Readable } = require('stream');
 
 module.exports = cds.service.impl(async function () {
   const { Suppliers, Services, SupplierDebts } = this.entities;
+
+  this.on('generateSupplierPDF', async (req) => {
+  const { supplierID } = req.data;
+
+  if (!supplierID) {
+    return req.error(400, 'supplierID is required');
+  }
+
+  try {
+    // 1. Lấy thông tin nhà cung cấp
+    const supplier = await SELECT.one.from(Suppliers).where({ ID: supplierID });
+    if (!supplier) {
+      return req.error(404, 'Supplier not found');
+    }
+
+    // 2. Lấy danh sách dịch vụ
+    const services = await SELECT.from(SupplierServices).where({ supplier_ID: supplierID });
+
+    // 3. Tính toán công nợ (giả sử có bảng SupplierBills)
+    const debtResult = await SELECT.one
+      .from(SupplierBills)
+      .columns('sum(amount) as total', 'count(*) as count')
+      .where({ supplier_ID: supplierID, paid: false });
+
+    const totalDebt = debtResult?.total || 0;
+    const outstandingBills = debtResult?.count || 0;
+
+    // 4. Tạo PDF
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const buffers = [];
+
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => {});
+
+    // === Thiết kế PDF ===
+    const logoPath = './assets/logo.png'; // nếu có logo
+    if (fs.existsSync(logoPath)) {
+      doc.image(logoPath, 50, 30, { width: 80 });
+    }
+
+    // Tiêu đề
+    doc.fontSize(20).font('Helvetica-Bold').text('BÁO CÁO NHÀ CUNG CẤP', { align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(14).font('Helvetica').text(`Mã NCC: ${supplier.ID}`, { align: 'center' });
+    doc.moveDown(2);
+
+    // Thông tin cơ bản
+    doc.fontSize(12).font('Helvetica-Bold').text('THÔNG TIN CƠ BẢN');
+    doc.font('Helvetica').fontSize(11)
+      .text(`Tên nhà cung cấp: ${supplier.SupplierName}`)
+      .text(`Địa chỉ: ${supplier.Address || 'N/A'}`)
+      .text(`Điện thoại: ${supplier.Phone || 'N/A'}`)
+      .text(`Email: ${supplier.Email || 'N/A'}`);
+    doc.moveDown(1.5);
+
+    // Dịch vụ cung cấp
+    doc.fontSize(12).font('Helvetica-Bold').text('DANH SÁCH DỊCH VỤ');
+    if (services.length > 0) {
+      const tableTop = doc.y;
+      const rowHeight = 20;
+      let y = tableTop;
+
+      // Header
+      doc.font('Helvetica-Bold');
+      drawRow(['STT', 'Tên dịch vụ', 'Đơn giá', 'Mô tả'], y);
+      doc.font('Helvetica');
+      y += rowHeight;
+
+      services.forEach((svc, idx) => {
+        drawRow([
+          (idx + 1).toString(),
+          svc.ServiceName,
+          formatCurrency(svc.UnitPrice),
+          (svc.Description || '').substring(0, 50) + (svc.Description?.length > 50 ? '...' : '')
+        ], y);
+        y += rowHeight;
+      });
+    } else {
+      doc.text('Chưa có dịch vụ nào.');
+    }
+    doc.moveDown(1.5);
+
+    // Công nợ
+    doc.fontSize(12).font('Helvetica-Bold').text('TÌNH HÌNH CÔNG NỢ');
+    doc.font('Helvetica').fontSize(11)
+      .text(`Tổng công nợ: ${formatCurrency(totalDebt)}`)
+      .text(`Số hóa đơn chưa thanh toán: ${outstandingBills}`);
+    doc.moveDown(2);
+
+    // Footer
+    doc.fontSize(10).text(`Ngày xuất báo cáo: ${new Date().toLocaleString('vi-VN')}`, { align: 'center' });
+
+    doc.end();
+
+    // Helper: vẽ dòng bảng
+    function drawRow(cells, y) {
+      const colWidths = [40, 180, 80, 180];
+      let x = 50;
+      cells.forEach((cell, i) => {
+        doc.text(cell, x, y, { width: colWidths[i], align: i === 2 ? 'right' : 'left' });
+        x += colWidths[i];
+      });
+      doc.moveTo(50, y + 15).lineTo(550, y + 15).stroke();
+    }
+
+    // Helper: định dạng tiền
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    }
+
+    // Chuyển PDF thành Base64
+    const pdfBuffer = await new Promise((resolve) => {
+      doc.on('end', () => {
+        const pdfData = Buffer.concat(buffers);
+        resolve(pdfData);
+      });
+    });
+
+    const pdfBase64 = pdfBuffer.toString('base64');
+
+    // Trả về kết quả
+    return {
+      supplier: {
+        ID: supplier.ID,
+        SupplierName: supplier.SupplierName,
+        Address: supplier.Address,
+        Phone: supplier.Phone,
+        Email: supplier.Email
+      },
+      services: services.map(s => ({
+        ID: s.ID,
+        ServiceName: s.ServiceName,
+        UnitPrice: s.UnitPrice,
+        Description: s.Description
+      })),
+      debtStatistics: {
+        totalDebt,
+        outstandingBills
+      },
+      pdfContent: pdfBase64,
+      generatedAt: new Date()
+    };
+
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    req.error(500, `Failed to generate PDF: ${error.message}`);
+  }
+});
 
   // Handler cho createSupplier
 this.on('createSupplier', async (req) => {

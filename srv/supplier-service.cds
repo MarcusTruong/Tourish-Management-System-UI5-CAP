@@ -129,6 +129,32 @@ service SupplierService @(path: '/supplier-service') {
     }
   };
 
+@requires: ['Admin', 'Manager', 'Accountant', 'Staff']
+action generateSupplierPDF(
+  supplierID: UUID
+) returns {
+  supplier: {
+    ID: UUID;
+    SupplierName: String(100);
+    Address: String(200);
+    Phone: String(20);
+    Email: String(100);
+  };
+  services: array of {
+    ID: UUID;
+    ServiceName: String(100);
+    UnitPrice: Decimal(15,2);
+    Description: String(500);
+  };
+  debtStatistics: {
+    totalDebt: Decimal(15,2);
+    outstandingBills: Integer;
+  };
+  pdfContent: LargeString; // Base64-encoded PDF
+  generatedAt: Timestamp;
+};
+
+
   @(requires: ['Admin', 'Manager', 'Accountant', 'Staff'])
   action getSupplierDetails(
     supplierID: UUID

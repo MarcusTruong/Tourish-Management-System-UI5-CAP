@@ -39,6 +39,12 @@
                 <OverflowToolbar id="_IDGenOverflowToolbar2">
                     <Title id="_IDGenTitle22"  text="Manage Suppliers Information" level="H2" />
                     <ToolbarSpacer id="_IDGenToolbarSpacer38" />
+                    <Button id="_IDGenButton90"
+                        icon="sap-icon://attachment-html"
+                        text="Generate PDF"
+                        type="Emphasized"
+                        tooltip="PDFView Page"
+                        press=".onGeneratePDF" />
                     <Button id="_IDGenButton12"
                         icon="sap-icon://add"
                         text="Add New Supplier"

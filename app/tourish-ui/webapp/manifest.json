@@ -265,7 +265,12 @@
           "name": "activeTourDetail",
           "pattern": "activeTour/{tourId}",
           "target": "activeTourDetail"
-      }
+        },
+        {
+            "pattern": "supplier/pdf/{supplierID}",
+            "name": "supplierPDF",
+            "target": "supplierPDF"
+        }
       ],
       "targets": {
         "login": {
@@ -390,6 +395,13 @@
         "controlId": "mainContents",
         "controlAggregation": "pages",
         "parent": "appContent"
+        },
+        "supplierPDF": {
+            "viewId": "supplierPDF",
+            "viewName": "supplier.SupplierPDF",
+            "controlId": "mainContents",
+            "controlAggregation": "pages",
+            "parent": "appContent"
         }
       }
     },

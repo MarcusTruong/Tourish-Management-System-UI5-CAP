@@ -1,0 +1,52 @@
+<mvc:View
+    controllerName="tourishui.controller.supplier.SupplierPDF"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns:pdf="sap.ui.webc.main">
+
+    <Page
+        id="supplierPDFPage"
+        title="Supplier Report - PDF Preview"
+        showNavButton="false"
+        class="sapUiContentPadding">
+
+        <content>
+            <!-- PDF Viewer Embedded -->
+            <PDFViewer
+                id="pdfViewer"
+                source="{pdfModel>/pdfUrl}"
+                title="{pdfModel>/title}"
+                height="{pdfModel>/height}"
+                isTrustedSource="true"
+                class="sapUiMediumMargin">
+                <layoutData>
+                    <FlexItemData id="_IDGenFlexItemData2" growFactor="1" />
+                </layoutData>
+            </PDFViewer>
+        </content>
+
+        <footer>
+            <OverflowToolbar id="_IDGenOverflowToolbar18">
+                <ToolbarSpacer id="_IDGenToolbarSpacer26" />
+                <Button id="_IDGenButton91"
+                    text="Download PDF"
+                    type="Emphasized"
+                    press=".onDownloadPDF"
+                    icon="sap-icon://download" />
+                <Button id="_IDGenButton92"
+                    text="Print"
+                    press=".onPrint"
+                    icon="sap-icon://print" />
+                <Button id="_IDGenButton93"
+                    text="Email"
+                    press=".onEmail"
+                    icon="sap-icon://email" />
+                <Button id="_IDGenButton94"
+                    text="Close"
+                    press=".onCloseWindow"
+                    icon="sap-icon://decline" />
+            </OverflowToolbar>
+        </footer>
+    </Page>
+</mvc:View>
